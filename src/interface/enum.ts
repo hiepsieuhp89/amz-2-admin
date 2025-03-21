@@ -1,0 +1,169 @@
+export enum UserRole {
+  ADMIN = 'admin',
+  MARKETING = 'marketing',
+  AGENT = 'agent',
+  USER = 'user',
+}
+
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BANNED = 'banned',
+  BLOCKED = 'blocked'
+}
+
+export enum DeviceType {
+  MOBILE = 'mobile',
+  DESKTOP = 'desktop',
+  TABLET = 'tablet',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  ERROR = 'error', 
+  SUCCESS = 'success',
+  REJECTED = 'reject',
+  PROCESSING = 'processing',
+} 
+
+export enum Type {
+  LAST_LOGIN_IP= "LAST_LOGIN_IP", 
+  REGISTER_IP = "REGISTER_IP",
+}
+
+export enum DepositType {
+  F1_FIRST_DEPOSIT = 'F1_FIRST_DEPOSIT',
+  BET_REFUND = 'BET_REFUND',
+  EVENT_BONUS = 'EVENT_BONUS',
+  FIRST_DEPOSIT_BONUS = 'FIRST_DEPOSIT_BONUS',
+  ACTIVITY_BONUS = 'ACTIVITY_BONUS',
+  DAILY_QUEST_COMPLETION_REWARDS = 'DAILY_QUEST_COMPLETION_REWARDS',
+  TELEGRAM_EVENT_REWARDS = 'TELEGRAM_EVENT_REWARDS',
+  DEPOSIT_COMMISSION_AGENCY = 'DEPOSIT_COMMISSION_AGENCY'
+}
+
+export enum DepositTypeTitles {
+  F1_FIRST_DEPOSIT = 'Thưởng F1 nạp đầu',
+  BET_REFUND = 'Hoàn cược',
+  EVENT_BONUS = 'Thưởng sự kiện',
+  FIRST_DEPOSIT_BONUS = 'Thưởng nạp đầu',
+  ACTIVITY_BONUS = 'Thưởng hoạt động',
+  DAILY_QUEST_COMPLETION_REWARDS = 'Thưởng hàng ngày',
+  TELEGRAM_EVENT_REWARDS = 'Thưởng sự kiện telegram',
+  DEPOSIT_COMMISSION_AGENCY = 'Thưởng thành viên cấp dưới nạp đầu'
+};
+
+export enum BalanceFlowType {
+  // COMMISSIONS = 'COMMISSIONS',
+  // REWARD_WINGO = 'REWARD_WINGO',
+  // REWARD_K3 = 'REWARD_K3',
+  // REWARD_5D = 'REWARD_5D',
+  // REWARD_WINGO_TRX = 'REWARD_WINGO_TRX',
+  F1_FIRST_DEPOSIT = 'F1_FIRST_DEPOSIT',
+  // BET_REFUND = 'BET_REFUND',
+  EVENT_BONUS = 'EVENT_BONUS',
+  FIRST_DEPOSIT_BONUS = 'FIRST_DEPOSIT_BONUS',
+  // ACTIVITY_BONUS = 'ACTIVITY_BONUS'
+}
+
+export enum BalanceFlowTitles {
+  // COMMISSIONS = 'Hoa hồng',
+  // REWARD_WINGO = 'Thắng cược game Wingo',
+  // REWARD_K3 = 'Thắng cược game K3',
+  // REWARD_5D = 'Thắng cược game 5D',
+  // REWARD_WINGO_TRX = 'Thắng cược game Trx',
+  F1_FIRST_DEPOSIT = 'Thưởng F1 nạp đầu',
+  // BET_REFUND = 'Hoàn cược',
+  EVENT_BONUS = 'Thưởng sự kiện',
+  FIRST_DEPOSIT_BONUS = 'Thưởng nạp đầu',
+  // ACTIVITY_BONUS = 'Thưởng hoạt động'
+};
+
+export const revenueTypes = [
+  'ONLINE_CASHIN',
+  'USER_MAMAGER_EDIT_BALANCE_RECORDED_REVENUE'
+];
+
+export const costTypes = [
+  'ONLINE_CASHOUT', 'REWARD_WINGO', 'REWARD_K3', 'REWARD_5D',
+  'REWARD_WINGO_TRX', 'COMMISSIONS', 'DEPOSIT_COMMISSION_USER',
+  'DEPOSIT_COMMISSION_AGENCY', 'F1_FIRST_DEPOSIT', 'BET_REFUND',
+  'EVENT_BONUS', 'FIRST_DEPOSIT_BONUS', 'ACTIVITY_BONUS',
+  'DAILY_QUEST_COMPLETION_REWARDS',
+  'TELEGRAM_EVENT_REWARDS',
+  'USER_MAMAGER_EDIT_BALANCE_RECORD_EXPENSE'
+];
+
+export enum TransactionType {
+  BET_FIST_SHOOT = 'BET_FIST_SHOOT',
+  BET_CASINO = 'BET_CASINO',
+  BET_SPORTS = 'BET_SPORTS',
+  BET_MINI_GAME = 'BET_MINI_GAME',
+  BET_OTHER_GAME = 'BET_OTHER_GAME',
+  BET_SLOTS = 'BET_SLOTS',
+  BET_WINGO = 'BET_WINGO',
+  BET_WINGO_TRX = 'BET_WINGO_TRX',
+  BET_K3 = 'BET_K3',
+  BET_5D = 'BET_5D',
+  ONLINE_CASHOUT_REFUND = 'ONLINE_CASHOUT_REFUND',
+  ONLINE_CASHIN = 'ONLINE_CASHIN',
+  ONLINE_CASHOUT = 'ONLINE_CASHOUT',
+  COMMISSIONS = 'COMMISSIONS',
+  REWARD_WINGO = 'REWARD_WINGO',
+  REWARD_K3 = 'REWARD_K3',
+  REWARD_5D = 'REWARD_5D',
+  REWARD_WINGO_TRX = 'REWARD_WINGO_TRX',
+  USER_MAMAGER_EDIT_BALANCE_RECORDED_REVENUE = 'USER_MAMAGER_EDIT_BALANCE_RECORDED_REVENUE',
+  USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_REVENUE = 'USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_REVENUE',
+  BET_CARD_GAME = 'BET_CARD_GAME',
+  AMAZON = 'AMAZON',
+  WALLET_TRANSFER = 'WALLET_TRANSFER',
+  F1_FIRST_DEPOSIT = 'F1_FIRST_DEPOSIT',
+  BET_REFUND = 'BET_REFUND',
+  EVENT_BONUS = 'EVENT_BONUS',
+  FIRST_DEPOSIT_BONUS = 'FIRST_DEPOSIT_BONUS',
+  ACTIVITY_BONUS = 'ACTIVITY_BONUS',
+  DAILY_QUEST_COMPLETION_REWARDS = 'DAILY_QUEST_COMPLETION_REWARDS',
+  TELEGRAM_EVENT_REWARDS = 'TELEGRAM_EVENT_REWARDS',
+  DEPOSIT_COMMISSION_USER = 'DEPOSIT_COMMISSION_USER',
+  DEPOSIT_COMMISSION_AGENCY = 'DEPOSIT_COMMISSION_AGENCY',
+  USER_MAMAGER_EDIT_BALANCE_RECORD_EXPENSE = 'USER_MAMAGER_EDIT_BALANCE_RECORD_EXPENSE',
+  USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_EXPENSE = 'USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_EXPENSE'
+}
+
+export enum TransactionTypeTitles {
+  BET_FIST_SHOOT = 'BET_FIST_SHOOT',
+  BET_CASINO = 'Casino',
+  BET_SPORTS = 'Thể thao',
+  BET_MINI_GAME = 'Mini game',
+  BET_OTHER_GAME = 'BET_OTHER_GAME',
+  BET_SLOTS = 'BET_SLOTS',
+  BET_WINGO = 'Bet Wingo',
+  BET_WINGO_TRX = 'Bet Wingo TRX',
+  BET_K3 = 'Bet K3',
+  BET_5D = 'Bet 5D, keno',
+  ONLINE_CASHOUT_REFUND = 'Hoàn tiền rút online',
+  ONLINE_CASHIN = 'Nạp online',
+  ONLINE_CASHOUT = 'Rút online',
+  COMMISSIONS = 'Hoàn tiền hoa hồng',
+  REWARD_WINGO = 'Thưởng cược thắng Wingo',
+  REWARD_K3 = 'Thưởng cược thắng K3',
+  REWARD_5D = 'Thưởng cược thắng 5D',
+  REWARD_WINGO_TRX = 'Thưởng cược thắng Wingo TRX',
+  USER_MAMAGER_EDIT_BALANCE_RECORDED_REVENUE = 'Admin cộng tiền',
+  USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_REVENUE = 'Admin cộng tiền không ghi vào doanh thu',
+  BET_CARD_GAME = 'BET_CARD_GAME',
+  AMAZON = 'Amazon',
+  WALLET_TRANSFER = 'Chuyển tiền ví chính sang ví khác',
+  F1_FIRST_DEPOSIT = 'Thưởng F1 nạp đầu',
+  BET_REFUND = 'Hoàn cược',
+  EVENT_BONUS = 'Thưởng sự kiện',
+  FIRST_DEPOSIT_BONUS = 'Thưởng nạp đầu',
+  ACTIVITY_BONUS = 'Thưởng hoạt động',
+  DAILY_QUEST_COMPLETION_REWARDS = 'Thưởng nhiệm vụ hằng ngày',
+  TELEGRAM_EVENT_REWARDS = 'Thưởng sự kiện telegram',
+  DEPOSIT_COMMISSION_USER = 'Thưởng nạp tiền hoa hồng được cộng cho user',
+  DEPOSIT_COMMISSION_AGENCY = 'Thưởng nạp tiền hoa hồng được cộng cho agency',
+  USER_MAMAGER_EDIT_BALANCE_RECORD_EXPENSE = 'Admin trừ tiền',
+  USER_MAMAGER_EDIT_BALANCE_NOT_RECORDED_EXPENSE = 'Admin trừ tiền không ghi vào chi phí'
+}

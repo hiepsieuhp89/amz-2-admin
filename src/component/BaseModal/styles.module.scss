@@ -1,0 +1,20 @@
+.customModal{
+    :global{
+        .ant-modal-content{
+            border-radius: 8px !important;
+            padding-bottom: 12px !important;
+            .ant-modal-header{
+                .ant-modal-title{
+                    font-size: 16px ;
+                       
+                    font-weight: 500px;
+                    padding-bottom: 10px;
+                }
+            }
+            .ant-modal-footer{
+                display: none;
+            }
+        }
+    }
+
+}

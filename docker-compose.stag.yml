@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  app-stag:
+    image: ${CI_REGISTRY_IMAGE}:staging
+    container_name: app-stag
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=staging 

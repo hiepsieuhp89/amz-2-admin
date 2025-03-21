@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "env": {
+    "NEXT_PUBLIC_API_URL": "cms-92lottery.apibet.site",
+    "NEXT_PUBLIC_ENV": "staging"
+  }
+}

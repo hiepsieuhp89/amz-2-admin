@@ -1,0 +1,76 @@
+image: docker/compose:latest
+
+services:
+  - name: docker:dind
+    alias: docker
+    command: ["--tls=false"]
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+stages:
+  - check-mr
+  - build
+  - deploy
+
+.base_config: &base_config
+  before_script:
+    - apk update && apk add --no-cache openssh-client bash
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - eval "$(ssh-agent -s)"
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa
+    - rm ~/.ssh/id_rsa
+
+.deploy_template: &deploy_definition
+  extends: .base_config
+  stage: deploy
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - scheduler_failure
+      - api_failure
+      - job_execution_timeout
+
+# Deploy staging environments
+deploy-staging:
+  <<: *deploy_definition
+  script:
+    - docker-compose -H "ssh://root@185.227.134.168" -f docker-compose.stag.yml -p staging build
+    - docker-compose -H "ssh://root@185.227.134.168" -f docker-compose.stag.yml -p staging up -d
+  environment:
+    name: staging
+  only:
+    - staging
+
+# Deploy production environments
+deploy-production:
+  <<: *deploy_definition
+  script:
+    - docker-compose -H "ssh://root@185.227.134.168" -f docker-compose.prod.yml -p production build
+    - docker-compose -H "ssh://root@185.227.134.168" -f docker-compose.prod.yml -p production up -d
+  environment:
+    name: production
+  only:
+    - main
+
+# Check merge requests
+check-mr:
+  extends: .base_config
+  stage: check-mr
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
+        docker-compose -f docker-compose.prod.yml build
+      else
+        docker-compose -f docker-compose.dev.yml build
+      fi
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual

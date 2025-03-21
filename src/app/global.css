@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media (min-width: 1700px) {
+    .container_box {
+        max-width: 1600px !important;
+    }
+}
+
+.bg-level {
+    background: #e1e3e4 !important;
+}
+
+tspan {
+    font-size: 10px !important;
+    color: black !important;
+}
+
+body {
+    padding-right: 0 !important;
+    overflow: auto !important;
+    width: 100%;
+}
+
+html {
+    overflow-y: scroll !important;
+    margin-right: 0 !important;
+    scrollbar-gutter: stable !important;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+body.select-open,
+body.dropdown-open,
+body.modal-open {
+    overflow-y: scroll !important;
+}
+.boxForm .ant-card-head{
+    background-color: #263238 !important;
+    color: #ffffff !important
+}
+
+/* Thay đổi màu placeholder cho tất cả Input, Select và DatePicker */
+input::placeholder,
+.ant-input::placeholder, 
+.ant-select-selection-placeholder,
+.ant-picker-input > input::placeholder { 
+  color: #555555 !important;
+  opacity: 1 !important;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px; /* For horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+.ant-switch{
+  background: #a8a8a8 
+}
+.btn-info{
+  color: #fff;
+  background-color: #5bc0de;
+  border-color: #46b8da; 
+  padding-top: .25rem !important;
+  padding-bottom: .25rem !important;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 4px;
+}

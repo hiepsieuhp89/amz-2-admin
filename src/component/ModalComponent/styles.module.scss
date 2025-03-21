@@ -1,0 +1,29 @@
+.modalCustom{
+  position: relative;
+  .iconX {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    right: 0px;
+    &::before,
+    &::after {
+      right: 10px;
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 20px;
+      background-color: black;
+    }
+
+    &::before {
+      transform: rotate(45deg);
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
+
+}
