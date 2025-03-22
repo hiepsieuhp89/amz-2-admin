@@ -15,10 +15,9 @@ export interface ICreateProduct {
   slug?: string;
   sku?: string;
   barcode?: string;
-  price: number;
-  compareAtPrice?: number;
-  costPrice?: number;
-  quantity: number;
+  price: number | string;
+  salePrice?: number | string;
+  stock: number | string;
   categoryId?: string;
   brandId?: string;
   tags?: string[];
@@ -38,6 +37,7 @@ export interface ICreateProduct {
   metaDescription?: string;
   metaKeywords?: string[];
   sellerId?: string;
+  imageUrl?: string;
 }
 
 export interface IUpdateProduct {
@@ -47,10 +47,9 @@ export interface IUpdateProduct {
   slug?: string;
   sku?: string;
   barcode?: string;
-  price?: number;
-  compareAtPrice?: number;
-  costPrice?: number;
-  quantity?: number;
+  price?: number | string;
+  salePrice?: number | string;
+  stock?: number | string;
   categoryId?: string;
   brandId?: string;
   tags?: string[];
@@ -70,4 +69,5 @@ export interface IUpdateProduct {
   metaDescription?: string;
   metaKeywords?: string[];
   sellerId?: string;
+  imageUrl?: string;
 }

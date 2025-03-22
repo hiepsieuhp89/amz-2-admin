@@ -1,41 +1,70 @@
-import React, { useState } from 'react';
+"use client"
+import React, { useState, useEffect } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Grid, Paper, Switch, TextField, Typography } from '@mui/material';
 import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
 import { Chip } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
+import { useGetProductById, useUpdateProduct, useDeleteProduct } from '@/hooks/product';
+import { useUploadImage } from '@/hooks/image';
 
-const ProductDetailPage = () => {
+// Define the form data interface to match our API structure
+interface ProductFormData {
+  name: string;
+  slug: string;
+  price: string;
+  salePrice: string; // Changed from compareAtPrice to match API
+  description: string;
+  stock: string; // Changed from quantity to match API
+  categoryId: string;
+  imageUrl: string | null; // Changed from image to match API
+  image: File | null; // For file upload handling
+  imagePreview: string | null; // For preview
+}
+
+const ProductDetailPage = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const { productData, updateProductMutation, deleteProductMutation } = useProduct();
+  const productId = params.id;
+  
+  // Use the hooks directly
+  const { data: productData, isLoading, error } = useGetProductById(productId);
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  const uploadImageMutation = useUploadImage();
 
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     slug: '',
     price: '',
-    compareAtPrice: '',
-    costPrice: '',
-    quantity: '',
-    sku: '',
-    barcode: '',
-    categoryId: '',
-    brandId: '',
-    shortDescription: '',
+    salePrice: '',
     description: '',
-    isActive: true,
-    isFeatured: false,
-    isDigital: false,
-    metaTitle: '',
-    metaDescription: '',
-    metaKeywords: [],
-    tags: [],
+    stock: '',
+    categoryId: '',
+    imageUrl: null,
     image: null,
     imagePreview: null,
   });
-  const [tag, setTag] = useState('');
-  const [metaKeyword, setMetaKeyword] = useState('');
+
+  // Load product data when available
+  useEffect(() => {
+    if (productData?.data) {
+      const product = productData.data;
+      setFormData({
+        name: product.name || '',
+        slug: '', // API doesn't return slug
+        price: product.price || '',
+        salePrice: product.salePrice || '',
+        description: product.description || '',
+        stock: product.stock?.toString() || '',
+        categoryId: product.category?.id || '',
+        imageUrl: product.imageUrl || null,
+        image: null,
+        imagePreview: product.imageUrl || null,
+      });
+    }
+  }, [productData]);
 
   const handleBack = () => {
     router.back();
@@ -49,98 +78,73 @@ const ProductDetailPage = () => {
     }));
   };
 
-  const addTag = () => {
-    if (tag.trim() !== "" && !formData.tags?.includes(tag.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...(prev.tags || []), tag.trim()],
-      }))
-      setTag("")
-    }
-  }
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags?.filter((k) => k !== tagToRemove) || [],
-    }))
-  }
-
-  const addMetaKeyword = () => {
-    if (metaKeyword.trim() !== "" && !formData.metaKeywords?.includes(metaKeyword.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        metaKeywords: [...(prev.metaKeywords || []), metaKeyword.trim()],
-      }))
-      setMetaKeyword("")
-    }
-  }
-
-  const removeMetaKeyword = (keywordToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      metaKeywords: prev.metaKeywords?.filter((k) => k !== keywordToRemove) || [],
-    }))
-  }
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      let updatedFormData = { ...formData }
+      let updatedData: any = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
+        stock: parseInt(formData.stock, 10),
+        categoryId: formData.categoryId || undefined
+      };
       
       if (formData.image) {
-        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" });
         
         const uploadResult = await uploadImageMutation.mutateAsync({
           file: formData.image,
           isPublic: true,
           description: `Hình ảnh cho sản phẩm: ${formData.name}`
-        })
+        });
         
-        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" });
         
-        // Cập nhật hình ảnh sẽ được xử lý bởi API backend
+        // Add the image URL to the update payload
+        updatedData.imageUrl = uploadResult.data.url;
       }
       
       await updateProductMutation.mutateAsync({
-        id: productData.id,
-        payload: updatedFormData,
-      })
-      message.success("Sản phẩm đã được cập nhật!")
-      setIsEditing(false)
+        id: productId,
+        payload: updatedData,
+      });
+      
+      message.success("Sản phẩm đã được cập nhật!");
+      setIsEditing(false);
     } catch (error) {
-      message.error("Không thể cập nhật sản phẩm. Vui lòng thử lại.")
-      console.error(error)
+      message.error("Không thể cập nhật sản phẩm. Vui lòng thử lại.");
+      console.error(error);
     }
-  }
+  };
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteProductMutation.mutateAsync(productData.id)
-      message.success("Sản phẩm đã được xóa thành công!")
-      router.back()
+      await deleteProductMutation.mutateAsync(productId);
+      message.success("Sản phẩm đã được xóa thành công!");
+      router.push('/admin/products');
     } catch (error) {
-      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
-      console.error(error)
+      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.");
+      console.error(error);
     }
-  }
+  };
 
-  if (updateProductMutation.isPending || deleteProductMutation.isPending) {
+  if (isLoading || updateProductMutation.isPending || deleteProductMutation.isPending) {
     return (
       <Box className="flex items-center justify-center p-6 py-12">
         <CircularProgress className="text-main-golden-orange" />
       </Box>
-    )
+    );
   }
 
-  if (productData.error || !productData.data) {
+  if (error || !productData?.data) {
     return (
       <Box className="p-8 text-center">
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải thông tin sản phẩm
         </Typography>
         <Typography className="mb-4 text-gray-400">
-          {productData.error?.message || "Sản phẩm không tồn tại hoặc đã bị xóa"}
+          {error?.message || "Sản phẩm không tồn tại hoặc đã bị xóa"}
         </Typography>
         <Button
           variant="outlined"
@@ -151,10 +155,10 @@ const ProductDetailPage = () => {
           Quay lại danh sách
         </Button>
       </Box>
-    )
+    );
   }
 
-  const { data: product } = productData;
+  const product = productData.data;
 
   return (
     <div className="p-6">
@@ -230,24 +234,9 @@ const ProductDetailPage = () => {
               <TextField
                 size="small"
                 label="Giá khuyến mãi"
-                name="compareAtPrice"
+                name="salePrice"
                 type="number"
-                value={formData.compareAtPrice}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Giá vốn"
-                name="costPrice"
-                type="number"
-                value={formData.costPrice}
+                value={formData.salePrice}
                 onChange={handleChange}
                 fullWidth
                 variant="outlined"
@@ -260,39 +249,11 @@ const ProductDetailPage = () => {
               <TextField
                 size="small"
                 label="Số lượng"
-                name="quantity"
+                name="stock"
                 type="number"
-                value={formData.quantity}
+                value={formData.stock}
                 onChange={handleChange}
                 required
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="SKU"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Mã vạch"
-                name="barcode"
-                value={formData.barcode}
-                onChange={handleChange}
                 fullWidth
                 variant="outlined"
                 className="rounded"
@@ -314,36 +275,6 @@ const ProductDetailPage = () => {
               />
             </Grid>
             
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="ID Thương hiệu"
-                name="brandId"
-                value={formData.brandId}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                size="small"
-                label="Mô tả ngắn"
-                name="shortDescription"
-                value={formData.shortDescription}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={2}
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </Grid>
-            
             <Grid item xs={12}>
               <TextField
                 size="small"
@@ -359,47 +290,6 @@ const ProductDetailPage = () => {
                 className="rounded"
                 disabled={!isEditing}
               />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                Tags
-              </Typography>
-              {isEditing && (
-                <Box className="flex gap-2 mb-2">
-                  <TextField
-                    size="small"
-                    placeholder="Thêm tag"
-                    value={tag}
-                    onChange={(e) => setTag(e.target.value)}
-                    variant="outlined"
-                    className="rounded"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addTag();
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={addTag}
-                    className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                  >
-                    <IconPlus size={18} />
-                  </Button>
-                </Box>
-              )}
-              <Box className="flex flex-wrap gap-1">
-                {formData.tags?.map((t) => (
-                  <Chip
-                    key={t}
-                    label={t}
-                    onDelete={isEditing ? () => removeTag(t) : undefined}
-                    className="m-1"
-                  />
-                ))}
-              </Box>
             </Grid>
             
             <Grid item xs={12} md={6}>
@@ -445,118 +335,6 @@ const ProductDetailPage = () => {
                   }} />}
                 </label>
               )}
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Box className="flex flex-col h-full">
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isActive}
-                        onChange={handleChange}
-                        name="isActive"
-                        color="primary"
-                        disabled={!isEditing}
-                      />
-                    }
-                    label="Kích hoạt"
-                  />
-                </Box>
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isFeatured}
-                        onChange={handleChange}
-                        name="isFeatured"
-                        color="primary"
-                        disabled={!isEditing}
-                      />
-                    }
-                    label="Sản phẩm nổi bật"
-                  />
-                </Box>
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isDigital}
-                        onChange={handleChange}
-                        name="isDigital"
-                        color="primary"
-                        disabled={!isEditing}
-                      />
-                    }
-                    label="Sản phẩm kỹ thuật số"
-                  />
-                </Box>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                SEO
-              </Typography>
-              <Box className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextField
-                  size="small"
-                  label="Meta title"
-                  name="metaTitle"
-                  value={formData.metaTitle}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                  disabled={!isEditing}
-                />
-                <TextField
-                  size="small"
-                  label="Meta description"
-                  name="metaDescription"
-                  value={formData.metaDescription}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                  disabled={!isEditing}
-                />
-              </Box>
-              {isEditing && (
-                <Box className="flex gap-2 mt-4 mb-2">
-                  <TextField
-                    size="small"
-                    placeholder="Thêm từ khóa meta"
-                    value={metaKeyword}
-                    onChange={(e) => setMetaKeyword(e.target.value)}
-                    variant="outlined"
-                    className="rounded"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addMetaKeyword();
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={addMetaKeyword}
-                    className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                  >
-                    <IconPlus size={18} />
-                  </Button>
-                </Box>
-              )}
-              <Box className="flex flex-wrap gap-1">
-                {formData.metaKeywords?.map((k) => (
-                  <Chip
-                    key={k}
-                    label={k}
-                    onDelete={isEditing ? () => removeMetaKeyword(k) : undefined}
-                    className="m-1"
-                  />
-                ))}
-              </Box>
             </Grid>
           </Grid>
           
@@ -619,7 +397,7 @@ const ProductDetailPage = () => {
         <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
-            Bạn có chắc chắn muốn xóa sản phẩm "{formData.name}"? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa sản phẩm &quot;{formData.name}&quot;? Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions className="!p-4 !pb-6">
@@ -644,7 +422,7 @@ const ProductDetailPage = () => {
         </DialogActions>
       </Dialog>
     </div>
-  )
-}
+  );
+};
 
 export default ProductDetailPage; 

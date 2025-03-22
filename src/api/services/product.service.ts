@@ -12,7 +12,7 @@ export const createProduct = async (payload: ICreateProduct): Promise<IProductRe
 // Get all products
 export const getAllProducts = async (params?: {
   page?: number
-  limit?: number
+  take?: number
   search?: string
   categoryId?: string
   brandId?: string
@@ -35,7 +35,15 @@ export const getProductById = async (id: string): Promise<IProductResponse> => {
 }
 
 // Update product
-export const updateProduct = async (id: string, payload: IUpdateProduct): Promise<IProductResponse> => {
+export const updateProduct = async (id: string, payload: {
+  name?: string;
+  description?: string;
+  imageUrl?: string;
+  categoryId?: string;
+  salePrice?: number | string;
+  price?: number | string;
+  stock?: number;
+}): Promise<IProductResponse> => {
   const res = await sendPatch(ConfigProductEndPoint.UPDATE(id), payload)
   return res
 }
