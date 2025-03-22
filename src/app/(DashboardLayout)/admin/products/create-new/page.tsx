@@ -1,143 +1,169 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import {
-  TextField,
-  Button,
-  FormControlLabel,
-  Switch,
-  Box,
-  Typography,
-  Paper,
-  CircularProgress,
-  Autocomplete,
-  Chip,
-  Grid,
-} from "@mui/material"
-import { IconUpload, IconX, IconArrowLeft, IconPlus } from "@tabler/icons-react"
+import React, { useState } from 'react';
+import { Box, Button, CircularProgress, FormControlLabel, Grid, Paper, Switch, TextField, Typography } from '@mui/material';
+import { IconArrowLeft, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
+import { Chip } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { message } from "antd"
-
-import { useCreateProduct } from "@/hooks/product"
-import { useUploadImage } from "@/hooks/image"
-import type { ICreateProduct } from "@/interface/request/product"
+import { useCreateProduct } from '@/hooks/product';
+import { useUploadImage } from '@/hooks/image';
 
 export default function CreateProductPage() {
-  const router = useRouter()
-  const createProductMutation = useCreateProduct()
-  const uploadImageMutation = useUploadImage()
+  const router = useRouter();
+  const createProductMutation = useCreateProduct();
+  const uploadImageMutation = useUploadImage();
 
-  const [formData, setFormData] = useState<ICreateProduct>({
-    name: "",
-    description: "",
-    shortDescription: "",
-    price: 0,
-    compareAtPrice: 0,
-    quantity: 0,
+  const [formData, setFormData] = useState({
+    name: '',
+    slug: '',
+    price: '',
+    salePrice: '', // Changed from compareAtPrice to match API
+    description: '',
+    shortDescription: '',
+    stock: '', // Changed from quantity to match API
+    sku: '',
+    barcode: '',
+    categoryId: '',
+    brandId: '',
+    tags: [] as string[],
     isActive: true,
     isFeatured: false,
     isDigital: false,
-    tags: [],
-    metaKeywords: [],
-    attributes: {},
-    specifications: {},
-  })
+    metaTitle: '',
+    metaDescription: '',
+    metaKeywords: [] as string[],
+    imageUrl: '', // Changed from image to match API
+  });
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [tag, setTag] = useState("")
-  const [metaKeyword, setMetaKeyword] = useState("")
+  const [tag, setTag] = useState('');
+  const [metaKeyword, setMetaKeyword] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData((prev) => ({
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : type === "number" ? Number(value) : value,
-    }))
-  }
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setImageFile(file)
+      const file = e.target.files[0];
+      setImageFile(file);
 
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (event) => {
-        setImagePreview(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const removeImage = () => {
-    setImagePreview(null)
-    setImageFile(null)
-  }
+    setImagePreview(null);
+    setImageFile(null);
+    setFormData(prev => ({
+      ...prev,
+      imageUrl: ''
+    }));
+  };
 
   const addTag = () => {
-    if (tag.trim() !== "" && !formData.tags?.includes(tag.trim())) {
-      setFormData((prev) => ({
+    if (tag.trim() && !formData.tags.includes(tag.trim())) {
+      setFormData(prev => ({
         ...prev,
-        tags: [...(prev.tags || []), tag.trim()],
-      }))
-      setTag("")
+        tags: [...prev.tags, tag.trim()]
+      }));
+      setTag('');
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      tags: prev.tags?.filter((t) => t !== tagToRemove) || [],
-    }))
-  }
+      tags: prev.tags.filter(t => t !== tagToRemove)
+    }));
+  };
 
   const addMetaKeyword = () => {
-    if (metaKeyword.trim() !== "" && !formData.metaKeywords?.includes(metaKeyword.trim())) {
-      setFormData((prev) => ({
+    if (metaKeyword.trim() && !formData.metaKeywords.includes(metaKeyword.trim())) {
+      setFormData(prev => ({
         ...prev,
-        metaKeywords: [...(prev.metaKeywords || []), metaKeyword.trim()],
-      }))
-      setMetaKeyword("")
+        metaKeywords: [...prev.metaKeywords, metaKeyword.trim()]
+      }));
+      setMetaKeyword('');
     }
-  }
+  };
 
   const removeMetaKeyword = (keywordToRemove: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      metaKeywords: prev.metaKeywords?.filter((k) => k !== keywordToRemove) || [],
-    }))
-  }
+      metaKeywords: prev.metaKeywords.filter(k => k !== keywordToRemove)
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     try {
-      let productData = { ...formData }
+      // Prepare the payload
+      let payload: any = {
+        name: formData.name,
+        description: formData.description,
+        shortDescription: formData.shortDescription || undefined,
+        slug: formData.slug || undefined,
+        sku: formData.sku || undefined,
+        barcode: formData.barcode || undefined,
+        price: formData.price ? parseFloat(formData.price) : 0,
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
+        stock: formData.stock ? parseInt(formData.stock, 10) : 0,
+        categoryId: formData.categoryId || undefined,
+        brandId: formData.brandId || undefined,
+        tags: formData.tags.length > 0 ? formData.tags : undefined,
+        isActive: formData.isActive,
+        isFeatured: formData.isFeatured,
+        isDigital: formData.isDigital,
+        metaTitle: formData.metaTitle || undefined,
+        metaDescription: formData.metaDescription || undefined,
+        metaKeywords: formData.metaKeywords.length > 0 ? formData.metaKeywords : undefined,
+      };
       
+      // Upload image if available
       if (imageFile) {
-        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" });
         
-        const uploadResult = await uploadImageMutation.mutateAsync({
-          file: imageFile,
-          isPublic: true,
-          description: `Hình ảnh cho sản phẩm: ${formData.name}`
-        })
-        
-        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
-        
-        // Thêm URL hình ảnh vào formData
-        // Lưu ý: Trong interface không có trường imageUrl, nên cần điều chỉnh theo API thực tế
+        try {
+          const uploadResult = await uploadImageMutation.mutateAsync({
+            file: imageFile,
+            isPublic: true,
+            description: `Hình ảnh cho sản phẩm: ${formData.name}`
+          });
+          
+          message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" });
+          
+          // Add the image URL to the payload
+          payload.imageUrl = uploadResult.data.url;
+        } catch (error) {
+          message.error({ content: "Lỗi khi tải hình ảnh!", key: "uploadImage" });
+          console.error("Image upload error:", error);
+          return; // Stop if image upload fails
+        }
       }
       
-      await createProductMutation.mutateAsync(productData)
-      message.success("Sản phẩm đã được tạo thành công!")
-      router.push("/admin/products")
+      // Create the product
+      message.loading({ content: "Đang tạo sản phẩm...", key: "createProduct" });
+      await createProductMutation.mutateAsync(payload);
+      
+      message.success({ content: "Sản phẩm đã được tạo thành công!", key: "createProduct" });
+      router.push("/admin/products");
     } catch (error) {
-      message.error("Không thể tạo sản phẩm. Vui lòng thử lại.")
-      console.error(error)
+      message.error({ content: "Không thể tạo sản phẩm. Vui lòng thử lại.", key: "createProduct" });
+      console.error("Product creation error:", error);
     }
-  }
+  };
 
   return (
     <div className="p-6">
@@ -210,23 +236,9 @@ export default function CreateProductPage() {
               <TextField
                 size="small"
                 label="Giá khuyến mãi"
-                name="compareAtPrice"
+                name="salePrice"
                 type="number"
-                value={formData.compareAtPrice}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Giá vốn"
-                name="costPrice"
-                type="number"
-                value={formData.costPrice}
+                value={formData.salePrice}
                 onChange={handleChange}
                 fullWidth
                 variant="outlined"
@@ -238,9 +250,9 @@ export default function CreateProductPage() {
               <TextField
                 size="small"
                 label="Số lượng"
-                name="quantity"
+                name="stock"
                 type="number"
-                value={formData.quantity}
+                value={formData.stock}
                 onChange={handleChange}
                 required
                 fullWidth
@@ -281,19 +293,6 @@ export default function CreateProductPage() {
                 label="ID Danh mục"
                 name="categoryId"
                 value={formData.categoryId}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="ID Thương hiệu"
-                name="brandId"
-                value={formData.brandId}
                 onChange={handleChange}
                 fullWidth
                 variant="outlined"
@@ -360,7 +359,7 @@ export default function CreateProductPage() {
                 </Button>
               </Box>
               <Box className="flex flex-wrap gap-1">
-                {formData.tags?.map((t) => (
+                {formData.tags.map((t) => (
                   <Chip
                     key={t}
                     label={t}
@@ -452,7 +451,7 @@ export default function CreateProductPage() {
               <Box className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <TextField
                   size="small"
-                  label="Meta title"
+                  label="Meta Title"
                   name="metaTitle"
                   value={formData.metaTitle}
                   onChange={handleChange}
@@ -462,7 +461,7 @@ export default function CreateProductPage() {
                 />
                 <TextField
                   size="small"
-                  label="Meta description"
+                  label="Meta Description"
                   name="metaDescription"
                   value={formData.metaDescription}
                   onChange={handleChange}
@@ -471,38 +470,43 @@ export default function CreateProductPage() {
                   className="rounded"
                 />
               </Box>
-              <Box className="flex gap-2 mt-4 mb-2">
-                <TextField
-                  size="small"
-                  placeholder="Thêm từ khóa meta"
-                  value={metaKeyword}
-                  onChange={(e) => setMetaKeyword(e.target.value)}
-                  variant="outlined"
-                  className="rounded"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addMetaKeyword();
-                    }
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={addMetaKeyword}
-                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                >
-                  <IconPlus size={18} />
-                </Button>
-              </Box>
-              <Box className="flex flex-wrap gap-1">
-                {formData.metaKeywords?.map((k) => (
-                  <Chip
-                    key={k}
-                    label={k}
-                    onDelete={() => removeMetaKeyword(k)}
-                    className="m-1"
+              <Box className="mt-4">
+                <Typography fontSize={14} variant="subtitle1" className="mb-2">
+                  Meta Keywords
+                </Typography>
+                <Box className="flex gap-2 mb-2">
+                  <TextField
+                    size="small"
+                    placeholder="Thêm từ khóa"
+                    value={metaKeyword}
+                    onChange={(e) => setMetaKeyword(e.target.value)}
+                    variant="outlined"
+                    className="rounded"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addMetaKeyword();
+                      }
+                    }}
                   />
-                ))}
+                  <Button
+                    variant="contained"
+                    onClick={addMetaKeyword}
+                    className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                  >
+                    <IconPlus size={18} />
+                  </Button>
+                </Box>
+                <Box className="flex flex-wrap gap-1">
+                  {formData.metaKeywords.map((keyword) => (
+                    <Chip
+                      key={keyword}
+                      label={keyword}
+                      onDelete={() => removeMetaKeyword(keyword)}
+                      className="m-1"
+                    />
+                  ))}
+                </Box>
               </Box>
             </Grid>
           </Grid>
@@ -532,5 +536,5 @@ export default function CreateProductPage() {
         </form>
       </Paper>
     </div>
-  )
+  );
 } 
