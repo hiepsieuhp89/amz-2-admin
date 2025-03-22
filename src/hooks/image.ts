@@ -35,10 +35,7 @@ import {
     return useMutation<IUploadImageResponse, Error, IUploadImageParams>({
       mutationFn: (params: IUploadImageParams) => uploadImage(params),
       onSuccess: (result, variables) => {
-        // Invalidate images query to refetch the updated list
         queryClient.invalidateQueries({ queryKey: [IMAGES_KEY] })
-  
-        // If productId is provided, also invalidate product images
         if (variables.productId) {
           queryClient.invalidateQueries({
             queryKey: [PRODUCT_IMAGES_KEY, variables.productId],

@@ -37,7 +37,7 @@ export const ConfigSellerPackageEndPoint = {
 
 export const ConfigImageEndPoint = {
   BASE: "/images",
-  UPLOAD: "/images/upload",
+  UPLOAD: "/upload",
   GET_BY_ID: (id: string) => `/images/${id}`,
   UPDATE: (id: string) => `/images/${id}`,
   DELETE: (id: string) => `/images/${id}`,

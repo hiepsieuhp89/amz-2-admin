@@ -1,7 +1,5 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import {
@@ -29,6 +27,7 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  IconButton,
 } from "@mui/material"
 import {
   IconSearch,
@@ -38,6 +37,7 @@ import {
   IconTrash,
   IconCurrencyDollar,
   IconClock,
+  IconEye,
 } from "@tabler/icons-react"
 import { message } from "antd"
 
@@ -53,7 +53,7 @@ export default function SellerPackagesPage() {
 
   const { data, isLoading, error } = useGetAllSellerPackages({ page, limit })
   const deletePackageMutation = useDeleteSellerPackage()
-console.log(data)
+  console.log(data)
   const handleCreateNew = () => {
     router.push("/admin/seller-packages/create-new")
   }
@@ -112,42 +112,44 @@ console.log(data)
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center">
           <IconPackage size={28} className="mr-3 text-main-golden-orange" />
-          <Typography 
+          <Typography
             fontSize={18}
             fontWeight={700}
-            variant="h5" 
+            variant="h5"
             className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
           >
             Quản lý gói bán hàng
           </Typography>
         </div>
-
-        <Button
-          variant="contained"
-          startIcon={<IconPlus size={18} />}
-          onClick={handleCreateNew}
-          className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
-        >
-          Tạo gói bán hàng mới
-        </Button>
+        <div className="flex items-center gap-4">
+          <TextField
+            size="small"
+            placeholder="Tìm kiếm gói bán hàng..."
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 rounded shadow-sm"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconSearch size={20} className="text-main-golden-orange" />
+                </InputAdornment>
+              ),
+              className: "text-white rounded-lg hover:shadow-md transition-shadow",
+            }}
+          />
+          <Button
+            variant="contained"
+            startIcon={<IconPlus size={18} />}
+            onClick={handleCreateNew}
+            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
+          >
+            Tạo gói bán hàng mới
+          </Button>
+        </div>
       </div>
 
-      <TextField
-        placeholder="Tìm kiếm gói bán hàng..."
-        variant="outlined"
-        fullWidth
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="rounded shadow-sm"
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <IconSearch size={20} className="text-main-golden-orange" />
-            </InputAdornment>
-          ),
-          className: "text-white rounded-lg hover:shadow-md transition-shadow",
-        }}
-      />
+
 
       {isLoading ? (
         <Box className="flex items-center justify-center py-12">
@@ -155,9 +157,9 @@ console.log(data)
         </Box>
       ) : filteredPackages.length === 0 ? (
         <Box className="flex flex-col items-center justify-center gap-4 py-8 text-center border border-gray-700 border-dashed rounded-lg backdrop-blur-sm">
-          <Typography 
+          <Typography
             fontWeight={400}
-            variant="h6" 
+            variant="h6"
             className="mb-2 text-gray-400"
           >
             Không tìm thấy gói bán hàng. {searchTerm ? "Thử tìm kiếm với từ khác" : "Tạo gói bán hàng đầu tiên"}
@@ -175,38 +177,43 @@ console.log(data)
         </Box>
       ) : (
         <>
-          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <Paper sx={{ width: '100%', overflow: 'hidden', border: '1px solid #E0E0E0' }}>
             <TableContainer sx={{ maxHeight: 440 }}>
-              <Table 
-                stickyHeader 
-                sx={{ minWidth: 650 }} 
+              <Table
+                stickyHeader
+                sx={{ minWidth: 650 }}
                 aria-label="packages table"
               >
                 <TableHead>
                   <TableRow>
-                    <TableCell>Tên gói</TableCell>
-                    <TableCell align="right">Giá (USD)</TableCell>
-                    <TableCell>Mô tả</TableCell>
-                    <TableCell align="center">Hình ảnh</TableCell>
-                    <TableCell align="center">Trạng thái</TableCell>
-                    <TableCell align="right">Thời hạn (ngày)</TableCell>
-                    <TableCell align="right">Lợi nhuận (%)</TableCell>
-                    <TableCell align="right">Sản phẩm tối đa</TableCell>
-                    <TableCell align="center">Thao tác</TableCell>
+                    <TableCell
+                      sx={{ fontSize: '14px', fontWeight: 600 }}
+                    >Tên gói</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Giá (USD)</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Mô tả</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Hình ảnh</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Trạng thái</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thời hạn (ngày)</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Lợi nhuận (%)</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Sản phẩm tối đa</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thao tác</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredPackages.map((pkg) => (
                     <TableRow
                       key={pkg.id || pkg.name}
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      sx={{
+                        '&:first-child td, &:first-child th': { borderTop: '1px solid #E0E0E0' },
+                        '& td': { borderBottom: '1px solid #E0E0E0' }
+                      }}
                     >
-                      <TableCell component="th" scope="row">
+                      <TableCell>
                         {pkg.name}
                       </TableCell>
-                      <TableCell align="right">{pkg.price}</TableCell>
+                      <TableCell>{pkg.price}</TableCell>
                       <TableCell>{pkg.description}</TableCell>
-                      <TableCell align="center">
+                      <TableCell>
                         {pkg.image ? (
                           <Box
                             component="img"
@@ -218,7 +225,7 @@ console.log(data)
                           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
                         )}
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell>
                         <Chip
                           label={pkg.isActive ? "Đang hoạt động" : "Đã dừng"}
                           color={pkg.isActive ? "success" : "error"}
@@ -226,32 +233,25 @@ console.log(data)
                           variant="outlined"
                         />
                       </TableCell>
-                      <TableCell align="right">{pkg.duration}</TableCell>
-                      <TableCell align="right">{pkg.percentProfit}%</TableCell>
-                      <TableCell align="right">{pkg.maxProducts}</TableCell>
-                      <TableCell align="center">
-                        <Box className="flex justify-center gap-1">
-                          <Button 
+                      <TableCell>{pkg.duration}</TableCell>
+                      <TableCell>{pkg.percentProfit}%</TableCell>
+                      <TableCell>{pkg.maxProducts}</TableCell>
+                      <TableCell>
+                        <Box className="flex items-center justify-center gap-4">
+                          <IconButton
                             onClick={() => handleView(pkg.id)}
-                            size="small" 
-                            className="min-w-0 p-1"
+                            size="medium"
+                            className="!bg-blue-100"
                           >
-                            <IconSearch size={18} className="text-blue-400" />
-                          </Button>
-                          <Button 
-                            onClick={() => handleEdit(pkg.id)}
-                            size="small" 
-                            className="min-w-0 p-1"
-                          >
-                            <IconEdit size={18} className="text-amber-400" />
-                          </Button>
-                          <Button 
+                            <IconEye size={18} className="text-blue-400" />
+                          </IconButton>
+                          <IconButton
                             onClick={() => openDeleteDialog(pkg.id)}
-                            size="small" 
-                            className="min-w-0 p-1"
+                            size="medium"
+                            className="!bg-red-100"
                           >
                             <IconTrash size={18} className="text-red-400" />
-                          </Button>
+                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -273,37 +273,37 @@ console.log(data)
           </Paper>
         </>
       )}
-
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
-          className: "bg-gradient-to-br from-main-gunmetal-blue to-main-charcoal-blue text-white rounded-xl border border-gray-700 shadow-xl",
+          className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="font-bold text-main-golden-orange">Xác nhận xóa</DialogTitle>
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <DialogContentText className="text-gray-300">
+          <DialogContentText className="text-gray-400">
             Bạn có chắc chắn muốn xóa gói bán hàng này không? Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-700">
-          <Button 
-            onClick={() => setDeleteDialogOpen(false)} 
-            className="text-gray-300 transition-colors hover:bg-gray-700/50"
+        <DialogActions className="!p-4 !pb-6">
+          <Button
+            variant="outlined"
+            onClick={() => setDeleteDialogOpen(false)}
           >
             Hủy bỏ
           </Button>
           <Button
+            variant="contained"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors bg-red-600 hover:bg-red-700"
+            className="text-white transition-colors !bg-red-500"
             disabled={deletePackageMutation.isPending}
           >
-            {deletePackageMutation.isPending ? 
-              <span className="flex items-center gap-2">
+            {deletePackageMutation.isPending ?
+              <div className="flex items-center gap-2 text-white">
                 <CircularProgress size={16} className="text-white" />
                 Đang xóa...
-              </span> : "Xóa"}
+              </div> : "Xóa"}
           </Button>
         </DialogActions>
       </Dialog>

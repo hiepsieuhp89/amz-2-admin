@@ -69,7 +69,6 @@ export default function CreateSellerPackagePage() {
     e.preventDefault()
     
     try {
-      // Tải lên hình ảnh trước nếu có
       let updatedFormData = { ...formData }
       
       if (imageFile) {
@@ -254,6 +253,7 @@ export default function CreateSellerPackagePage() {
           </div>
           <Box className="flex justify-end gap-4">
             <Button
+              className="!normal-case"
               type="button"
               variant="outlined"
               onClick={() => router.push("/admin/seller-packages")}
@@ -264,7 +264,7 @@ export default function CreateSellerPackagePage() {
               type="submit"
               variant="contained"
               disabled={createPackageMutation.isPending}
-              className="text-black !bg-main-golden-orange hover:bg-amber-600"
+              className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
             >
               {createPackageMutation.isPending ? (
                 <CircularProgress size={24} className="text-gray-800" />
