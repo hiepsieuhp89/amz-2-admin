@@ -43,11 +43,23 @@ export const useGetProductById = (id: string): UseQueryResult<IProductResponse> 
 }
 
 // Create product
-export const useCreateProduct = (): UseMutationResult<IProductResponse, Error, ICreateProduct> => {
+export const useCreateProduct = (): UseMutationResult<
+    IProductResponse, 
+    Error, 
+    {
+        name: string;
+        description: string;
+        imageUrl?: string;
+        categoryId?: string;
+        salePrice: number | string;
+        price: number | string;
+        stock: number;
+    }
+> => {
     const queryClient = useQueryClient()
 
-    return useMutation<IProductResponse, Error, ICreateProduct>({
-        mutationFn: (payload: ICreateProduct) => createProduct(payload),
+    return useMutation({
+        mutationFn: (payload) => createProduct(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: [PRODUCTS_KEY],
@@ -60,11 +72,22 @@ export const useCreateProduct = (): UseMutationResult<IProductResponse, Error, I
 export const useUpdateProduct = (): UseMutationResult<
     IProductResponse,
     Error,
-    { id: string; payload: IUpdateProduct }
+    { 
+        id: string; 
+        payload: {
+            name?: string;
+            description?: string;
+            imageUrl?: string;
+            categoryId?: string;
+            salePrice?: number | string;
+            price?: number | string;
+            stock?: number;
+        }
+    }
 > => {
     const queryClient = useQueryClient()
 
-    return useMutation<IProductResponse, Error, { id: string; payload: IUpdateProduct }>({
+    return useMutation({
         mutationFn: ({ id, payload }) => updateProduct(id, payload),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: [PRODUCT_KEY, variables.id] })

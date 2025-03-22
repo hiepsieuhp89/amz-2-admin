@@ -3,11 +3,12 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
 import { Chip } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { message } from "antd"
 
 const ProductDetailPage = () => {
   const router = useRouter();
   const { productData, updateProductMutation, deleteProductMutation } = useProduct();
-  const { message } = useMessage();
+
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -115,9 +116,7 @@ const ProductDetailPage = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteProductMutation.mutateAsync({
-        id: productData.id,
-      })
+      await deleteProductMutation.mutateAsync(productData.id)
       message.success("Sản phẩm đã được xóa thành công!")
       router.back()
     } catch (error) {

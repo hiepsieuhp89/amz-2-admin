@@ -39,13 +39,13 @@ import { useDeleteProduct, useGetAllProducts } from "@/hooks/product"
 
 function ProductsPage() {
   const router = useRouter()
-  const [page, setPage] = useState(0)
-  const [limit, setLimit] = useState(8)
+  const [page, setPage] = useState(1)
+  const [take, setTake] = useState(8)
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
 
-  const { data, isLoading, error } = useGetAllProducts({ page, limit, search: searchTerm })
+  const { data, isLoading, error } = useGetAllProducts({ page, take, search: searchTerm })
   const deleteProductMutation = useDeleteProduct()
 
   const handleCreateNew = () => {
@@ -80,11 +80,13 @@ function ProductsPage() {
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLimit(parseInt(event.target.value, 10))
+    setTake(parseInt(event.target.value, 10))
     setPage(0)
   }
 
-  const filteredProducts = data?.data || []
+  const filteredProducts = data?.data?.data || []
+  const totalItems = data?.data?.meta?.itemCount || 0
+  const currentPage = data?.data?.meta?.page || 1
 
   if (error) {
     return (
@@ -178,17 +180,15 @@ function ProductsPage() {
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Giá (USD)</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Giá khuyến mãi</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Hình ảnh</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Trạng thái</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Số lượng</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Danh mục</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Nổi bật</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thao tác</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredProducts.map((product) => (
                     <TableRow
-                      key={product.id || product.name}
+                      key={product.id}
                       sx={{
                         '&:first-child td, &:first-child th': { borderTop: '1px solid #E0E0E0' },
                         '& td': { borderBottom: '1px solid #E0E0E0' }
@@ -196,12 +196,12 @@ function ProductsPage() {
                     >
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.price}</TableCell>
-                      <TableCell>{product.compareAtPrice || '-'}</TableCell>
+                      <TableCell>{product.salePrice || '-'}</TableCell>
                       <TableCell>
-                        {product.images && product.images.length > 0 ? (
+                        {product.imageUrl ? (
                           <Box
                             component="img"
-                            src={product.images[0].url}
+                            src={product.imageUrl}
                             alt={product.name}
                             sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
                           />
@@ -209,24 +209,8 @@ function ProductsPage() {
                           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={product.isActive ? "Đang hoạt động" : "Đã dừng"}
-                          color={product.isActive ? "success" : "error"}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>{product.quantity}</TableCell>
+                      <TableCell>{product.stock}</TableCell>
                       <TableCell>{product.category?.name || '-'}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={product.isFeatured ? "Có" : "Không"}
-                          color={product.isFeatured ? "primary" : "default"}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
                       <TableCell>
                         <Box className="flex items-center justify-center gap-4">
                           <IconButton
@@ -253,9 +237,9 @@ function ProductsPage() {
             <TablePagination
               rowsPerPageOptions={[5, 8, 10, 25]}
               component="div"
-              count={data?.total || 0}
-              rowsPerPage={limit}
-              page={page}
+              count={totalItems}
+              rowsPerPage={take}
+              page={currentPage}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleChangeRowsPerPage}
               labelRowsPerPage="Dòng mỗi trang:"

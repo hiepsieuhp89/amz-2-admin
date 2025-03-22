@@ -16,64 +16,53 @@ export interface IProductVariantResponse {
     isDefault: boolean
 }
 
+export interface IProductCategory {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: null | string;
+    name: string;
+    description: string;
+    parentId: string | null;
+}
+
 export interface IProduct {
-    id: string
-    name: string
-    description: string
-    shortDescription?: string
-    slug: string
-    sku: string
-    barcode?: string
-    price: number
-    compareAtPrice?: number
-    costPrice?: number
-    quantity: number
-    categoryId?: string
-    category?: {
-        id: string
-        name: string
-    }
-    brandId?: string
-    brand?: {
-        id: string
-        name: string
-    }
-    tags: string[]
-    attributes: Record<string, string | string[]>
-    specifications: Record<string, string>
-    isActive: boolean
-    isFeatured: boolean
-    isDigital: boolean
-    weight?: number
-    dimensions?: {
-        length: number
-        width: number
-        height: number
-    }
-    variants: IProductVariantResponse[]
-    images: IProductImage[]
-    metaTitle?: string
-    metaDescription?: string
-    metaKeywords: string[]
-    sellerId?: string
-    seller?: {
-        id: string
-        name: string
-    }
-    rating: number
-    reviewCount: number
-    createdAt: string
-    updatedAt: string
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: null | string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    salePrice: string;
+    price: string;
+    stock: number;
+    category?: IProductCategory;
 }
 
-export interface IProductListResponse {
-    data: IProduct[]
-    total: number
-    page: number
-    limit: number
+export interface IPaginationMeta {
+    page: number;
+    take: number;
+    itemCount: number;
+    pageCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
 }
 
-export interface IProductResponse {
-    data: IProduct
+export interface IProductListData {
+    data: IProduct[];
+    meta: IPaginationMeta;
 }
+
+export interface IApiResponse<T> {
+    status: boolean;
+    message: string;
+    data: T;
+    errors: null | any;
+    timestamp: string;
+}
+
+export interface IProductListResponse extends IApiResponse<IProductListData> {}
+
+export interface IProductResponse extends IApiResponse<IProduct> {}
 

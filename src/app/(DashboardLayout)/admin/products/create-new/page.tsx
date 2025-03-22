@@ -126,8 +126,9 @@ export default function CreateProductPage() {
         
         message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
         
-        // Thêm URL hình ảnh vào formData
-        // Lưu ý: Trong interface không có trường imageUrl, nên cần điều chỉnh theo API thực tế
+        // Add image URL to formData - we'll need to adjust this based on the actual API
+        // The API docs mention imageUrl, but our interface uses images array
+        // productData.images = [{ url: uploadResult.url }]
       }
       
       await createProductMutation.mutateAsync(productData)
