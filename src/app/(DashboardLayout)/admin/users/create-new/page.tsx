@@ -251,11 +251,10 @@ export default function CreateUserPage() {
                 className="rounded"
               />
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <Typography 
                 fontSize={14}
                 variant="subtitle1" 
-                className="!mb-2 mr-4"
               >
                 Trạng thái tài khoản
               </Typography>

@@ -176,8 +176,8 @@ export default function CreateSpreadPackagePage() {
                 className="rounded"
               />
               
-              <div className="flex items-center gap-4 mt-2">
-                <Typography fontSize={14} variant="subtitle1" className="!mb-2">
+              <div className="flex items-center gap-2 mt-2">
+                <Typography fontSize={14} variant="subtitle1" >
                   Kích hoạt
                 </Typography>
                 <FormControlLabel

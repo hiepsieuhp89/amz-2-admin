@@ -297,11 +297,10 @@ function UserDetailPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Typography
               fontSize={14}
               variant="subtitle1"
-              className="!mb-2"
             >
               Trạng thái tài khoản
             </Typography>

@@ -260,11 +260,10 @@ function SpreadPackageDetailPage() {
                 disabled={!isEditing}
               />
               
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-2 mt-2">
                 <Typography
                   fontSize={14}
                   variant="subtitle1"
-                  className="!mb-2"
                 >
                   Kích hoạt
                 </Typography>
