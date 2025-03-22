@@ -3,7 +3,7 @@ import { Button } from 'antd';
 import Link from 'next/link';
 import Layout from './(DashboardLayout)/layout';
 
-export default function NotFound() {
+function NotFound() {
   return (
     <Layout> {/* Sử dụng layout chung của ứng dụng */}
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -33,3 +33,4 @@ export default function NotFound() {
     </Layout>
   );
 }
+export default NotFound;

@@ -3,17 +3,17 @@ import { Button } from 'antd';
 import Link from 'next/link';
 import Layout from './layout';
 
-export default function NotFound() {
+function NotFound() {
   return (
     <Layout> {/* Sử dụng layout chung của ứng dụng */}
       <div className="min-h-[80vh] flex items-center justify-center px-4">
         <div className="text-center">
 
           {/* Nội dung */}
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          <h1 className="mb-4 text-4xl font-bold text-gray-800">
             Tính năng đang bảo trì
           </h1>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <p className="max-w-md mx-auto mb-8 text-gray-600">
             Chúng tôi đang nâng cấp tính năng này để mang lại trải nghiệm tốt hơn. 
             Vui lòng quay lại sau.
           </p>
@@ -33,3 +33,4 @@ export default function NotFound() {
     </Layout>
   );
 }
+export default NotFound;

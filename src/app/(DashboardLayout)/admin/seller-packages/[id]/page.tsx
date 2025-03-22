@@ -28,7 +28,7 @@ import { message } from "antd"
 
 import { useDeleteSellerPackage, useGetSellerPackageById, useUpdateSellerPackage } from "@/hooks/seller-package"
 
-export default function SellerPackageDetailPage() {
+function SellerPackageDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
@@ -417,4 +417,4 @@ export default function SellerPackageDetailPage() {
     </div>
   )
 }
-
+export default SellerPackageDetailPage;
