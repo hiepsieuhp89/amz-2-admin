@@ -8,6 +8,8 @@ export interface IUserResponse {
   referralCode?: string;
   createdAt?: string;
   updatedAt?: string;
+  isActive?: boolean;
+  balance?: number;
 }
 
 export interface ICreateUser {
@@ -24,3 +26,10 @@ export interface IReferral {
   totalWithdraw: number;
   createdAt: string;
 } 
+
+export interface IUserListResponse {
+  data: IUserResponse[]
+  total: number
+  page: number
+  limit: number
+}

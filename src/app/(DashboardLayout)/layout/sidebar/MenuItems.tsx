@@ -1,5 +1,4 @@
 import {
-  IconSettings,
   IconUsers,
   IconTransactionDollar,
   IconBuildingWarehouse,
@@ -15,7 +14,6 @@ const generateUniqueId = (() => {
   const usedIds = new Set()
   return () => {
     let id
-    // Generate a random ID until it's unique
     do {
       id = Math.floor(Math.random() * 1000000) // Generate a random number
     } while (usedIds.has(id))
@@ -33,70 +31,19 @@ const Menuitems = [
     id: generateUniqueId(),
     title: "Quản lý người dùng",
     icon: IconUsers,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách người dùng",
-        href: "/admin/users",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thêm người dùng mới",
-        href: "/admin/users/create",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Phân quyền người dùng",
-        href: "/admin/users/roles",
-      },
-    ],
+    href: "/admin/users",
   },
   {
     id: generateUniqueId(),
     title: "Quản lý sản phẩm",
     icon: IconShoppingCart,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách sản phẩm",
-        href: "/admin/products",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thêm sản phẩm mới",
-        href: "/admin/products/create",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Sản phẩm nổi bật",
-        href: "/admin/products/featured",
-      },
-    ],
+    href: "/admin/products",
   },
   {
     id: generateUniqueId(),
     title: "Quản lý danh mục",
     icon: IconLayoutGridAdd,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách danh mục",
-        href: "/admin/categories",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thêm danh mục mới",
-        href: "/admin/categories/create",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Sắp xếp danh mục",
-        href: "/admin/categories/sort",
-      },
-    ],
+    href: "/admin/categories",
   },
   {
     id: generateUniqueId(),
@@ -200,24 +147,7 @@ const Menuitems = [
     id: generateUniqueId(),
     title: "Quản lý gói phân phối",
     icon: IconBrandTelegram,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách gói phân phối",
-        href: "/admin/spread-packages",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thêm gói phân phối",
-        href: "/admin/spread-packages/create",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thống kê phân phối",
-        href: "/admin/spread-packages/statistics",
-      },
-    ],
+    href: "/admin/spread-packages",
   },
 ]
 

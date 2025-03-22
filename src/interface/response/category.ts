@@ -7,6 +7,8 @@ export interface ICategory {
     order?: number
     createdAt: string
     updatedAt: string
+    parent?: ICategory
+    image?: string
 }
 
 export interface ICategoryListResponse {

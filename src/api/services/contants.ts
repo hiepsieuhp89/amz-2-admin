@@ -45,3 +45,25 @@ export const ConfigImageEndPoint = {
   DELETE_PRODUCT_IMAGE_LINK: (id: string) => `/images/product-image/${id}`,
   GET_IMAGE_FILE: (filename: string) => `/images/file/${filename}`,
 };
+
+export const ConfigSpreadPackageEndPoint = {
+  BASE: "/admin/spread-packages",
+  GET_BY_ID: (id: string) => `/admin/spread-packages/${id}`,
+  UPDATE: (id: string) => `/admin/spread-packages/${id}`,
+  DELETE: (id: string) => `/admin/spread-packages/${id}`,
+}
+
+export const ConfigProductEndPoint = {
+  BASE: "/admin/products",
+  GET_BY_ID: (id: string) => `/admin/products/${id}`,
+  UPDATE: (id: string) => `/admin/products/${id}`,
+  DELETE: (id: string) => `/admin/products/${id}`,
+};
+
+
+export const ConfigUserEndPoint = {
+  BASE: "/admin/users",
+  GET_BY_ID: (id: string) => `/admin/users/${id}`,
+  UPDATE: (id: string) => `/admin/users/${id}`,
+  DELETE: (id: string) => `/admin/users/${id}`,
+};
