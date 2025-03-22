@@ -1,4 +1,3 @@
-// Category interface
 export interface ICategory {
     id: string
     name: string
@@ -9,6 +8,13 @@ export interface ICategory {
     createdAt: string
     updatedAt: string
     deletedAt: null | string
+}
+
+export interface ICreateCategory {
+    id: string
+    name: string
+    description?: string
+    parentId: string 
 }
 
 // Pagination metadata

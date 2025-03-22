@@ -9,67 +9,71 @@ import {
   Paper,
   TextField,
   CircularProgress,
-  Switch,
-  FormControlLabel,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
 } from "@mui/material"
-import { IconArrowLeft, IconUpload, IconX } from "@tabler/icons-react"
+import { IconArrowLeft } from "@tabler/icons-react"
 import { message } from "antd"
 
 import { useCreateCategory, useGetAllCategories } from "@/hooks/category"
+import { ICategory } from "@/interface/request/category"
 
 export default function CreateCategoryPage() {
   const router = useRouter()
-  const [imagePreview, setImagePreview] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    parent: "",
-    isActive: true,
-    image: "",
+    parentId: "",
+  })
+  const [errors, setErrors] = useState({
+    name: "",
   })
 
-  const createCategory = useCreateCategory()
-  const { data: categoriesData, isLoading: loadingCategories } = useGetAllCategories()
+  const createCategoryMutation = useCreateCategory()
+  const { data: categoriesData } = useGetAllCategories()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    })
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-        setFormData({
-          ...formData,
-          image: reader.result as string,
-        })
-      }
-      reader.readAsDataURL(file)
+  const validateForm = () => {
+    let isValid = true
+    const newErrors = {
+      name: "",
     }
+
+    // Validate name
+    if (formData.name.trim().length < 2) {
+      newErrors.name = "Tên danh mục phải có ít nhất 2 ký tự"
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
   }
 
-  const removeImage = () => {
-    setImagePreview("")
-    setFormData({
-      ...formData,
-      image: "",
-    })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+    const { name, value } = e.target as HTMLInputElement
+    
+    if (name) {
+      setFormData({
+        ...formData,
+        [name]: value,
+      })
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      message.error("Vui lòng kiểm tra lại thông tin nhập")
+      return
+    }
+    
     try {
-      await createCategory.mutateAsync(formData)
+      await createCategoryMutation.mutateAsync({
+        ...formData,
+        id: "",
+      })
       message.success("Danh mục đã được tạo thành công!")
       router.push("/admin/categories")
     } catch (error) {
@@ -77,6 +81,8 @@ export default function CreateCategoryPage() {
       console.error(error)
     }
   }
+
+  const availableParentCategories = categoriesData?.data?.data || []
 
   return (
     <div className="p-6">
@@ -102,7 +108,7 @@ export default function CreateCategoryPage() {
       <Paper className="p-6 border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-6">
+            <div>
               <TextField
                 size="small"
                 label="Tên danh mục"
@@ -113,99 +119,51 @@ export default function CreateCategoryPage() {
                 fullWidth
                 variant="outlined"
                 className="rounded"
+                error={!!errors.name}
+                helperText={errors.name}
               />
-
+            </div>
+            <div>
               <FormControl fullWidth size="small">
-                <InputLabel>Danh mục cha</InputLabel>
+                <InputLabel id="parentId-label">Danh mục cha</InputLabel>
                 <Select
-                  name="parent"
-                  value={formData.parent}
+                  labelId="parentId-label"
+                  name="parentId"
+                  value={formData.parentId}
                   label="Danh mục cha"
-                  onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement>)}
+                  onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="">Không có</MenuItem>
-                  {loadingCategories ? (
-                    <MenuItem disabled>Đang tải danh mục...</MenuItem>
-                  ) : (
-                    categoriesData?.data.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.name}
-                      </MenuItem>
-                    ))
-                  )}
+                  {availableParentCategories.map((category: ICategory) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </div>
-
-            <TextField
-              size="small"
-              label="Mô tả"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={4}
-              variant="outlined"
-              className="rounded"
-            />
           </div>
-          <div className="grid items-stretch grid-cols-1 gap-6 md:grid-cols-2">
+
+          <div className="grid grid-cols-1 gap-6">
             <div>
-              <Typography 
-                fontSize={14}
-                variant="subtitle1" 
-                className="!mb-2"
-              >
-                Hình ảnh danh mục
-              </Typography>
-              {imagePreview ? (
-                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreview}
-                    alt="Category preview"
-                    className="object-cover w-full h-full"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                  >
-                    <IconX size={16} color="white" />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <IconUpload size={24} className="mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-400">Upload hình ảnh</p>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                </label>
-              )}
-              <div className="flex items-center gap-2 mt-2">
-                <Typography 
-                  fontSize={14}
-                  variant="subtitle1" 
-                >
-                  Kích hoạt
-                </Typography>
-                <FormControlLabel
-                  label=""
-                  control={
-                    <Switch 
-                      checked={formData.isActive} 
-                      onChange={handleChange} 
-                      name="isActive" 
-                      color="primary"
-                    />
-                  }
-                />
-              </div>
+              <TextField
+                size="small"
+                label="Mô tả"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                className="rounded"
+              />
             </div>
           </div>
+
           <Box className="flex justify-end gap-4">
             <Button
+              className="!normal-case"
               type="button"
               variant="outlined"
               onClick={() => router.push("/admin/categories")}
@@ -215,11 +173,11 @@ export default function CreateCategoryPage() {
             <Button
               type="submit"
               variant="contained"
-              disabled={createCategory.isPending}
-              className="text-black !bg-main-golden-orange hover:bg-amber-600"
+              disabled={createCategoryMutation.isPending}
+              className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
             >
-              {createCategory.isPending ? (
-                <CircularProgress size={24} className="text-gray-800" />
+              {createCategoryMutation.isPending ? (
+                <CircularProgress size={16} className="text-white" />
               ) : (
                 "Tạo danh mục"
               )}

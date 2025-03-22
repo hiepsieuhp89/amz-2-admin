@@ -1,10 +1,3 @@
-export enum UserRole {
-    ADMIN = "admin",
-    SELLER = "seller",
-    CUSTOMER = "customer",
-    MODERATOR = "moderator",
-}
-
 export enum UserStatus {
     ACTIVE = "active",
     INACTIVE = "inactive",
@@ -23,17 +16,17 @@ export interface IAddress {
 
 export interface ICreateUser {
     email: string
+    username: string
     password: string
-    firstName: string
-    lastName: string
-    phoneNumber?: string
-    role?: UserRole
+    fullName: string
+    phone?: string
+    role?: string
     status?: UserStatus
-    avatar?: string
+    balance?: number
     addresses?: IAddress[]
     dateOfBirth?: string
     gender?: "male" | "female" | "other"
-    isEmailVerified?: boolean
+    isActive?: boolean
     isPhoneVerified?: boolean
     notes?: string
     metadata?: Record<string, any>
@@ -45,7 +38,7 @@ export interface IUpdateUser {
     firstName?: string
     lastName?: string
     phoneNumber?: string
-    role?: UserRole
+    role?: string
     status?: UserStatus
     avatar?: string
     addresses?: IAddress[]

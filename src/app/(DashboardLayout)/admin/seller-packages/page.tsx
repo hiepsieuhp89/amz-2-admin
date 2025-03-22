@@ -53,7 +53,6 @@ function SellerPackagesPage() {
 
   const { data, isLoading, error } = useGetAllSellerPackages({ page, limit })
   const deletePackageMutation = useDeleteSellerPackage()
-  console.log(data)
   const handleCreateNew = () => {
     router.push("/admin/seller-packages/create-new")
   }

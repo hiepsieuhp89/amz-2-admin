@@ -46,15 +46,7 @@ export const useGetProductById = (id: string): UseQueryResult<IProductResponse> 
 export const useCreateProduct = (): UseMutationResult<
     IProductResponse, 
     Error, 
-    {
-        name: string;
-        description: string;
-        imageUrl?: string;
-        categoryId?: string;
-        salePrice: number | string;
-        price: number | string;
-        stock: number;
-    }
+    ICreateProduct
 > => {
     const queryClient = useQueryClient()
 

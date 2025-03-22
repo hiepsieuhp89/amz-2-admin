@@ -67,3 +67,10 @@ export const ConfigUserEndPoint = {
   UPDATE: (id: string) => `/admin/users/${id}`,
   DELETE: (id: string) => `/admin/users/${id}`,
 };
+
+export const ConfigTransactionEndPoint = {
+  BASE: "/transaction",
+  HISTORY: "/transaction/history",
+  RECHARGE: "/transaction/recharge",
+  WITHDRAW: "/transaction/withdraw",
+};

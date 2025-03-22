@@ -123,17 +123,17 @@ const Menuitems = [
       {
         id: generateUniqueId(),
         title: "Lịch sử giao dịch",
-        href: "/transaction",
+        href: "/transaction/history",
       },
       {
         id: generateUniqueId(),
         title: "Yêu cầu nạp tiền",
-        href: "/transaction/deposits",
+        href: "/transaction/recharge",
       },
       {
         id: generateUniqueId(),
         title: "Yêu cầu rút tiền",
-        href: "/transaction/withdrawals",
+        href: "/transaction/withdraw",
       },
     ],
   },
@@ -145,7 +145,7 @@ const Menuitems = [
   },
   {
     id: generateUniqueId(),
-    title: "Quản lý gói phân phối",
+    title: "Quản lý gói quảng bá",
     icon: IconBrandTelegram,
     href: "/admin/spread-packages",
   },

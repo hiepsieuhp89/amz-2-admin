@@ -55,7 +55,7 @@ function HomePage() {
                 <Grid item xs={12} sm={6} lg={3}>
                     <StatCard
                         title="Total Categories"
-                        value={categories?.data?.length || 0}
+                        value={categories?.data?.meta?.itemCount || 0}
                         icon={<CategoryOutlined sx={{ fontSize: 40 }} />}
                         loading={categoriesLoading}
                     />

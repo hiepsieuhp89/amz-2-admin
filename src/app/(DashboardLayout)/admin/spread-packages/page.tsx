@@ -31,6 +31,7 @@ import {
   IconEdit,
   IconTrash,
   IconEye,
+  IconBrandTelegram,
 } from "@tabler/icons-react"
 import { message } from "antd"
 
@@ -46,9 +47,12 @@ function SpreadPackagesPage() {
 
   const { data, isLoading, error } = useGetAllSpreadPackages({ page, limit })
   const deletePackageMutation = useDeleteSpreadPackage()
-
   const handleCreateNew = () => {
     router.push("/admin/spread-packages/create-new")
+  }
+
+  const handleEdit = (id: string) => {
+    router.push(`/admin/spread-packages/edit?id=${id}`)
   }
 
   const handleView = (id: string) => {
@@ -100,7 +104,7 @@ function SpreadPackagesPage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center">
-          <IconEye size={28} className="mr-3 text-main-golden-orange" />
+          <IconBrandTelegram size={28} className="mr-3 text-main-golden-orange" />
           <Typography
             fontSize={18}
             fontWeight={700}
@@ -176,10 +180,10 @@ function SpreadPackagesPage() {
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Tên gói</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Giá (USD)</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Mô tả</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Lượt hiển thị</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Độ ưu tiên</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Hình ảnh</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Trạng thái</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thời hạn (ngày)</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Ngày tạo</TableCell>
                     <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thao tác</TableCell>
                   </TableRow>
                 </TableHead>
@@ -195,8 +199,18 @@ function SpreadPackagesPage() {
                       <TableCell>{pkg.name}</TableCell>
                       <TableCell>{pkg.price}</TableCell>
                       <TableCell>{pkg.description}</TableCell>
-                      <TableCell>{pkg.impressions}</TableCell>
-                      <TableCell>{pkg.priority}</TableCell>
+                      <TableCell>
+                        {pkg.image ? (
+                          <Box
+                            component="img"
+                            src={pkg.image}
+                            alt={pkg.name}
+                            sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                          />
+                        ) : (
+                          <Box sx={{ color: 'text.secondary' }}>N/A</Box>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={pkg.isActive ? "Đang hoạt động" : "Đã dừng"}
@@ -206,6 +220,9 @@ function SpreadPackagesPage() {
                         />
                       </TableCell>
                       <TableCell>{pkg.duration}</TableCell>
+                      <TableCell>
+                        {new Date(pkg.createdAt).toLocaleDateString('vi-VN')}
+                      </TableCell>
                       <TableCell>
                         <Box className="flex items-center justify-center gap-4">
                           <IconButton

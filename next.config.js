@@ -12,7 +12,6 @@ const nextConfig = {
   async rewrites() {
     const domain =
         process.env.NEXT_PUBLIC_API_URL || "amz.dunghaysai.site";
-        console.log("Domain:", domain);
         return [
       {
         source: "/api/:path*",

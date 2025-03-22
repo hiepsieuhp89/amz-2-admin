@@ -18,7 +18,11 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material"
 import {
   IconEdit,
@@ -26,226 +30,212 @@ import {
   IconSearch,
   IconPlus,
   IconEye,
+  IconCategory,
 } from "@tabler/icons-react"
-import { message, Modal } from "antd"
+import { message } from "antd"
 
 import { useDeleteCategory, useGetAllCategories } from "@/hooks/category"
 
 export default function CategoriesPage() {
   const router = useRouter()
-  const [search, setSearch] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
 
-  const { data: categoriesData, isLoading, error } = useGetAllCategories({ page, limit })
+  const { data: categoriesData, isLoading, error } = useGetAllCategories({ page, order: "DESC" })
   const deleteCategory = useDeleteCategory()
 
-  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
-  }
+  const filteredCategories = categoriesData?.data?.data?.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value)
-    setPage(1)
-  }
-
-  const handleViewCategory = (id: string) => {
+  const handleView = (id: string) => {
     router.push(`/admin/categories/${id}`)
   }
 
-  const handleEditCategory = (id: string) => {
-    router.push(`/admin/categories/edit?id=${id}`)
-  }
-
-  const handleCreateCategory = () => {
+  const handleCreateNew = () => {
     router.push("/admin/categories/create-new")
   }
 
-  const confirmDelete = (id: string) => {
+  const openDeleteDialog = (id: string) => {
     setCategoryToDelete(id)
-    setDeleteModalVisible(true)
-  }
-
-  const handleDeleteCancel = () => {
-    setDeleteModalVisible(false)
-    setCategoryToDelete(null)
+    setDeleteDialogOpen(true)
   }
 
   const handleDeleteConfirm = async () => {
-    if (categoryToDelete) {
-      try {
-        await deleteCategory.mutateAsync(categoryToDelete)
-        message.success("Danh mục đã được xóa thành công!")
-        setDeleteModalVisible(false)
-        setCategoryToDelete(null)
-      } catch (error) {
-        message.error("Không thể xóa danh mục. Vui lòng thử lại.")
-        console.error(error)
-      }
+    if (!categoryToDelete) return
+
+    try {
+      await deleteCategory.mutateAsync(categoryToDelete)
+      message.success("Danh mục đã được xóa thành công!")
+      setDeleteDialogOpen(false)
+      setCategoryToDelete(null)
+    } catch (error) {
+      message.error("Không thể xóa danh mục. Vui lòng thử lại.")
+      console.error(error)
     }
   }
 
-  const filteredCategories = categoriesData?.data.filter(category =>
-    category.name.toLowerCase().includes(search.toLowerCase())
-  ) || []
+  if (error) {
+    return (
+      <Box className="p-8 text-center">
+        <Typography variant="h6" className="mb-2 text-red-400">
+          Lỗi khi tải danh sách danh mục
+        </Typography>
+        <Typography className="text-gray-400">{error.message || "Vui lòng thử lại sau"}</Typography>
+      </Box>
+    )
+  }
 
   return (
-    <div className="p-6">
-      <Box className="flex items-center justify-between mb-6">
-        <Typography variant="h5" className="font-bold text-white">
-          Quản lý danh mục
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<IconPlus size={18} />}
-          onClick={handleCreateCategory}
-          className="text-black !bg-main-golden-orange hover:bg-amber-600"
-        >
-          Tạo danh mục mới
-        </Button>
-      </Box>
-
-      <Paper className="mb-6 border border-gray-700 bg-main-gunmetal-blue">
-        <Box className="p-4">
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex items-center">
+          <IconCategory size={28} className="mr-3 text-main-golden-orange" />
+          <Typography
+            fontSize={18}
+            fontWeight={700}
+            variant="h5"
+            className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
+          >
+            Quản lý danh mục
+          </Typography>
+        </div>
+        <div className="flex items-center gap-4">
           <TextField
-            fullWidth
-            value={search}
-            onChange={handleSearch}
+            size="small"
             placeholder="Tìm kiếm danh mục..."
             variant="outlined"
-            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 rounded shadow-sm"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <IconSearch size={20} className="text-gray-400" />
+                  <IconSearch size={20} className="text-main-golden-orange" />
                 </InputAdornment>
               ),
+              className: "text-white rounded-lg hover:shadow-md transition-shadow",
             }}
-            className="rounded"
           />
-        </Box>
-      </Paper>
+          <Button
+            variant="contained"
+            startIcon={<IconPlus size={18} />}
+            onClick={handleCreateNew}
+            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
+          >
+            Tạo danh mục mới
+          </Button>
+        </div>
+      </div>
 
-      <Paper className="overflow-hidden border border-gray-700 bg-main-gunmetal-blue">
-        {isLoading ? (
-          <Box className="flex items-center justify-center p-6">
-            <CircularProgress className="text-main-golden-orange" />
-          </Box>
-        ) : error ? (
-          <Box className="p-6 text-center">
-            <Typography className="text-red-400">
-              Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.
-            </Typography>
-          </Box>
-        ) : filteredCategories.length > 0 ? (
-          <>
-            <TableContainer>
-              <Table>
-                <TableHead className="bg-main-dark-blue">
-                  <TableRow>
-                    <TableCell className="text-white">Tên danh mục</TableCell>
-                    <TableCell className="text-white">Mô tả</TableCell>
-                    <TableCell className="text-white">Danh mục cha</TableCell>
-                    <TableCell className="text-white">Trạng thái</TableCell>
-                    <TableCell className="text-white" align="right">
-                      Thao tác
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredCategories.map((category) => (
-                    <TableRow key={category.id} className="hover:bg-main-dark-blue/40">
+      {isLoading ? (
+        <Box className="flex items-center justify-center py-12">
+          <CircularProgress className="text-main-golden-orange" />
+        </Box>
+      ) : filteredCategories.length === 0 ? (
+        <Box className="flex flex-col items-center justify-center gap-4 py-8 text-center border border-gray-700 border-dashed rounded-lg backdrop-blur-sm">
+          <Typography fontWeight={400} variant="h6" className="mb-2 text-gray-400">
+            Không tìm thấy danh mục nào. {searchTerm ? "Thử tìm kiếm với từ khác" : "Tạo danh mục đầu tiên"}
+          </Typography>
+          {!searchTerm && (
+            <Button
+              variant="outlined"
+              startIcon={<IconPlus size={18} />}
+              onClick={handleCreateNew}
+              className="transition-all w-fit !normal-case"
+            >
+              Tạo danh mục mới
+            </Button>
+          )}
+        </Box>
+      ) : (
+        <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0" }}>
+          <TableContainer sx={{ maxHeight: 440 }}>
+            <Table stickyHeader sx={{ minWidth: 650 }} aria-label="categories table">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Tên danh mục</TableCell>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Mô tả</TableCell>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Danh mục cha</TableCell>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày tạo</TableCell>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày cập nhật</TableCell>
+                  <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Array.isArray(filteredCategories) &&
+                  filteredCategories.map((category) => (
+                    <TableRow
+                      key={category.id}
+                      sx={{
+                        "&:first-child td, &:first-child th": { borderTop: "1px solid #E0E0E0" },
+                        "& td": { borderBottom: "1px solid #E0E0E0" },
+                      }}
+                    >
+                      <TableCell>{category.name}</TableCell>
                       <TableCell>
-                        <Typography className="font-medium text-white">{category.name}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography className="text-gray-300 truncate max-w-[200px]">
+                        <Typography className="truncate max-w-[200px]">
                           {category.description || "Không có mô tả"}
                         </Typography>
                       </TableCell>
+                      <TableCell>{category.parent?.name || "Danh mục gốc"}</TableCell>
+                      <TableCell>{new Date(category.createdAt).toLocaleDateString('vi-VN')}</TableCell>
+                      <TableCell>{new Date(category.updatedAt).toLocaleDateString('vi-VN')}</TableCell>
                       <TableCell>
-                        <Typography className="text-gray-300">
-                          {category.parent?.name || "Danh mục gốc"}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={category.isActive ? "Hoạt động" : "Không hoạt động"}
-                          size="small"
-                          className={
-                            category.isActive ? "bg-green-700 text-white" : "bg-gray-600 text-gray-300"
-                          }
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box className="flex justify-end space-x-2">
-                          <IconButton
-                            onClick={() => handleViewCategory(category.id)}
-                            className="text-blue-400 hover:bg-blue-900/20"
-                          >
-                            <IconEye size={20} />
+                        <Box className="flex items-center gap-2">
+                          <IconButton onClick={() => handleView(category.id)} size="medium" className="!bg-blue-100">
+                            <IconEye size={18} className="text-blue-400" />
                           </IconButton>
-                          <IconButton
-                            onClick={() => handleEditCategory(category.id)}
-                            className="text-amber-400 hover:bg-amber-900/20"
-                          >
-                            <IconEdit size={20} />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => confirmDelete(category.id)}
-                            className="text-red-400 hover:bg-red-900/20"
-                          >
-                            <IconTrash size={20} />
+                          <IconButton onClick={() => openDeleteDialog(category.id)} size="medium" className="!bg-red-100">
+                            <IconTrash size={18} className="text-red-400" />
                           </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
 
-            <Box className="flex items-center justify-center p-4">
-              <Pagination
-                count={Math.ceil((categoriesData?.total || 0) / limit)}
-                page={page}
-                onChange={handlePageChange}
-                shape="rounded"
-                className="text-white"
-              />
-            </Box>
-          </>
-        ) : (
-          <Box className="p-6 text-center">
-            <Typography className="text-gray-400">
-              {search ? "Không tìm thấy danh mục phù hợp" : "Chưa có danh mục nào"}
-            </Typography>
-          </Box>
-        )}
-      </Paper>
-
-      <Modal
-        title="Xác nhận xóa"
-        open={deleteModalVisible}
-        onCancel={handleDeleteCancel}
-        footer={[
-          <Button key="cancel" onClick={handleDeleteCancel} className="text-gray-300 hover:bg-gray-700">
-            Hủy
-          </Button>,
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button variant="outlined" onClick={() => setDeleteDialogOpen(false)}>
+            Hủy bỏ
+          </Button>
           <Button
-            key="delete"
+            variant="contained"
             onClick={handleDeleteConfirm}
-            className="text-white bg-red-600 hover:bg-red-700"
+            className="text-white transition-colors !bg-red-500"
             disabled={deleteCategory.isPending}
           >
-            {deleteCategory.isPending ? "Đang xóa..." : "Xóa"}
-          </Button>,
-        ]}
-      >
-        <p>Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.</p>
-      </Modal>
+            {deleteCategory.isPending ? (
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xóa...
+              </div>
+            ) : (
+              "Xóa"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 } 

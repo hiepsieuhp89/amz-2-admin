@@ -1,3 +1,5 @@
+import { TransactionStatus, TransactionType } from "../request/transaction"
+
 // Base interface cho metadata phân trang
 interface PaginationMeta {
   totalItems: number;
@@ -58,6 +60,51 @@ interface ITopDepositor {
   totalAmount: number;
 }
 
+export interface ITransaction {
+  id: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+  money: string
+  status: TransactionStatus
+  description: string
+  type: TransactionType
+  referenceId: string | null
+  userId: string
+  data: any
+}
+
+export interface IPaginationMeta {
+  page: number
+  limit: number
+  total: number
+  pageCount: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
+export interface ITransactionListResponse {
+  status: boolean
+  message: string
+  data: {
+    data: ITransaction[]
+    meta: IPaginationMeta
+  }
+  errors: any | null
+  timestamp: string
+}
+
+export interface ITransactionResponse {
+  status: boolean
+  message: string
+  data: ITransaction
+  errors: any | null
+  timestamp: string
+}
+
+export interface IRechargeResponse extends ITransactionListResponse {}
+
+export interface IWithdrawResponse extends ITransactionResponse {}
 
 // Export tất cả các types
 export type {

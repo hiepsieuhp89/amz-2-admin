@@ -1,137 +1,179 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Grid, Paper, Switch, TextField, Typography } from '@mui/material';
-import { IconArrowLeft, IconEdit, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
-import { Chip } from '@mui/material';
-import { useRouter } from 'next/navigation';
+
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import {
+  Typography,
+  Button,
+  Box,
+  Paper,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  TextField,
+  Grid,
+} from "@mui/material"
+import {
+  IconArrowLeft,
+  IconEdit,
+  IconTrash,
+  IconX,
+  IconUpload,
+} from "@tabler/icons-react"
 import { message } from "antd"
-import { useGetProductById, useUpdateProduct, useDeleteProduct } from '@/hooks/product';
-import { useUploadImage } from '@/hooks/image';
 
-// Define the form data interface to match our API structure
-interface ProductFormData {
-  name: string;
-  slug: string;
-  price: string;
-  salePrice: string; // Changed from compareAtPrice to match API
-  description: string;
-  stock: string; // Changed from quantity to match API
-  categoryId: string;
-  imageUrl: string | null; // Changed from image to match API
-  image: File | null; // For file upload handling
-  imagePreview: string | null; // For preview
-}
+import { useDeleteProduct, useGetProductById, useUpdateProduct } from "@/hooks/product"
+import { useUploadImage } from "@/hooks/image"
+import { ICreateProduct } from "@/interface/request/product"
 
-const ProductDetailPage = ({ params }: { params: { id: string } }) => {
-  const router = useRouter();
-  const { productData, updateProductMutation, deleteProductMutation } = useProduct();
-  const { message } = useMessage();
-  const [isEditing, setIsEditing] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<ProductFormData>({
+function ProductDetailPage() {
+  const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
-    slug: '',
-    price: '',
-    salePrice: '',
     description: '',
-    stock: '',
+    imageUrl: '',
     categoryId: '',
-    imageUrl: null,
-    image: null,
-    imagePreview: null,
-  });
+    salePrice: '',
+    price: '',
+    stock: 0
+  })
 
-  // Load product data when available
+  const { data: productData, isLoading, error } = useGetProductById(id)
+  const deleteProductMutation = useDeleteProduct()
+  const updateProductMutation = useUpdateProduct()
+  const uploadImageMutation = useUploadImage()
+
   useEffect(() => {
     if (productData?.data) {
-      const product = productData.data;
+      const product = productData.data
       setFormData({
-        name: product.name || '',
-        slug: '', // API doesn't return slug
-        price: product.price || '',
-        salePrice: product.salePrice || '',
-        description: product.description || '',
-        stock: product.stock?.toString() || '',
-        categoryId: product.category?.id || '',
-        imageUrl: product.imageUrl || null,
-        image: null,
-        imagePreview: product.imageUrl || null,
-      });
+        name: product.name,
+        description: product.description || "",
+        imageUrl: product.imageUrl || "",
+        categoryId: product.category?.id || "",
+        salePrice: product.salePrice?.toString() || "",
+        price: product.price?.toString() || "",
+        stock: product.stock || 0
+      })
+      setImagePreview(product.imageUrl || null)
     }
-  }, [productData]);
-
-  const handleBack = () => {
-    router.back();
-  };
+  }, [productData])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+    const { name, value } = e.target
+    setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+      [name]: value
+    }))
+  }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      let updatedData: any = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-        stock: parseInt(formData.stock, 10),
-        categoryId: formData.categoryId || undefined
-      };
-      
-      if (formData.image) {
-        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" });
-        
-        const uploadResult = await uploadImageMutation.mutateAsync({
-          file: formData.image,
-          isPublic: true,
-          description: `Hình ảnh cho sản phẩm: ${formData.name}`
-        });
-        
-        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" });
-        
-        // Add the image URL to the update payload
-        updatedData.imageUrl = uploadResult.data.url;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImageFile(file)
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string)
       }
-      
-      await updateProductMutation.mutateAsync({
-        id: productId,
-        payload: updatedData,
-      });
-      
-      message.success("Sản phẩm đã được cập nhật!");
-      setIsEditing(false);
-    } catch (error) {
-      message.error("Không thể cập nhật sản phẩm. Vui lòng thử lại.");
-      console.error(error);
+      reader.readAsDataURL(file)
     }
-  };
+  }
+
+  const removeImage = () => {
+    setImagePreview(null)
+    setImageFile(null)
+    setFormData(prev => ({
+      ...prev,
+      imageUrl: ''
+    }))
+  }
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteProductMutation.mutateAsync(productId);
-      message.success("Sản phẩm đã được xóa thành công!");
-      router.push('/admin/products');
+      await deleteProductMutation.mutateAsync(id)
+      message.success("Sản phẩm đã được xóa thành công!")
+      router.push("/admin/products")
     } catch (error) {
-      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.");
-      console.error(error);
+      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
+      console.error("Delete error:", error)
     }
-  };
+  }
 
-  if (isLoading || updateProductMutation.isPending || deleteProductMutation.isPending) {
+  const handleBack = () => {
+    router.push("/admin/products")
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      // Prepare the payload
+      let payload: ICreateProduct = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price ? parseFloat(formData.price.toString()) : 0,
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice.toString()) : 0,
+        stock: typeof formData.stock === 'string' ? parseInt(formData.stock, 10) : formData.stock,
+        categoryId: formData.categoryId || undefined,
+        imageUrl: formData.imageUrl,
+      }
+      
+      // Upload new image if available
+      if (imageFile) {
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        
+        try {
+          const uploadResult = await uploadImageMutation.mutateAsync({
+            file: imageFile,
+            isPublic: true,
+            description: `Hình ảnh cho sản phẩm: ${formData.name}`
+          })
+          
+          message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+          
+          // Add the image URL to the payload
+          payload.imageUrl = uploadResult.data.url
+        } catch (error) {
+          message.error({ content: "Lỗi khi tải hình ảnh!", key: "uploadImage" })
+          console.error("Image upload error:", error)
+          return // Stop if image upload fails
+        }
+      }
+      
+      // Update the product
+      message.loading({ content: "Đang cập nhật sản phẩm...", key: "updateProduct" })
+      await updateProductMutation.mutateAsync({
+        id,
+        payload
+      })
+      
+      message.success({ content: "Sản phẩm đã được cập nhật thành công!", key: "updateProduct" })
+      setIsEditing(false)
+    } catch (error) {
+      message.error({ content: "Không thể cập nhật sản phẩm. Vui lòng thử lại.", key: "updateProduct" })
+      console.error("Product update error:", error)
+    }
+  }
+
+  if (isLoading) {
     return (
       <Box className="flex items-center justify-center p-6 py-12">
         <CircularProgress className="text-main-golden-orange" />
       </Box>
-    );
+    )
   }
 
-  if (error || !productData?.data) {
+  if (error || !productData) {
     return (
       <Box className="p-8 text-center">
         <Typography variant="h6" className="mb-2 text-red-400">
@@ -146,13 +188,11 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
           onClick={handleBack}
           className="text-gray-300 border-gray-500 hover:bg-gray-700"
         >
-          Quay lại danh sách
+          Trở về danh sách sản phẩm
         </Button>
       </Box>
-    );
+    )
   }
-
-  const product = productData.data;
 
   return (
     <div className="p-6">
@@ -165,10 +205,10 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
         >
           Quay lại
         </Button>
-        <Typography
+        <Typography 
           fontSize={18}
           fontWeight={700}
-          variant="h5"
+          variant="h5" 
           className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
         >
           Chi tiết sản phẩm
@@ -178,7 +218,7 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
       <Paper className="p-6 border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <TextField
                 size="small"
                 label="Tên sản phẩm"
@@ -190,21 +230,6 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
                 variant="outlined"
                 className="rounded"
                 disabled={!isEditing}
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Slug (URL)"
-                name="slug"
-                value={formData.slug}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-                helperText="Để trống để tự động tạo từ tên sản phẩm"
               />
             </Grid>
             
@@ -286,21 +311,21 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
               />
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <Typography fontSize={14} variant="subtitle1" className="mb-2">
                 Hình ảnh sản phẩm
               </Typography>
-              {formData.imagePreview ? (
+              {imagePreview ? (
                 <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
                   <img
-                    src={formData.imagePreview}
+                    src={imagePreview || "/placeholder.svg"}
                     alt="Product preview"
                     className="object-cover w-full h-full"
                   />
                   {isEditing && (
                     <button
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, image: null, imagePreview: null }))}
+                      onClick={removeImage}
                       className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
                     >
                       <IconX size={16} color="white" />
@@ -313,20 +338,7 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
                     <IconUpload size={24} className="mb-2 text-gray-400" />
                     <p className="text-sm text-gray-400">Upload hình ảnh</p>
                   </div>
-                  {isEditing && <input type="file" className="hidden" accept="image/*" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          image: file,
-                          imagePreview: reader.result as string,
-                        }));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} />}
+                  {isEditing && <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />}
                 </label>
               )}
             </Grid>
@@ -335,6 +347,7 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
+                className="!normal-case"
                 type="button"
                 variant="outlined"
                 onClick={() => setIsEditing(false)}
@@ -345,40 +358,38 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
                 type="submit"
                 variant="contained"
                 disabled={updateProductMutation.isPending}
-                className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
               >
                 {updateProductMutation.isPending ? (
-                  <CircularProgress size={16} className="text-white" />
+                  <CircularProgress size={24} className="text-gray-800" />
                 ) : (
-                  "Cập nhật"
+                  "Cập nhật sản phẩm"
                 )}
               </Button>
             </Box>
           )}
         </form>
         
-        <Box className="flex justify-end gap-2 mt-4 mb-4">
-          {!isEditing ? (
-            <>
-              <Button
-                variant="contained"
-                startIcon={<IconTrash size={18} />}
-                onClick={() => setDeleteDialogOpen(true)}
-                className="!bg-red-500 !text-white"
-              >
-                Xóa
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<IconEdit size={18} />}
-                onClick={() => setIsEditing(true)}
-                className="!normal-case !bg-main-golden-orange"
-              >
-                Cập nhật
-              </Button>
-            </>
-          ) : null}
-        </Box>
+        {!isEditing && (
+          <Box className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="contained"
+              startIcon={<IconTrash size={18} />}
+              onClick={() => setDeleteDialogOpen(true)}
+              className="!bg-red-500 !text-white !normal-case"
+            >
+              Xóa
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<IconEdit size={18} />}
+              onClick={() => setIsEditing(true)}
+              className="!normal-case !bg-main-golden-orange"
+            >
+              Chỉnh sửa
+            </Button>
+          </Box>
+        )}
       </Paper>
 
       <Dialog
@@ -398,25 +409,29 @@ const ProductDetailPage = ({ params }: { params: { id: string } }) => {
           <Button
             variant="outlined"
             onClick={() => setDeleteDialogOpen(false)}
+            className="!normal-case"
           >
             Hủy bỏ
           </Button>
           <Button
             variant="contained"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors !bg-red-500"
+            className="text-white transition-colors !bg-red-500 !normal-case"
             disabled={deleteProductMutation.isPending}
           >
-            {deleteProductMutation.isPending ?
+            {deleteProductMutation.isPending ? (
               <div className="flex items-center gap-2 text-white">
                 <CircularProgress size={16} className="text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div>
+            ) : (
+              "Xóa"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
     </div>
-  );
-};
+  )
+}
 
-export default ProductDetailPage; 
+export default ProductDetailPage 

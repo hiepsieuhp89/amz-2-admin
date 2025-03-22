@@ -41,7 +41,6 @@ function UsersPage() {
     order: "DESC",
   })
   const filteredUsers = userData?.data?.data || []
-  console.log(userData)
   const deleteUserMutation = useDeleteUser()
 
   const handleCreateNew = () => {

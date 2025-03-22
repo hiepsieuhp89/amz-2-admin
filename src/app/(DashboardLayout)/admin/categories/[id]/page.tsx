@@ -25,26 +25,25 @@ import {
   IconArrowLeft,
   IconEdit,
   IconTrash,
-  IconUpload,
-  IconX,
 } from "@tabler/icons-react"
 import { message } from "antd"
 
 import { useDeleteCategory, useGetCategoryById, useUpdateCategory, useGetAllCategories } from "@/hooks/category"
+import { ICategory } from "@/interface/request/category"
 
-export default function CategoryDetailPage() {
+function CategoryDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [imagePreview, setImagePreview] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    parent: "",
-    isActive: true,
-    image: "",
+    parentId: "",
+  })
+  const [errors, setErrors] = useState({
+    name: "",
   })
 
   const { data: categoryData, isLoading, error } = useGetCategoryById(id)
@@ -56,15 +55,28 @@ export default function CategoryDetailPage() {
     if (categoryData?.data) {
       const category = categoryData.data
       setFormData({
-        name: category.name,
+        name: category.name || "",
         description: category.description || "",
-        parent: category.parentId || "",
-        isActive: category.isActive,
-        image: category.image || "",
+        parentId: category.parentId || "",
       })
-      setImagePreview(category.image || "")
     }
   }, [categoryData])
+
+  const validateForm = () => {
+    let isValid = true
+    const newErrors = {
+      name: "",
+    }
+
+    // Validate name
+    if (formData.name.trim().length < 2) {
+      newErrors.name = "Tên danh mục phải có ít nhất 2 ký tự"
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
+  }
 
   const handleBack = () => {
     router.push("/admin/categories")
@@ -73,7 +85,7 @@ export default function CategoryDetailPage() {
   const handleDeleteConfirm = async () => {
     try {
       await deleteCategory.mutateAsync(id)
-      message.success("Danh mục đã được xóa!")
+      message.success("Danh mục đã được xóa thành công!")
       router.push("/admin/categories")
     } catch (error) {
       message.error("Không thể xóa danh mục. Vui lòng thử lại.")
@@ -81,45 +93,34 @@ export default function CategoryDetailPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    })
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-        setFormData({
-          ...formData,
-          image: reader.result as string,
-        })
-      }
-      reader.readAsDataURL(file)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+    const { name, value } = e.target as HTMLInputElement
+    
+    if (name) {
+      setFormData({
+        ...formData,
+        [name]: value,
+      })
     }
-  }
-
-  const removeImage = () => {
-    setImagePreview("")
-    setFormData({
-      ...formData,
-      image: "",
-    })
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      message.error("Vui lòng kiểm tra lại thông tin nhập")
+      return
+    }
+    
     try {
       await updateCategory.mutateAsync({
         id,
-        payload: formData,
+        payload: {
+          ...formData,
+          id: categoryData?.data?.id || "",
+        },
       })
-      message.success("Danh mục đã được cập nhật!")
+      message.success("Danh mục đã được cập nhật thành công!")
       setIsEditing(false)
     } catch (error) {
       message.error("Không thể cập nhật danh mục. Vui lòng thử lại.")
@@ -156,7 +157,7 @@ export default function CategoryDetailPage() {
     )
   }
 
-  const availableParentCategories = categoriesData?.data.filter(cat => cat.id !== id) || []
+  const availableParentCategories = categoriesData?.data?.data?.filter((cat: ICategory) => cat.id !== id) || []
 
   return (
     <div className="p-6">
@@ -175,37 +176,14 @@ export default function CategoryDetailPage() {
           variant="h5" 
           className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
         >
-          Quản lý danh mục
+          Chi tiết danh mục
         </Typography>
       </Box>
 
       <Paper className="p-6 border">
-        <Box className="flex justify-end gap-2 mb-4">
-          {!isEditing ? (
-            <>
-              <Button
-                variant="outlined"
-                startIcon={<IconEdit size={18} />}
-                onClick={() => setIsEditing(true)}
-                className="text-blue-400 border-blue-500 hover:bg-blue-900/30"
-              >
-                Chỉnh sửa danh mục
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<IconTrash size={18} />}
-                onClick={() => setDeleteDialogOpen(true)}
-                className="text-red-400 border-red-500 hover:bg-red-900/30"
-              >
-                Xóa
-              </Button>
-            </>
-          ) : null}
-        </Box>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-6">
+            <div>
               <TextField
                 size="small"
                 label="Tên danh mục"
@@ -217,15 +195,19 @@ export default function CategoryDetailPage() {
                 variant="outlined"
                 className="rounded"
                 disabled={!isEditing}
+                error={!!errors.name}
+                helperText={errors.name}
               />
-
+            </div>
+            <div>
               <FormControl fullWidth size="small" disabled={!isEditing}>
-                <InputLabel>Danh mục cha</InputLabel>
+                <InputLabel id="parentId-label">Danh mục cha</InputLabel>
                 <Select
-                  name="parent"
-                  value={formData.parent}
+                  labelId="parentId-label"
+                  name="parentId"
+                  value={formData.parentId}
                   label="Danh mục cha"
-                  onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement>)}
+                  onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="">Không có</MenuItem>
                   {availableParentCategories.map((category) => (
@@ -236,78 +218,26 @@ export default function CategoryDetailPage() {
                 </Select>
               </FormControl>
             </div>
-
-            <TextField
-              size="small"
-              label="Mô tả"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={4}
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
           </div>
-          <div className="grid items-stretch grid-cols-1 gap-6 md:grid-cols-2">
+
+          <div className="grid grid-cols-1 gap-6">
             <div>
-              <Typography 
-                fontSize={14}
-                variant="subtitle1" 
-                className="!mb-2"
-              >
-                Hình ảnh danh mục
-              </Typography>
-              {imagePreview ? (
-                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreview}
-                    alt="Category preview"
-                    className="object-cover w-full h-full"
-                  />
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <label className={`flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <IconUpload size={24} className="mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-400">Upload hình ảnh</p>
-                  </div>
-                  {isEditing && <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />}
-                </label>
-              )}
-              <div className="flex items-center gap-2 mt-2">
-                <Typography 
-                  fontSize={14}
-                  variant="subtitle1" 
-                >
-                  Kích hoạt
-                </Typography>
-                <FormControlLabel
-                  label=""
-                  control={
-                    <Switch 
-                      checked={formData.isActive} 
-                      onChange={handleChange} 
-                      name="isActive" 
-                      color="primary"
-                      disabled={!isEditing}
-                    />
-                  }
-                />
-              </div>
+              <TextField
+                size="small"
+                label="Mô tả"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
             </div>
           </div>
+
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
@@ -324,7 +254,7 @@ export default function CategoryDetailPage() {
                 className="text-black !bg-main-golden-orange hover:bg-amber-600"
               >
                 {updateCategory.isPending ? (
-                  <CircularProgress size={24} className="text-gray-800" />
+                  <CircularProgress size={16} className="text-white" />
                 ) : (
                   "Cập nhật"
                 )}
@@ -332,37 +262,66 @@ export default function CategoryDetailPage() {
             </Box>
           )}
         </form>
+        <Box className="flex justify-end gap-2 mt-4 mb-4">
+          {!isEditing ? (
+            <>
+              <Button
+                variant="contained"
+                startIcon={<IconTrash size={18} />}
+                onClick={() => setDeleteDialogOpen(true)}
+                className="!bg-red-500 !text-white"
+              >
+                Xóa
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<IconEdit size={18} />}
+                onClick={() => setIsEditing(true)}
+                className="!normal-case !bg-main-golden-orange"
+              >
+                Cập nhật
+              </Button>
+            </>
+          ) : null}
+        </Box>
       </Paper>
 
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
-          className: "bg-main-charcoal-blue text-white",
+          className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="text-white">Xác nhận xóa</DialogTitle>
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <DialogContentText className="text-gray-300">
+          <DialogContentText className="text-gray-400">
             Bạn có chắc chắn muốn xóa danh mục "{formData.name}"? Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
-        <DialogActions className="p-4">
-          <Button 
-            onClick={() => setDeleteDialogOpen(false)} 
-            className="text-gray-300 hover:bg-gray-700"
+        <DialogActions className="!p-4 !pb-6">
+          <Button
+            variant="outlined"
+            onClick={() => setDeleteDialogOpen(false)}
           >
             Hủy bỏ
           </Button>
           <Button
+            variant="contained"
             onClick={handleDeleteConfirm}
-            className="text-white bg-red-600 hover:bg-red-700"
+            className="text-white transition-colors !bg-red-500"
             disabled={deleteCategory.isPending}
           >
-            {deleteCategory.isPending ? "Đang xóa..." : "Xóa"}
+            {deleteCategory.isPending ?
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xóa...
+              </div> : "Xóa"}
           </Button>
         </DialogActions>
       </Dialog>
     </div>
   )
-} 
+}
+
+export default CategoryDetailPage; 

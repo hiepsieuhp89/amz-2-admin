@@ -30,8 +30,6 @@ import {
 import { message } from "antd"
 
 import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user"
-import { UserRole } from "@/interface/request/user"
-
 function UserDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -134,7 +132,7 @@ function UserDetailPage() {
         id,
         payload: {
           ...formData,
-          role: formData.role as UserRole,
+          role: formData.role,
         },
       })
       message.success("Thông tin người dùng đã được cập nhật!")

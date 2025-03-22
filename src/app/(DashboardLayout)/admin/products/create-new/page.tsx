@@ -1,51 +1,37 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, FormControlLabel, Grid, Paper, Switch, TextField, Typography } from '@mui/material';
-import { IconArrowLeft, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
-import { Chip } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography } from '@mui/material';
+import { IconArrowLeft, IconUpload, IconX } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
 import { useCreateProduct } from '@/hooks/product';
 import { useUploadImage } from '@/hooks/image';
+import { ICreateProduct } from '@/interface/request/product';
 
 export default function CreateProductPage() {
   const router = useRouter();
   const createProductMutation = useCreateProduct();
   const uploadImageMutation = useUploadImage();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
-    slug: '',
-    price: '',
-    salePrice: '', // Changed from compareAtPrice to match API
     description: '',
-    shortDescription: '',
-    stock: '', // Changed from quantity to match API
-    sku: '',
-    barcode: '',
+    imageUrl: '',
     categoryId: '',
-    brandId: '',
-    tags: [] as string[],
-    isActive: true,
-    isFeatured: false,
-    isDigital: false,
-    metaTitle: '',
-    metaDescription: '',
-    metaKeywords: [] as string[],
-    imageUrl: '', // Changed from image to match API
+    salePrice: '',
+    price: '',
+    stock: 0
   });
 
-  const [tag, setTag] = useState('');
-  const [metaKeyword, setMetaKeyword] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
@@ -71,64 +57,18 @@ export default function CreateProductPage() {
     }));
   };
 
-  const addTag = () => {
-    if (tag.trim() && !formData.tags.includes(tag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, tag.trim()]
-      }));
-      setTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tagToRemove)
-    }));
-  };
-
-  const addMetaKeyword = () => {
-    if (metaKeyword.trim() && !formData.metaKeywords.includes(metaKeyword.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        metaKeywords: [...prev.metaKeywords, metaKeyword.trim()]
-      }));
-      setMetaKeyword('');
-    }
-  };
-
-  const removeMetaKeyword = (keywordToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      metaKeywords: prev.metaKeywords.filter(k => k !== keywordToRemove)
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       // Prepare the payload
-      let payload: any = {
+      let payload: ICreateProduct = {
         name: formData.name,
         description: formData.description,
-        shortDescription: formData.shortDescription || undefined,
-        slug: formData.slug || undefined,
-        sku: formData.sku || undefined,
-        barcode: formData.barcode || undefined,
-        price: formData.price ? parseFloat(formData.price) : 0,
-        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-        stock: formData.stock ? parseInt(formData.stock, 10) : 0,
+        price: formData.price ? parseFloat(formData.price.toString()) : 0,
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice.toString()) : 0,
+        stock: typeof formData.stock === 'string' ? parseInt(formData.stock, 10) : formData.stock,
         categoryId: formData.categoryId || undefined,
-        brandId: formData.brandId || undefined,
-        tags: formData.tags.length > 0 ? formData.tags : undefined,
-        isActive: formData.isActive,
-        isFeatured: formData.isFeatured,
-        isDigital: formData.isDigital,
-        metaTitle: formData.metaTitle || undefined,
-        metaDescription: formData.metaDescription || undefined,
-        metaKeywords: formData.metaKeywords.length > 0 ? formData.metaKeywords : undefined,
       };
       
       // Upload image if available
@@ -189,7 +129,7 @@ export default function CreateProductPage() {
       <Paper className="p-6 border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <TextField
                 size="small"
                 label="Tên sản phẩm"
@@ -200,20 +140,6 @@ export default function CreateProductPage() {
                 fullWidth
                 variant="outlined"
                 className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Slug (URL)"
-                name="slug"
-                value={formData.slug}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                helperText="Để trống để tự động tạo từ tên sản phẩm"
               />
             </Grid>
             
@@ -264,52 +190,11 @@ export default function CreateProductPage() {
             <Grid item xs={12} md={6}>
               <TextField
                 size="small"
-                label="SKU"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Mã vạch"
-                name="barcode"
-                value={formData.barcode}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
                 label="ID Danh mục"
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                size="small"
-                label="Mô tả ngắn"
-                name="shortDescription"
-                value={formData.shortDescription}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={2}
                 variant="outlined"
                 className="rounded"
               />
@@ -333,51 +218,12 @@ export default function CreateProductPage() {
             
             <Grid item xs={12}>
               <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                Tags
-              </Typography>
-              <Box className="flex gap-2 mb-2">
-                <TextField
-                  size="small"
-                  placeholder="Thêm tag"
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  variant="outlined"
-                  className="rounded"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addTag();
-                    }
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={addTag}
-                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                >
-                  <IconPlus size={18} />
-                </Button>
-              </Box>
-              <Box className="flex flex-wrap gap-1">
-                {formData.tags.map((t) => (
-                  <Chip
-                    key={t}
-                    label={t}
-                    onDelete={() => removeTag(t)}
-                    className="m-1"
-                  />
-                ))}
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
                 Hình ảnh sản phẩm
               </Typography>
               {imagePreview ? (
                 <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
                   <img
-                    src={imagePreview}
+                    src={imagePreview || "/placeholder.svg"}
                     alt="Product preview"
                     className="object-cover w-full h-full"
                   />
@@ -398,116 +244,6 @@ export default function CreateProductPage() {
                   <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                 </label>
               )}
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Box className="flex flex-col h-full">
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isActive}
-                        onChange={handleChange}
-                        name="isActive"
-                        color="primary"
-                      />
-                    }
-                    label="Kích hoạt"
-                  />
-                </Box>
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isFeatured}
-                        onChange={handleChange}
-                        name="isFeatured"
-                        color="primary"
-                      />
-                    }
-                    label="Sản phẩm nổi bật"
-                  />
-                </Box>
-                <Box className="mb-2">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.isDigital}
-                        onChange={handleChange}
-                        name="isDigital"
-                        color="primary"
-                      />
-                    }
-                    label="Sản phẩm kỹ thuật số"
-                  />
-                </Box>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                SEO
-              </Typography>
-              <Box className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextField
-                  size="small"
-                  label="Meta Title"
-                  name="metaTitle"
-                  value={formData.metaTitle}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-                <TextField
-                  size="small"
-                  label="Meta Description"
-                  name="metaDescription"
-                  value={formData.metaDescription}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-              </Box>
-              <Box className="mt-4">
-                <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                  Meta Keywords
-                </Typography>
-                <Box className="flex gap-2 mb-2">
-                  <TextField
-                    size="small"
-                    placeholder="Thêm từ khóa"
-                    value={metaKeyword}
-                    onChange={(e) => setMetaKeyword(e.target.value)}
-                    variant="outlined"
-                    className="rounded"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addMetaKeyword();
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={addMetaKeyword}
-                    className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                  >
-                    <IconPlus size={18} />
-                  </Button>
-                </Box>
-                <Box className="flex flex-wrap gap-1">
-                  {formData.metaKeywords.map((keyword) => (
-                    <Chip
-                      key={keyword}
-                      label={keyword}
-                      onDelete={() => removeMetaKeyword(keyword)}
-                      className="m-1"
-                    />
-                  ))}
-                </Box>
-              </Box>
             </Grid>
           </Grid>
           
@@ -537,4 +273,4 @@ export default function CreateProductPage() {
       </Paper>
     </div>
   );
-} 
+}

@@ -6,7 +6,7 @@ import {
     getCategoryDescendants,
     updateCategory,
   } from "@/api/services/category.service"
-  import type { ICreateCategory } from "@/interface/request/category"
+import { ICategory, ICreateCategory } from "@/interface/request/category"
   import type { ICategoryListResponse, ICategoryResponse } from "@/interface/response/category"
   import {
     useMutation,
@@ -25,13 +25,18 @@ import {
   export const useGetAllCategories = (params?: {
     page?: number
     limit?: number
+    search?: string
+    role?: string
+    status?: string
+    sortBy?: string
+    order?: "ASC" | "DESC"
   }): UseQueryResult<ICategoryListResponse> => {
     return useQuery({
       queryKey: [CATEGORIES_KEY, params],
       queryFn: () => getAllCategories(params),
     })
   }
-  
+
   // Get category by ID
   export const useGetCategoryById = (id: string): UseQueryResult<ICategoryResponse> => {
     return useQuery({
@@ -46,7 +51,7 @@ import {
     return useQuery({
       queryKey: [CATEGORY_DESCENDANTS_KEY, id],
       queryFn: () => getCategoryDescendants(id),
-      enabled: !!id, // Only run the query if id is provided
+      enabled: !!id,
     })
   }
   
@@ -57,7 +62,6 @@ import {
     return useMutation<ICategoryResponse, Error, ICreateCategory>({
       mutationFn: (payload: ICreateCategory) => createCategory(payload),
       onSuccess: () => {
-        // Invalidate categories query to refetch the updated list
         queryClient.invalidateQueries({ queryKey: [CATEGORIES_KEY] })
       },
     })
@@ -74,11 +78,8 @@ import {
     return useMutation<ICategoryResponse, Error, { id: string; payload: ICreateCategory }>({
       mutationFn: ({ id, payload }) => updateCategory(id, payload),
       onSuccess: (_, variables) => {
-        // Invalidate specific category query and categories list
         queryClient.invalidateQueries({ queryKey: [CATEGORY_KEY, variables.id] })
         queryClient.invalidateQueries({ queryKey: [CATEGORIES_KEY] })
-  
-        // If this category might have descendants, invalidate those too
         queryClient.invalidateQueries({ queryKey: [CATEGORY_DESCENDANTS_KEY, variables.id] })
       },
     })
@@ -87,11 +88,9 @@ import {
   // Delete category
   export const useDeleteCategory = (): UseMutationResult<{ success: boolean }, Error, string> => {
     const queryClient = useQueryClient()
-  
     return useMutation<{ success: boolean }, Error, string>({
       mutationFn: (id: string) => deleteCategory(id),
       onSuccess: () => {
-        // Invalidate categories query to refetch the updated list
         queryClient.invalidateQueries({ queryKey: [CATEGORIES_KEY] })
       },
     })

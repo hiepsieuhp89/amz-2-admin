@@ -9,35 +9,13 @@ export interface IProductVariant {
 }
 
 export interface ICreateProduct {
-  name: string;
-  description?: string;
-  shortDescription?: string;
-  slug?: string;
-  sku?: string;
-  barcode?: string;
-  price: number | string;
-  salePrice?: number | string;
-  stock: number | string;
-  categoryId?: string;
-  brandId?: string;
-  tags?: string[];
-  attributes?: Record<string, string | string[]>;
-  specifications?: Record<string, string>;
-  isActive?: boolean;
-  isFeatured?: boolean;
-  isDigital?: boolean;
-  weight?: number;
-  dimensions?: {
-    length?: number;
-    width?: number;
-    height?: number;
-  };
-  variants?: IProductVariant[];
-  metaTitle?: string;
-  metaDescription?: string;
-  metaKeywords?: string[];
-  sellerId?: string;
-  imageUrl?: string;
+    name: string;
+    description: string;
+    imageUrl?: string;
+    categoryId?: string;
+    salePrice: number | string;
+    price: number | string;
+    stock: number;
 }
 
 export interface IUpdateProduct {
