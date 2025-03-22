@@ -70,29 +70,6 @@ const Menuitems = [
   },
   {
     id: generateUniqueId(),
-    title: "Quản lý hình ảnh",
-    icon: IconPhoto,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Thư viện hình ảnh",
-        href: "/images",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Tải lên hình ảnh",
-        href: "/images/upload",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Quản lý thư mục",
-        href: "/images/folders",
-      },
-    ],
-  },
-  {
-    id: generateUniqueId(),
     title: "Quản lý giới thiệu",
     icon: IconGift,
     href: "javascript:void(0)",

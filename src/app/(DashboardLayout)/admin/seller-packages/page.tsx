@@ -40,6 +40,10 @@ import {
   IconEye,
 } from "@tabler/icons-react"
 import { message } from "antd"
+import Lightbox from "yet-another-react-lightbox"
+import "yet-another-react-lightbox/styles.css"
+import Zoom from "yet-another-react-lightbox/plugins/zoom"
+import Download from "yet-another-react-lightbox/plugins/download"
 
 import { useDeleteSellerPackage, useGetAllSellerPackages } from "@/hooks/seller-package"
 
@@ -50,6 +54,8 @@ function SellerPackagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImage, setLightboxImage] = useState("")
 
   const { data, isLoading, error } = useGetAllSellerPackages({ page, limit })
   const deletePackageMutation = useDeleteSellerPackage()
@@ -91,6 +97,11 @@ function SellerPackagesPage() {
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLimit(parseInt(event.target.value, 10))
     setPage(0)
+  }
+
+  const openLightbox = (imageUrl: string) => {
+    setLightboxImage(imageUrl)
+    setLightboxOpen(true)
   }
 
   const filteredPackages = data?.data.filter((pkg) => pkg.name.toLowerCase().includes(searchTerm.toLowerCase())) || []
@@ -147,8 +158,6 @@ function SellerPackagesPage() {
           </Button>
         </div>
       </div>
-
-
 
       {isLoading ? (
         <Box className="flex items-center justify-center py-12">
@@ -218,7 +227,19 @@ function SellerPackagesPage() {
                             component="img"
                             src={pkg.image}
                             alt={pkg.name}
-                            sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                            sx={{ 
+                              width: 50, 
+                              height: 50, 
+                              objectFit: 'cover', 
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s',
+                              '&:hover': {
+                                transform: 'scale(1.05)',
+                                boxShadow: '0 0 8px rgba(0,0,0,0.2)'
+                              }
+                            }}
+                            onClick={() => openLightbox(pkg.image)}
                           />
                         ) : (
                           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
@@ -306,6 +327,32 @@ function SellerPackagesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={[{ src: lightboxImage }]}
+        plugins={[Zoom, Download]}
+        download={{
+          download: ({ slide }) => {
+            const link = document.createElement('a');
+            link.href = slide.src as string;
+            link.download = slide.alt || 'image-download';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        }}
+        zoom={{
+          maxZoomPixelRatio: 5,
+          zoomInMultiplier: 2,
+          doubleTapDelay: 300,
+          doubleClickDelay: 300,
+          doubleClickMaxStops: 2,
+          keyboardMoveDistance: 50,
+          wheelZoomDistanceFactor: 100,
+          pinchZoomDistanceFactor: 100,
+        }}
+      />
     </div>
   )
 }

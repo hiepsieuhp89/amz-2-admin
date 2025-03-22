@@ -24,6 +24,11 @@ export interface ITransactionHistoryParams {
 
 export interface IRechargeRequest {
   amount: number
+  bankName: string
+  bankCode: string
+  accountNumber: string
+  accountName: string
+  withdrawPassword: string
 }
 
 export interface IWithdrawRequest {
