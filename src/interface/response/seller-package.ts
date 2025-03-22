@@ -4,25 +4,23 @@ export interface ISellerPackage {
     description?: string
     price: number
     duration: number
-    productLimit: number
-    features: string[]
+    image: string
     isActive: boolean
     createdAt: string
     updatedAt: string
-    image: string
-    maxProducts: number
+    deletedAt: null | string
     percentProfit: number
+    maxProducts: number
 }
 
-export interface ISellerPackageListResponse {
-    data: ISellerPackage[]
-    total: number
-    page: number
-    limit: number
-    totalPages: number
+export interface IApiResponse<T> {
+    status: boolean
+    message: string
+    data: T
+    errors: null | any
+    timestamp: string
 }
 
-export interface ISellerPackageResponse {
-    data: ISellerPackage
-}
+export interface ISellerPackageResponse extends IApiResponse<ISellerPackage> {}
 
+export interface ISellerPackageListResponse extends IApiResponse<ISellerPackage[]> {}

@@ -57,15 +57,15 @@ function UserDetailPage() {
   const updateUserMutation = useUpdateUser()
 
   useEffect(() => {
-    if (userData) {
+    if (userData?.data) {
       setFormData({
-        email: userData.email || "",
-        username: userData.username,
-        fullName: userData.fullName || "",
-        phone: userData.phone || "",
-        role: userData.role || "user",
-        isActive: userData.isActive || false,
-        balance: userData.balance || 0,
+        email: userData?.data.email || "",
+        username: userData.data.username,
+        fullName: userData.data.fullName || "",
+        phone: userData.data.phone || "",
+        role: userData.data.role || "user",
+        isActive: userData.data.isActive || false,
+        balance: Number(userData.data.balance),
       })
     }
   }, [userData])

@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 const ProductDetailPage = () => {
   const router = useRouter();
   const { productData, updateProductMutation, deleteProductMutation } = useProduct();
-  const { message } = useMessage();
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({

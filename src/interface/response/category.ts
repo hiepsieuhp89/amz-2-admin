@@ -2,23 +2,36 @@ export interface ICategory {
     id: string
     name: string
     description?: string
-    parentId?: string
-    isActive: boolean
-    order?: number
+    parentId: string | null
+    children: ICategory[]
+    parent?: ICategory
     createdAt: string
     updatedAt: string
-    parent?: ICategory
-    image?: string
+    deletedAt: null | string
 }
 
-export interface ICategoryListResponse {
-    data: ICategory[]
-    total: number
+export interface IPaginationMeta {
     page: number
-    limit: number
+    take: number
+    itemCount: number
+    pageCount: number
+    hasPreviousPage: boolean
+    hasNextPage: boolean
 }
 
-export interface ICategoryResponse {
-    data: ICategory
+export interface ICategoryList {
+    data: ICategory[]
+    meta: IPaginationMeta
 }
 
+export interface IApiResponse<T> {
+    status: boolean
+    message: string
+    data: T
+    errors: null | any
+    timestamp: string
+}
+
+export interface ICategoryListResponse extends IApiResponse<ICategoryList> {}
+
+export interface ICategoryResponse extends IApiResponse<ICategory> {}

@@ -21,7 +21,7 @@ export const useGetAllUsers = (params?: {
   role?: string
   status?: string
   sortBy?: string
-  sortOrder?: "asc" | "desc"
+  order?: "ASC" | "DESC"
 }): UseQueryResult<IUserListResponse> => {
   return useQuery({
     queryKey: [USERS_KEY, params],
@@ -34,7 +34,7 @@ export const useGetUserById = (id: string): UseQueryResult<IUserResponse> => {
   return useQuery({
     queryKey: [USER_KEY, id],
     queryFn: () => getUserById(id),
-    enabled: !!id, // Only run the query if id is provided
+    enabled: !!id, 
   })
 }
 
@@ -70,7 +70,6 @@ export const useUpdateUser = (): UseMutationResult<IUserResponse, Error, { id: s
 // Delete user
 export const useDeleteUser = (): UseMutationResult<{ success: boolean }, Error, string> => {
   const queryClient = useQueryClient()
-
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: (_, id) => {

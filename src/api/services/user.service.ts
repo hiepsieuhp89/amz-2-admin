@@ -26,7 +26,9 @@ export const getAllUsers = async (params?: {
 
 // Get user by ID
 export const getUserById = async (id: string): Promise<IUserResponse> => {
-  const res = await sendGet(ConfigUserEndPoint.GET_BY_ID(id))
+  const res = await sendGet(ConfigUserEndPoint.GET_BY_ID(id), {
+    withCredentials: true,
+  })
   return res
 }
 
@@ -38,7 +40,7 @@ export const updateUser = async (id: string, payload: IUpdateUser): Promise<IUse
 
 // Delete user
 export const deleteUser = async (id: string): Promise<{ success: boolean }> => {
-  const res = await sendDelete(ConfigUserEndPoint.DELETE(id))
+  const res = await sendDelete(ConfigUserEndPoint.DELETE(id), { withCredentials: true })
   return res
 }
 
