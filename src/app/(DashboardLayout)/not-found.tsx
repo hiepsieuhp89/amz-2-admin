@@ -14,13 +14,13 @@ function NotFound() {
             Tính năng đang bảo trì
           </h1>
           <p className="max-w-md mx-auto mb-8 text-gray-600">
-            Chúng tôi đang nâng cấp tính năng này để mang lại trải nghiệm tốt hơn. 
+            Chúng tôi đang nâng cấp tính năng này để mang lại trải nghiệm tốt hơn.
             Vui lòng quay lại sau.
           </p>
 
           {/* Button quay về trang chủ */}
           <Link href="/">
-            <Button 
+            <Button
               type="primary"
               size="large"
               className="bg-[#1677ff] hover:bg-[#4096ff]"

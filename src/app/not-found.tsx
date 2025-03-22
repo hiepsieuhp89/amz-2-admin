@@ -1,7 +1,7 @@
 // pages/404.tsx hoặc app/not-found.tsx
 import { Button } from 'antd';
 import Link from 'next/link';
-import Layout from './(DashboardLayout)/layout';
+import Layout from './layout';
 
 function NotFound() {
   return (
