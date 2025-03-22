@@ -40,18 +40,18 @@ export default function SellerPackageDetailPage() {
   const deletePackageMutation = useDeleteSellerPackage()
 
   const handleEdit = () => {
-    router.push(`/seller-packages/edit?id=${id}`)
+    router.push(`/admin/seller-packages/edit?id=${id}`)
   }
 
   const handleBack = () => {
-    router.push("/seller-packages")
+    router.push("/admin/seller-packages")
   }
 
   const handleDeleteConfirm = async () => {
     try {
       await deletePackageMutation.mutateAsync(id)
       message.success("Seller package deleted successfully!")
-      router.push("/seller-packages")
+      router.push("/admin/seller-packages")
     } catch (error) {
       message.error("Failed to delete seller package. Please try again.")
       console.error(error)

@@ -46,7 +46,9 @@ export const useCreateSellerPackage = (): UseMutationResult<ISellerPackageRespon
     return useMutation<ISellerPackageResponse, Error, ICreateSellerPackage>({
         mutationFn: (payload: ICreateSellerPackage) => createSellerPackage(payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [SELLER_PACKAGES_KEY] })
+            queryClient.invalidateQueries({ 
+                queryKey: [SELLER_PACKAGES_KEY]
+            })
         },
     })
 }
@@ -63,7 +65,9 @@ export const useUpdateSellerPackage = (): UseMutationResult<
         mutationFn: ({ id, payload }) => updateSellerPackage(id, payload),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: [SELLER_PACKAGE_KEY, variables.id] })
-            queryClient.invalidateQueries({ queryKey: [SELLER_PACKAGES_KEY] })
+            queryClient.invalidateQueries({ 
+                queryKey: [SELLER_PACKAGES_KEY]
+            })
         },
     })
 }
@@ -74,8 +78,11 @@ export const useDeleteSellerPackage = (): UseMutationResult<{ success: boolean }
 
     return useMutation<{ success: boolean }, Error, string>({
         mutationFn: (id: string) => deleteSellerPackage(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [SELLER_PACKAGES_KEY] })
+        onSuccess: (_, id) => {
+            queryClient.invalidateQueries({ queryKey: [SELLER_PACKAGE_KEY, id] })
+            queryClient.invalidateQueries({ 
+                queryKey: [SELLER_PACKAGES_KEY]
+            })
         },
     })
 }

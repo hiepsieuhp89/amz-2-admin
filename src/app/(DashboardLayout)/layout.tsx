@@ -40,7 +40,7 @@ export default function RootLayout({
       <PageWrapper className='page-wrapper'>
         <Header toggleMobileSidebar={() => setMobileSidebarOpen(true)} />
 
-        <div className='container_box !pl-4 mt-[90px] '>
+        <div className='container_box mt-[90px] '>
           <Box sx={{ minHeight: 'calc(110vh - 170px)' }}>{children}</Box>
         </div>
       </PageWrapper>

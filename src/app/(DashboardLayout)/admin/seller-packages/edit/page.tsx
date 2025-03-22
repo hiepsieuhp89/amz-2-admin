@@ -94,16 +94,16 @@ export default function EditSellerPackagePage() {
 
     try {
       await updatePackageMutation.mutateAsync({ id, payload: formData })
-      message.success("Seller package updated successfully!")
-      router.push("/seller-packages")
+      message.success("Cập nhật gói bán hàng thành công!")
+      router.push("/admin/seller-packages")
     } catch (error) {
-      message.error("Failed to update seller package. Please try again.")
+      message.error("Cập nhật gói bán hàng thất bại. Vui lòng thử lại.")
       console.error(error)
     }
   }
 
   const handleBack = () => {
-    router.push("/seller-packages")
+    router.push("/admin/seller-packages")
   }
 
   if (isLoading) {

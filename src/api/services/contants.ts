@@ -34,3 +34,14 @@ export const ConfigSellerPackageEndPoint = {
   UPDATE: (id: string) => `/admin/seller-packages/${id}`,
   DELETE: (id: string) => `/admin/seller-packages/${id}`,
 }
+
+export const ConfigImageEndPoint = {
+  BASE: "/images",
+  UPLOAD: "/images/upload",
+  GET_BY_ID: (id: string) => `/images/${id}`,
+  UPDATE: (id: string) => `/images/${id}`,
+  DELETE: (id: string) => `/images/${id}`,
+  GET_PRODUCT_IMAGES: (productId: string) => `/images/product/${productId}`,
+  DELETE_PRODUCT_IMAGE_LINK: (id: string) => `/images/product-image/${id}`,
+  GET_IMAGE_FILE: (filename: string) => `/images/file/${filename}`,
+};
