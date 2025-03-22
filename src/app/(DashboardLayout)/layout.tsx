@@ -23,7 +23,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export default function RootLayout({
+function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -47,3 +47,4 @@ export default function RootLayout({
     </MainWrapper>
   );
 }
+export default RootLayout;

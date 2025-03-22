@@ -43,7 +43,7 @@ import { message } from "antd"
 
 import { useDeleteSellerPackage, useGetAllSellerPackages } from "@/hooks/seller-package"
 
-export default function SellerPackagesPage() {
+function SellerPackagesPage() {
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(8)
@@ -311,3 +311,4 @@ console.log(data)
   )
 }
 
+export default SellerPackagesPage;

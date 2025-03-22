@@ -7,7 +7,7 @@ import { ReactQueryProvider } from "../providers/ReactQueryProvider";
 import WrapMessage from "@/component/WrapMessage";
 import { useEffect } from "react";
 import { UserProvider } from "@/context/useUserContext";
-export default function RootLayout({
+function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -36,3 +36,4 @@ export default function RootLayout({
     </ReactQueryProvider>
   );
 }
+export default RootLayout;
