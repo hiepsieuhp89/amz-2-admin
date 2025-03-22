@@ -22,17 +22,10 @@ const PRODUCT_KEY = "product"
 // Get all products
 export const useGetAllProducts = (params?: {
     page?: number
-    limit?: number
+    take?: number
     search?: string
-    categoryId?: string
-    brandId?: string
-    sellerId?: string
-    isActive?: boolean
-    isFeatured?: boolean
-    minPrice?: number
-    maxPrice?: number
-    sortBy?: string
-    sortOrder?: "asc" | "desc"
+    status?: string
+    order?: "ASC" | "DESC"
 }): UseQueryResult<IProductListResponse> => {
     return useQuery({
         queryKey: [PRODUCTS_KEY, params],
