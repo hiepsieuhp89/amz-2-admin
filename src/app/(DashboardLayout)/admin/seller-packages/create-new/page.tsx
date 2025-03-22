@@ -11,7 +11,7 @@ import { message } from "antd"
 import { useCreateSellerPackage } from "@/hooks/seller-package"
 import { useUploadImage } from "@/hooks/image"
 
-export default function CreateSellerPackagePage() {
+function CreateSellerPackagePage() {
   const router = useRouter()
   const createPackageMutation = useCreateSellerPackage()
   const uploadImageMutation = useUploadImage()
@@ -279,3 +279,4 @@ export default function CreateSellerPackagePage() {
   )
 }
 
+export default CreateSellerPackagePage;

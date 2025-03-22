@@ -2,7 +2,7 @@
 import { Button, Layout } from 'antd';
 import { useRouter } from 'next/navigation';
 
-export default function NotFoundData() {
+function NotFoundData() {
     const router = useRouter()
     return (
         <Layout> {/* Sử dụng layout chung của ứng dụng */}
@@ -28,3 +28,5 @@ export default function NotFoundData() {
         </Layout>
     );
 }
+
+export default NotFoundData;
