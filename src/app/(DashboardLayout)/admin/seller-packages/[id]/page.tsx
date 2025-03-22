@@ -390,7 +390,7 @@ function SellerPackageDetailPage() {
         <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
-            Bạn có chắc chắn muốn xóa gói bán hàng "{formData.name}"? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa gói bán hàng &quot;{formData.name}&quot;? Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions className="!p-4 !pb-6">
