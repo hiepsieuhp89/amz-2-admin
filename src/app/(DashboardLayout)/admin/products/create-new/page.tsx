@@ -221,7 +221,7 @@ export default function CreateProductPage() {
                 Hình ảnh sản phẩm
               </Typography>
               {imagePreview ? (
-                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
+                <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
                   <img
                     src={imagePreview || "/placeholder.svg"}
                     alt="Product preview"

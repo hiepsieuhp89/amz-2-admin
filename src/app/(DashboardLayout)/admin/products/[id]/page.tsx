@@ -115,7 +115,7 @@ function ProductDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       // Prepare the payload
       let payload: ICreateProduct = {
@@ -127,20 +127,20 @@ function ProductDetailPage() {
         categoryId: formData.categoryId || undefined,
         imageUrl: formData.imageUrl,
       }
-      
+
       // Upload new image if available
       if (imageFile) {
         message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
-        
+
         try {
           const uploadResult = await uploadImageMutation.mutateAsync({
             file: imageFile,
             isPublic: true,
             description: `Hình ảnh cho sản phẩm: ${formData.name}`
           })
-          
+
           message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
-          
+
           // Add the image URL to the payload
           payload.imageUrl = uploadResult.data.url
         } catch (error) {
@@ -149,14 +149,14 @@ function ProductDetailPage() {
           return // Stop if image upload fails
         }
       }
-      
+
       // Update the product
       message.loading({ content: "Đang cập nhật sản phẩm...", key: "updateProduct" })
       await updateProductMutation.mutateAsync({
         id,
         payload
       })
-      
+
       message.success({ content: "Sản phẩm đã được cập nhật thành công!", key: "updateProduct" })
       setIsEditing(false)
     } catch (error) {
@@ -205,10 +205,10 @@ function ProductDetailPage() {
         >
           Quay lại
         </Button>
-        <Typography 
+        <Typography
           fontSize={18}
           fontWeight={700}
-          variant="h5" 
+          variant="h5"
           className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
         >
           Chi tiết sản phẩm
@@ -232,7 +232,7 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 size="small"
@@ -248,7 +248,7 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 size="small"
@@ -263,7 +263,7 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 size="small"
@@ -279,7 +279,7 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 size="small"
@@ -293,7 +293,7 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <TextField
                 size="small"
@@ -310,13 +310,13 @@ function ProductDetailPage() {
                 disabled={!isEditing}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <Typography fontSize={14} variant="subtitle1" className="mb-2">
                 Hình ảnh sản phẩm
               </Typography>
               {imagePreview ? (
-                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
+                <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
                   <img
                     src={imagePreview || "/placeholder.svg"}
                     alt="Product preview"
@@ -343,7 +343,7 @@ function ProductDetailPage() {
               )}
             </Grid>
           </Grid>
-          
+
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
@@ -369,7 +369,7 @@ function ProductDetailPage() {
             </Box>
           )}
         </form>
-        
+
         {!isEditing && (
           <Box className="flex justify-end gap-2 mt-4">
             <Button
