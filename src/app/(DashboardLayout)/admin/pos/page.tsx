@@ -155,8 +155,6 @@ const AdminPosPage = () => {
                                 <OutlinedInput
                                     size="small"
                                     id="outlined-adornment-email"
-                                    value={keyword}
-                                    onChange={(e) => setKeyword(e.target.value)}
                                     startAdornment={<InputAdornment position="start"><IconSearch className="w-4 h-4" /></InputAdornment>}
                                     label="Email khách hàng"
                                 />
