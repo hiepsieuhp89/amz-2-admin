@@ -27,7 +27,6 @@ const SignInForm = () => {
             const payload: ISignIn = {
                 username: values.username,
                 password: values.password,
-                gate: "website"
             }
 
             const response = await mutateAsync(payload);

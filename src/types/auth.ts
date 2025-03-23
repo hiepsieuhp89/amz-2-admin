@@ -33,7 +33,6 @@ export interface User {
   isPartner: boolean;
   autoCreate: boolean;
   metadata: string | null; // Changed from any to string since we store as JSON string
-  gate: string;
   phone: string | null;
   email: string | null;
   withdrawPassword: string | null;
