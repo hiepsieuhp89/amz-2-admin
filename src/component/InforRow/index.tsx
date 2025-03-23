@@ -12,7 +12,6 @@ export const InfoRow: React.FC<InfoRowProps> = ({ label, value, className = "" }
   return (
     <div className={`flex gap-2 p-4 ${className}`}>
       <span>{label}:</span>
-
       <span className="font-medium cursor-pointer">{displayedValue}</span>
 
     </div>

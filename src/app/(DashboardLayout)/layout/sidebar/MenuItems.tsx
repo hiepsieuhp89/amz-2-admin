@@ -8,6 +8,7 @@ import {
   IconPhoto,
   IconShoppingCart,
   IconLayoutGridAdd,
+  IconPrinter,
 } from "@tabler/icons-react"
 
 const generateUniqueId = (() => {
@@ -26,6 +27,12 @@ const Menuitems = [
   {
     navlabel: true,
     subheader: "Menu",
+  },
+  {
+    id: generateUniqueId(),
+    title: "Quản lý POS",
+    icon: IconPrinter,
+    href: "/admin/pos",
   },
   {
     id: generateUniqueId(),

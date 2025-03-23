@@ -34,7 +34,7 @@ export default function CreateUserPage() {
     password: "",
     fullName: "",
     phone: "",
-    role: "user",
+    role: "user" ,
     isActive: true,
     balance: 0
   })
