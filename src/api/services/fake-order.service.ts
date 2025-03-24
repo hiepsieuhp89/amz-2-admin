@@ -7,7 +7,7 @@ export interface IValidUserParams {
   take?: number
   search?: string
   status?: string
-  shopProductId: string
+  shopProductIds: string[]
 }
 
 export interface IFakeOrderItem {
