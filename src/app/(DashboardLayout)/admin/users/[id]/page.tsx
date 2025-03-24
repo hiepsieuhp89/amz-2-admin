@@ -44,6 +44,25 @@ function UserDetailPage() {
     role: "user",
     isActive: false,
     balance: 0,
+    fedexBalance: 0,
+    bankName: "",
+    bankAccountNumber: "",
+    bankAccountName: "",
+    bankBranch: "",
+    bankNumber: "",
+    bankCode: "",
+    address: "",
+    city: "",
+    district: "",
+    ward: "",
+    stars: 0,
+    reputationPoints: 0,
+    shopName: "",
+    shopAddress: "",
+    sellerPackageExpiry: "",
+    spreadPackageExpiry: "",
+    invitationCode: "",
+    referralCode: ""
   })
   const [errors, setErrors] = useState({
     email: "",
@@ -64,6 +83,25 @@ function UserDetailPage() {
         role: userData.data.role || "user",
         isActive: userData.data.isActive || false,
         balance: Number(userData.data.balance),
+        fedexBalance: Number(userData.data.fedexBalance),
+        bankName: userData.data.bankName || "",
+        bankAccountNumber: userData.data.bankAccountNumber || "",
+        bankAccountName: userData.data.bankAccountName || "",
+        bankBranch: userData.data.bankBranch || "",
+        bankNumber: userData.data.bankNumber || "",
+        bankCode: userData.data.bankCode || "",
+        address: userData.data.address || "",
+        city: userData.data.city || "",
+        district: userData.data.district || "",
+        ward: userData.data.ward || "",
+        stars: Number(userData.data.stars),
+        reputationPoints: Number(userData.data.reputationPoints),
+        shopName: userData.data.shopName || "",
+        shopAddress: userData.data.shopAddress || "",
+        sellerPackageExpiry: userData.data.sellerPackageExpiry || "",
+        spreadPackageExpiry: userData.data.spreadPackageExpiry || "",
+        invitationCode: userData.data.invitationCode || "",
+        referralCode: userData.data.referralCode || ""
       })
     }
   }, [userData])
@@ -110,7 +148,7 @@ function UserDetailPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement
-    
+
     if (name) {
       setFormData({
         ...formData,
@@ -121,18 +159,26 @@ function UserDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       message.error("Vui lòng kiểm tra lại thông tin nhập")
       return
     }
-    
+
     try {
       await updateUserMutation.mutateAsync({
         id,
         payload: {
-          ...formData,
+          username: formData.username,
+          email: formData.email,
+          phone: formData.phone,
+          fullName: formData.fullName,
           role: formData.role,
+          shopName: formData.shopName,
+          shopAddress: formData.shopAddress,
+          balance: formData.balance,
+          fedexBalance: formData.fedexBalance,
+          invitationCode: formData.invitationCode
         },
       })
       message.success("Thông tin người dùng đã được cập nhật!")
@@ -316,6 +362,65 @@ function UserDetailPage() {
             />
           </div>
 
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <TextField
+                size="small"
+                label="Fedex Balance"
+                name="fedexBalance"
+                type="number"
+                value={formData.fedexBalance}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Bank Account Number"
+                name="bankAccountNumber"
+                value={formData.bankAccountNumber}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <TextField
+                size="small"
+                label="Address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="City"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
@@ -374,7 +479,7 @@ function UserDetailPage() {
         <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
-            Bạn có chắc chắn muốn xóa người dùng "{formData.fullName || formData.username}"? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa người dùng &quot;{formData.fullName || formData.username}&quot;? Hành động này không thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions className="!p-4 !pb-6">

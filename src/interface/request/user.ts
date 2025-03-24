@@ -34,13 +34,25 @@ export interface ICreateUser {
 
 export interface IUpdateUser {
     email?: string
+    username?: string
     password?: string
-    firstName?: string
-    lastName?: string
-    phoneNumber?: string
+    fullName?: string
+    phone?: string
     role?: string
     status?: UserStatus
-    avatar?: string
+    balance?: number
+    fedexBalance?: number
+    bankName?: string
+    bankAccountNumber?: string
+    bankAccountName?: string
+    bankBranch?: string
+    bankNumber?: string
+    bankCode?: string
+    address?: string
+    city?: string
+    district?: string
+    ward?: string
+    stars?: number
     addresses?: IAddress[]
     dateOfBirth?: string
     gender?: "male" | "female" | "other"
@@ -48,5 +60,11 @@ export interface IUpdateUser {
     isPhoneVerified?: boolean
     notes?: string
     metadata?: Record<string, any>
+    shopName?: string
+    shopAddress?: string
+    sellerPackageExpiry?: string
+    spreadPackageExpiry?: string
+    invitationCode?: string
+    referralCode?: string
 }
 
