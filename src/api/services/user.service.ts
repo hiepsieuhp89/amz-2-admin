@@ -12,13 +12,13 @@ export const createUser = async (payload: ICreateUser): Promise<IUserResponse> =
 
 // Get all users
 export const getAllUsers = async (params?: {
+  order?: "ASC" | "DESC"
   page?: number
-  limit?: number
+  take?: number
   search?: string
-  role?: string
   status?: string
-  sortBy?: string
-  sortOrder?: "asc" | "desc"
+  role?: "shop" | "admin" | "user",
+  hasShop?: boolean
 }): Promise<IUserListResponse> => {
   const res = await sendGet(ConfigUserEndPoint.BASE, params)
   return res

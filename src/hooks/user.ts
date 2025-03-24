@@ -15,13 +15,13 @@ const USER_KEY = "user"
 
 // Get all users
 export const useGetAllUsers = (params?: {
-  page?: number
-  limit?: number
-  search?: string
-  role?: string
-  status?: string
-  sortBy?: string
   order?: "ASC" | "DESC"
+  page?: number
+  take?: number
+  search?: string
+  status?: string
+  role?: "shop" | "admin" | "user",
+  hasShop?: boolean
 }): UseQueryResult<IUserListResponse> => {
   return useQuery({
     queryKey: [USERS_KEY, params],

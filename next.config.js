@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: process.env.NEXT_PUBLIC_API_URL
-      ? [process.env.NEXT_PUBLIC_API_URL, "example.com", "picsum.photos"]
-      : ["amz.dunghaysai.site", "example.com", "picsum.photos"],
+      ? [process.env.NEXT_PUBLIC_API_URL, "example.com", "picsum.photos", "m.media-amazon.com"]
+      : ["amz.dunghaysai.site", "example.com", "picsum.photos", "m.media-amazon.com"],
   },
   eslint: {
     ignoreDuringBuilds: true,

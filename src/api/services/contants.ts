@@ -74,3 +74,9 @@ export const ConfigTransactionEndPoint = {
   RECHARGE: "/transaction/recharge",
   WITHDRAW: "/transaction/withdraw",
 };
+
+export const ConfigFakeOrderEndPoint = {
+  BASE: "/admin/fake-orders",
+  VALID_USERS: "/admin/fake-orders/valid-users",
+  DELIVER: (id: string) => `/admin/fake-orders/${id}/deliver`,
+};

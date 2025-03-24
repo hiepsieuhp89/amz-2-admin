@@ -14,6 +14,7 @@ export interface IUser {
   role: string;
   isActive: boolean;
   balance: string;
+  fedexBalance: string;
   bankName: string | null;
   bankAccountNumber: string | null;
   bankAccountName: string | null;
@@ -26,8 +27,12 @@ export interface IUser {
   ward: string | null;
   stars: number;
   reputationPoints: number;
+  shopName: string | null;
+  shopAddress: string | null;
   sellerPackageExpiry: string | null;
   spreadPackageExpiry: string | null;
+  sellerPackage: string | null;
+  spreadPackage: string | null;
 }
 
 export interface ICreateUser {
