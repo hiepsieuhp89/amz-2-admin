@@ -1,7 +1,7 @@
-import { addShopProducts, removeShopProducts } from "@/api/services/shop-products.service"
-import type { IAddShopProductsRequest, IRemoveShopProductsRequest } from "@/interface/request/shop-products"
-import type { IShopProductsResponse } from "@/interface/response/shop-products"
-import { type UseMutationResult, useMutation, useQueryClient } from "@tanstack/react-query"
+import { addShopProducts, getAllShopProducts, getAllShops, removeShopProducts } from "@/api/services/shop-products.service"
+import type { IAddShopProductsRequest, IGetAllShopsRequest, IGetShopProductsRequest, IRemoveShopProductsRequest } from "@/interface/request/shop-products"
+import type {IAllShopsResponse, IShopProductsResponse } from "@/interface/response/shop-products"
+import { type UseMutationResult, UseQueryResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 export const useAddShopProducts = (): UseMutationResult<IShopProductsResponse, Error, IAddShopProductsRequest> => {
   const queryClient = useQueryClient()
@@ -38,6 +38,22 @@ export const useRemoveShopProducts = (): UseMutationResult<
     onError: (result) => {
       return result
     },
+  })
+}
+
+// Get all products
+export const useGetAllShops = (params?: IGetAllShopsRequest) => {
+  return useQuery<IAllShopsResponse, Error>({
+      queryKey: ['shop-products', params],
+      queryFn: () => getAllShops(params),
+  })
+}
+
+// Get all shop products
+export const useGetAllShopProducts = (params?: IGetShopProductsRequest) => {
+  return useQuery<IShopProductsResponse, Error>({
+    queryKey: ['shop-products', params],
+    queryFn: () => getAllShopProducts(params),
   })
 }
 

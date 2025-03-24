@@ -7,6 +7,7 @@ import type {
   ICreateFakeOrderPayload,
   IValidUserParams,
 } from "@/api/services/fake-order.service"
+import { IValidUserListResponse } from "@/interface/response/fake-order"
 import {
   useMutation,
   type UseMutationResult,
@@ -14,18 +15,16 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query"
 
-// Query keys
 const VALID_USERS_KEY = "validUsers"
-const FAKE_ORDERS_KEY = "fakeOrders"
 
 // Get valid users
 export const useGetValidUsers = (
   params: IValidUserParams
-): UseQueryResult<any> => {
+): UseQueryResult<IValidUserListResponse> => {
   return useQuery({
     queryKey: [VALID_USERS_KEY, params],
     queryFn: () => getValidUsers(params),
-    enabled: !!params.shopProductId,
+    enabled: !!params.shopProductIds,
   })
 }
 

@@ -2,11 +2,10 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Card, Badge, message } from "antd"
-import { useGetAllProducts } from "@/hooks/product"
+import { Card, message, Empty } from "antd"
+import { useGetAllShopProducts } from "@/hooks/shop-products"
 import type { IProduct } from "@/interface/response/product"
 import Image from "next/image"
-import { useAddShopProducts } from "@/hooks/shop-products"
 import styles from "./storehouse.module.scss"
 import {
     TextField,
@@ -26,7 +25,6 @@ import {
     MenuItem,
     Popover,
     Typography,
-    Radio,
 } from "@mui/material"
 import {
     IconCopyCheck,
@@ -39,81 +37,57 @@ import {
     IconMapPin,
     IconCalendar,
 } from "@tabler/icons-react"
-import { useUser } from "@/context/useUserContext"
 import { useGetAllUsers } from "@/hooks/user"
-import { useCreateFakeOrder } from "@/hooks/fake-order"
+import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
 
 const AdminPosPage = () => {
-    const {
-        data: productsData,
-        isLoading,
-        refetch,
-    } = useGetAllProducts({
-        page: 1,
-    })
-    const { mutate: addShopProducts, isPending: isAddingProducts } = useAddShopProducts()
-    const { user } = useUser()
-    const [products, setProducts] = useState<IProduct[]>([])
-    const [filteredProducts, setFilteredProducts] = useState<IProduct[]>(productsData?.data?.data || [])
+
     const [selectedProducts, setSelectedProducts] = useState<IProduct[]>([])
     const [keyword, setKeyword] = useState("")
     const [minPrice, setMinPrice] = useState<number | undefined>()
     const [maxPrice, setMaxPrice] = useState<number | undefined>()
-    const [quantity, setQuantity] = useState<number | undefined>()
     const [totalSelectedProducts, setTotalSelectedProducts] = useState(0)
     const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
-    const [searchCustomer, setSearchCustomer] = useState("")
-    const { data: customersData } = useGetAllUsers({
+    const [searchShop, setSearchShop] = useState("")
+    const [selectedShopId, setSelectedShopId] = useState<string>("")
+    // Hook
+    const { data: shopsData } = useGetAllUsers({
         role: "shop",
-        search: searchCustomer,
+        search: searchShop,
+    })
+    const {
+        data: productsData,
+        isLoading,
+    } = useGetAllShopProducts({
+        shopId: selectedShopId,
+        page: 1,
     })
 
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
     const [customerColors] = useState(new Map())
     const { mutate: createFakeOrder } = useCreateFakeOrder()
-
-    const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>, customer: any) => {
-        setAnchorEl(event.currentTarget)
-    }
+    const [filteredProducts, setFilteredProducts] = useState<IProduct[]>((productsData as any)?.data?.data || [])
+    const [showShops, setShowShops] = useState(false)
+    const [showProducts, setShowProducts] = useState(false)
+    const { data: validUsers } = useGetValidUsers({
+        shopProductIds: selectedProducts.map(product => product.id)
+    });
+    console.log(validUsers)
+    const handlePopoverOpen = (event: React.MouseEvent<HTMLDivElement>) => {
+        const customer = event.currentTarget.dataset.customer;
+        if (customer) {
+            setAnchorEl(event.currentTarget);
+            setSelectedCustomer(JSON.parse(customer));
+        }
+    };
 
     const handlePopoverClose = () => {
         setAnchorEl(null)
     }
 
     const open = Boolean(anchorEl)
-
-    const filterProducts = () => {
-        if (keyword || minPrice !== undefined || maxPrice !== undefined) {
-            let filtered = [...(productsData?.data?.data || [])]
-
-            if (keyword) {
-                filtered = filtered.filter((product) => product.name.toLowerCase().includes(keyword.toLowerCase()))
-            }
-
-            if (minPrice !== undefined) {
-                filtered = filtered.filter((product) => Number(product.salePrice) >= minPrice)
-            }
-
-            if (maxPrice !== undefined) {
-                filtered = filtered.filter((product) => Number(product.salePrice) <= maxPrice)
-            }
-
-            setFilteredProducts(filtered)
-        } else {
-            setFilteredProducts(productsData?.data?.data || [])
-        }
-    }
-
-    useEffect(() => {
-        if ((productsData?.data?.data as any)?.length > 0) {
-            filterProducts()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keyword, minPrice, maxPrice, productsData?.data?.data])
-
     const addProduct = (product: IProduct) => {
-        // Kiểm tra xem sản phẩm đã tồn tại trong danh sách đã chọn chưa
         const productExists = selectedProducts.some((item) => item.id === product.id)
 
         if (productExists) {
@@ -130,34 +104,6 @@ const AdminPosPage = () => {
         newSelectedProducts.splice(index, 1)
         setSelectedProducts(newSelectedProducts)
         setTotalSelectedProducts(totalSelectedProducts - 1)
-    }
-
-    const selectRandomProducts = () => {
-        if (!quantity || quantity <= 0 || quantity > products.length) return
-
-        const shuffled = [...products].sort(() => 0.5 - Math.random())
-        const randomProducts = shuffled.slice(0, quantity)
-
-        setSelectedProducts(randomProducts)
-        setTotalSelectedProducts(randomProducts.length)
-    }
-
-    const addAllSelectedProducts = () => {
-        const productIds = selectedProducts.map((product) => product.id)
-
-        addShopProducts(
-            { productIds: productIds },
-            {
-                onSuccess: () => {
-                    message.success("Thêm sản phẩm vào cửa hàng thành công")
-                    setSelectedProducts([])
-                    setTotalSelectedProducts(0)
-                },
-                onError: (error) => {
-                    message.error(`Lỗi khi thêm sản phẩm: ${error.message}`)
-                },
-            },
-        )
     }
 
     const checkImageUrl = (imageUrl: string): string => {
@@ -200,12 +146,19 @@ const AdminPosPage = () => {
 
     const handleCustomerSelect = (customer: any) => {
         setSelectedCustomer(customer)
+        setSelectedShopId(customer.id)
         setAnchorEl(null)
+        setShowProducts(true)
     }
 
     const handleCreateFakeOrder = () => {
         if (!selectedCustomer || selectedProducts.length === 0) {
             message.warning('Vui lòng chọn khách hàng và sản phẩm')
+            return
+        }
+
+        if (!validUsers || validUsers.data.data.length === 0) {
+            message.warning('Không tìm thấy người dùng hợp lệ cho sản phẩm đã chọn')
             return
         }
 
@@ -233,6 +186,11 @@ const AdminPosPage = () => {
         })
     }
 
+    const handleSearchShop = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchShop(e.target.value)
+        setShowShops(true)
+    }
+
     return (
         <Box component="section" className={styles.storehouse}>
             <Box className="container px-4 py-4 mx-auto">
@@ -240,8 +198,10 @@ const AdminPosPage = () => {
                     <Box className="flex flex-col h-screen md:flex-1">
                         <Box className="grid justify-between grid-cols-2 gap-2 mb-3 md:grid-cols-4">
                             <FormControl fullWidth variant="outlined">
-                                <InputLabel htmlFor="outlined-adornment-email">Email khách hàng</InputLabel>
+                                <InputLabel htmlFor="outlined-adornment-email">Tìm shop</InputLabel>
                                 <OutlinedInput
+                                    value={searchShop}
+                                    onChange={handleSearchShop}
                                     size="small"
                                     id="outlined-adornment-email"
                                     startAdornment={
@@ -249,7 +209,7 @@ const AdminPosPage = () => {
                                             <IconSearch className="w-4 h-4" />
                                         </InputAdornment>
                                     }
-                                    label="Email khách hàng"
+                                    label="Tìm shop"
                                 />
                             </FormControl>
 
@@ -291,111 +251,12 @@ const AdminPosPage = () => {
                             </FormControl>
                         </Box>
 
-                        <Box className="grid flex-1 h-full grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3">
-                            {isLoading ? (
-                                <Box className="flex items-center justify-center h-full col-span-2">
-                                    <CircularProgress size={24} />
-                                </Box>
-                            ) : filteredProducts.length > 0 ? (
-                                filteredProducts.map((product) => (
-                                    <Box key={product.id} className={styles.productCard}>
-                                        <Box className={`${styles.card} !rounded-[8px] overflow-hidden `}>
-                                            <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-                                                <Box className={styles.imageContainer}>
-                                                    <Box
-                                                        className="
-                          h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center
-                          absolute z-50 border-none -top-2 -right-2">
-                                                        Trong kho: {product.stock}
-                                                    </Box>
-                                                    <Image
-                                                        src={checkImageUrl(product.imageUrl || "")}
-                                                        alt={product.name}
-                                                        className={`${styles.productImage}`}
-                                                        width={140}
-                                                        height={140}
-                                                        draggable={false}
-                                                    />
-                                                </Box>
-                                                <Box className={styles.productName}>Tên sản phẩm: {product.name}</Box>
-                                                <Box className={styles.productDescription}>
-                                                    <strong>Mô tả: </strong>
-                                                    {product.description}
-                                                </Box>
-                                                <Box className={styles.priceInfo}>
-                                                    <span>Giá bán:</span>
-                                                    <span className="!text-green-500">{Number(product.salePrice).toFixed(2)}</span>
-                                                </Box>
-                                                <Box className={styles.priceInfo}>
-                                                    <span>Giá nhập:</span>
-                                                    <span className="!text-amber-500">{Number(product.price).toFixed(2)}</span>
-                                                </Box>
-                                                <Box className={styles.priceInfo}>
-                                                    <span>Lợi nhuận:</span>
-                                                    <span className="!text-red-500 font-bold">
-                                                        ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
-                                                    </span>
-                                                </Box>
-                                                <Box className={styles.addButton} onClick={() => addProduct(product)}>
-                                                    <Box className={styles.overlay}></Box>
-                                                    <IconPlus className={styles.plusIcon} />
-                                                </Box>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                ))
-                            ) : (
-                                <Box>Không tìm thấy sản phẩm</Box>
-                            )}
-                        </Box>
-
-                        {filteredProducts.length > 12 && (
-                            <div className="mt-4 text-center">
-                                <Button variant="outlined">Tải thêm</Button>
-                            </div>
-                        )}
-                    </Box>
-
-                    <Box className="md:w-[400px]">
-                        <Box className="flex items-center gap-2 mb-3">
-                            <FormControl fullWidth variant="outlined">
-                                <InputLabel htmlFor="outlined-adornment-product">Tìm khách ảo (Tên, email, sdt)</InputLabel>
-                                <OutlinedInput
-                                    size="small"
-                                    id="outlined-adornment-product"
-                                    value={searchCustomer}
-                                    onChange={(e) => setSearchCustomer(e.target.value)}
-                                    startAdornment={
-                                        <InputAdornment position="start">
-                                            <IconSearch className="w-4 h-4" />
-                                        </InputAdornment>
-                                    }
-                                    label="Tìm khách ảo (Tên, email, sdt)"
-                                />
-                            </FormControl>
-                            <IconButton
-                                sx={{
-                                    height: "36px",
-                                    width: "36px",
-                                    backgroundColor: "#5D87FF",
-                                    color: "#fff",
-                                    "&:hover": {
-                                        backgroundColor: "#4570EA",
-                                    },
-                                }}
-                                size="small"
-                                className="flex-shrink-0 !rounded-[4px]"
-                            >
-                                <IconCopyCheck className="w-5 h-5" />
-                            </IconButton>
-                        </Box>
-
-                        {customersData?.data?.data && customersData.data.data.length > 0 && (
+                        {showShops && shopsData?.data?.data && shopsData.data.data.length > 0 && (
                             <Box sx={{ maxHeight: "40%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
                                 <List>
-                                    {customersData.data.data.map((customer, index) => (
+                                    {shopsData.data.data.map((shop, index) => (
                                         <ListItem
-                                            key={customer.id}
+                                            key={shop.id}
                                             sx={{
                                                 cursor: "pointer",
                                                 backgroundColor: index % 2 !== 0 ? "#f5f5f5" : "inherit",
@@ -406,19 +267,13 @@ const AdminPosPage = () => {
                                                     borderBottom: "none",
                                                 },
                                             }}
-                                            onMouseEnter={(e) => handlePopoverOpen(e, customer)}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.dataset.customer = JSON.stringify(shop);
+                                                handlePopoverOpen(e as any);
+                                            }}
                                             onMouseLeave={handlePopoverClose}
+                                            onClick={() => handleCustomerSelect(shop)}
                                         >
-                                            <Box onClick={(e) => e.stopPropagation()}>
-                                                <Radio
-                                                    checked={selectedCustomer?.id === customer.id}
-                                                    onChange={() => handleCustomerSelect(customer)}
-                                                    value={customer.id}
-                                                    name="customer-radio"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    size="small"
-                                                />
-                                            </Box>
                                             <Box
                                                 sx={{
                                                     width: 40,
@@ -430,10 +285,10 @@ const AdminPosPage = () => {
                                                     fontWeight: 500,
                                                     fontSize: 16,
                                                     mr: 2,
-                                                    ...getCustomerColor(customer),
+                                                    ...getCustomerColor(shop),
                                                 }}
                                             >
-                                                {customer?.shopName?.substring(0, 2).toUpperCase()}
+                                                {shop.shopName?.substring(0, 2).toUpperCase()}
                                             </Box>
                                             <ListItemText
                                                 primary={
@@ -441,7 +296,7 @@ const AdminPosPage = () => {
                                                         fontWeight={500}
                                                         sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
                                                     >
-                                                        {customer?.shopName}
+                                                        {shop.shopName}
                                                         <Box
                                                             component="div"
                                                             sx={{
@@ -470,14 +325,12 @@ const AdminPosPage = () => {
                                                         variant="body2"
                                                         color="text.secondary"
                                                     >
-                                                        <IconMail className="w-3 h-3 mr-1" style={{ verticalAlign: "middle" }} /> {customer.email}
-                                                        <IconPhone className="w-3 h-3 ml-1 mr-1" style={{ verticalAlign: "middle" }} />{" "}
-                                                        {customer.phone}
+                                                        <IconMail className="w-3 h-3 mr-1" /> {shop.email}
+                                                        <IconPhone className="w-3 h-3 ml-1 mr-1" /> {shop.phone}
                                                     </Typography>
                                                 }
                                                 sx={{ my: 0 }}
                                             />
-
                                         </ListItem>
                                     ))}
                                 </List>
@@ -486,23 +339,28 @@ const AdminPosPage = () => {
 
                         <Popover
                             sx={{
-                                pointerEvents: "none",
-                                "& .MuiPopover-paper": {
-                                    overflow: "visible",
+                                pointerEvents: 'none',
+                                '& .MuiPopover-paper': {
+                                    pointerEvents: 'auto',
                                 },
                             }}
                             open={open}
                             anchorEl={anchorEl}
                             anchorOrigin={{
-                                vertical: "center",
-                                horizontal: "right",
+                                vertical: 'center',
+                                horizontal: 'right',
                             }}
                             transformOrigin={{
-                                vertical: "center",
-                                horizontal: "right",
+                                vertical: 'center',
+                                horizontal: 'right',
                             }}
                             onClose={handlePopoverClose}
                             disableRestoreFocus
+                            disableScrollLock
+                            disablePortal
+                            transitionDuration={200}
+                            onMouseEnter={handlePopoverOpen}
+                            onMouseLeave={handlePopoverClose}
                         >
                             {selectedCustomer && (
                                 <Box
@@ -660,6 +518,112 @@ const AdminPosPage = () => {
                                 </Box>
                             )}
                         </Popover>
+
+                        {showProducts && (
+                            <Box className="grid flex-1 h-full grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3">
+                                {isLoading ? (
+                                    <Box className="flex items-center justify-center h-full col-span-2">
+                                        <CircularProgress size={24} />
+                                    </Box>
+                                ) : (productsData?.data?.data as any)?.length > 0 ? (
+                                    productsData?.data?.data?.map((item) => {
+                                        const product = (item as any).product;
+                                        return (
+                                            <Box key={product.id} className={styles.productCard}>
+                                                <Box className={`${styles.card} !rounded-[8px] overflow-hidden `}>
+                                                    <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
+                                                        <Box className={styles.imageContainer}>
+                                                            <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
+                                                                Trong kho: {product.stock}
+                                                            </Box>
+                                                            <Image
+                                                                src={checkImageUrl(product.imageUrl || "")}
+                                                                alt={product.name}
+                                                                className={`${styles.productImage}`}
+                                                                width={140}
+                                                                height={140}
+                                                                draggable={false}
+                                                            />
+                                                        </Box>
+                                                        <Box className={styles.productName}>Tên sản phẩm: {product.name}</Box>
+                                                        <Box className={styles.productDescription}>
+                                                            <strong>Mô tả: </strong>
+                                                            {product.description}
+                                                        </Box>
+                                                        <Box className={styles.priceInfo}>
+                                                            <span>Giá bán:</span>
+                                                            <span className="!text-green-500">{Number(product.salePrice).toFixed(2)}</span>
+                                                        </Box>
+                                                        <Box className={styles.priceInfo}>
+                                                            <span>Giá nhập:</span>
+                                                            <span className="!text-amber-500">{Number(product.price).toFixed(2)}</span>
+                                                        </Box>
+                                                        <Box className={styles.priceInfo}>
+                                                            <span>Lợi nhuận:</span>
+                                                            <span className="!text-red-500 font-bold">
+                                                                ${(item as any).profit}
+                                                            </span>
+                                                        </Box>
+                                                        <Box className={styles.addButton} onClick={() => addProduct(product)}>
+                                                            <Box className={styles.overlay}></Box>
+                                                            <IconPlus className={styles.plusIcon} />
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )
+                                    })
+                                ) : (
+                                    <Box className="flex items-center justify-center h-full col-span-3">
+                                        <Empty
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            description="Chưa có sản phẩm nào. Vui lòng tìm kiếm shop"
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
+
+                        {filteredProducts.length > 12 && (
+                            <div className="mt-4 text-center">
+                                <Button variant="outlined">Tải thêm</Button>
+                            </div>
+                        )}
+                    </Box>
+
+                    <Box className="md:w-[400px]">
+                        <Box className="flex items-center gap-2 mb-3">
+                            <FormControl fullWidth variant="outlined">
+                                <InputLabel htmlFor="outlined-adornment-product">Tìm khách ảo (Tên, email, sdt)</InputLabel>
+                                <OutlinedInput
+                                    size="small"
+                                    id="outlined-adornment-product"
+                                    // value={searchCustomer}
+                                    // onChange={(e) => setSearchShop(e.target.value)}
+                                    startAdornment={
+                                        <InputAdornment position="start">
+                                            <IconSearch className="w-4 h-4" />
+                                        </InputAdornment>
+                                    }
+                                    label="Tìm khách ảo (Tên, email, sdt)"
+                                />
+                            </FormControl>
+                            <IconButton
+                                sx={{
+                                    height: "36px",
+                                    width: "36px",
+                                    backgroundColor: "#5D87FF",
+                                    color: "#fff",
+                                    "&:hover": {
+                                        backgroundColor: "#4570EA",
+                                    },
+                                }}
+                                size="small"
+                                className="flex-shrink-0 !rounded-[4px]"
+                            >
+                                <IconCopyCheck className="w-5 h-5" />
+                            </IconButton>
+                        </Box>
 
                         {totalSelectedProducts > 0 && (
                             <Box className="my-3 text-center">
@@ -826,4 +790,3 @@ const AdminPosPage = () => {
 }
 
 export default AdminPosPage
-
