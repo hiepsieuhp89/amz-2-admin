@@ -24,7 +24,7 @@ import { ICategory, ICreateCategory } from "@/interface/request/category"
   // Get all categories
   export const useGetAllCategories = (params?: {
     page?: number
-    limit?: number
+    take?: number
     search?: string
     role?: string
     status?: string

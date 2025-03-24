@@ -1,46 +1,40 @@
 "use client"
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import {
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
   Box,
-  CircularProgress,
+  Button,
   Chip,
+  CircularProgress,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TablePagination,
+  DialogTitle,
   IconButton,
+  InputAdornment,
+  TableCell,
+  TableRow,
+  TextField,
+  Typography
 } from "@mui/material"
 import {
-  IconSearch,
-  IconPlus,
-  IconEdit,
-  IconTrash,
-  IconEye,
   IconBrandTelegram,
+  IconEye,
+  IconPlus,
+  IconSearch,
+  IconTrash
 } from "@tabler/icons-react"
 import { message } from "antd"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useState } from "react"
 
+import DataTable from "@/components/DataTable"
 import { useDeleteSpreadPackage, useGetAllSpreadPackages } from "@/hooks/spread-package"
 
 function SpreadPackagesPage() {
   const router = useRouter()
-  const [page, setPage] = useState(0)
-  const [limit, setLimit] = useState(8)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
@@ -88,6 +82,57 @@ function SpreadPackagesPage() {
   }
 
   const filteredPackages = data?.data.filter((pkg) => pkg.name.toLowerCase().includes(searchTerm.toLowerCase())) || []
+
+  const columns = [
+    { key: 'name', label: 'Tên gói' },
+    { key: 'price', label: 'Giá (USD)' },
+    { key: 'description', label: 'Mô tả' },
+    { key: 'image', label: 'Hình ảnh' },
+    { key: 'isActive', label: 'Trạng thái' },
+    { key: 'duration', label: 'Thời hạn (ngày)' },
+    { key: 'createdAt', label: 'Ngày tạo' },
+    { key: 'actions', label: 'Thao tác' },
+  ]
+
+  const renderRow = (pkg: any) => (
+    <TableRow key={pkg.id}>
+      <TableCell>{pkg.name}</TableCell>
+      <TableCell>{pkg.price}</TableCell>
+      <TableCell>{pkg.description}</TableCell>
+      <TableCell>
+        {pkg.image ? (
+          <Box
+            component="img"
+            src={pkg.image}
+            alt={pkg.name}
+            sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+          />
+        ) : (
+          <Box sx={{ color: 'text.secondary' }}>N/A</Box>
+        )}
+      </TableCell>
+      <TableCell>
+        <Chip
+          label={pkg.isActive ? "Đang hoạt động" : "Đã dừng"}
+          color={pkg.isActive ? "success" : "error"}
+          size="small"
+          variant="outlined"
+        />
+      </TableCell>
+      <TableCell>{pkg.duration}</TableCell>
+      <TableCell>{new Date(pkg.createdAt).toLocaleDateString('vi-VN')}</TableCell>
+      <TableCell>
+        <Box className="flex items-center justify-center gap-4">
+          <IconButton onClick={() => handleView(pkg.id)} size="medium" className="!bg-blue-100">
+            <IconEye size={18} className="text-blue-400" />
+          </IconButton>
+          <IconButton onClick={() => openDeleteDialog(pkg.id)} size="medium" className="!bg-red-100">
+            <IconTrash size={18} className="text-red-400" />
+          </IconButton>
+        </Box>
+      </TableCell>
+    </TableRow>
+  )
 
   if (error) {
     return (
@@ -142,124 +187,47 @@ function SpreadPackagesPage() {
         </div>
       </div>
 
-      {isLoading ? (
-        <Box className="flex items-center justify-center py-12">
-          <CircularProgress className="text-main-golden-orange" />
-        </Box>
-      ) : filteredPackages.length === 0 ? (
-        <Box className="flex flex-col items-center justify-center gap-4 py-8 text-center border border-gray-700 border-dashed rounded-lg backdrop-blur-sm">
-          <Typography
-            fontWeight={400}
-            variant="h6"
-            className="mb-2 text-gray-400"
-          >
-            Không tìm thấy gói quảng bá. {searchTerm ? "Thử tìm kiếm với từ khác" : "Tạo gói quảng bá đầu tiên"}
-          </Typography>
-          {!searchTerm && (
-            <Button
+      <DataTable
+        columns={columns}
+        data={filteredPackages}
+        isLoading={isLoading}
+        pagination={{
+          page,
+          take: limit,
+          itemCount: data?.data.length || 0,
+        }}
+        onPageChange={(newPage) => setPage(newPage)}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setLimit(newRowsPerPage)
+          setPage(0)
+        }}
+        renderRow={renderRow}
+        emptyMessage="Không tìm thấy gói quảng bá nào"
+        createNewButton={{
+          label: "Tạo gói quảng bá mới",
+          onClick: handleCreateNew
+        }}
+        searchComponent={
+          <div className="flex items-center gap-4">
+            <TextField
+              size="small"
+              placeholder="Tìm kiếm gói quảng bá..."
               variant="outlined"
-              startIcon={<IconPlus size={18} />}
-              onClick={handleCreateNew}
-              className="transition-all w-fit !normal-case"
-            >
-              Tạo gói quảng bá mới
-            </Button>
-          )}
-        </Box>
-      ) : (
-        <>
-          <Paper sx={{ width: '100%', overflow: 'hidden', border: '1px solid #E0E0E0' }}>
-            <TableContainer sx={{ maxHeight: 440 }}>
-              <Table
-                stickyHeader
-                sx={{ minWidth: 650 }}
-                aria-label="packages table"
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Tên gói</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Giá (USD)</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Mô tả</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Hình ảnh</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Trạng thái</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thời hạn (ngày)</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Ngày tạo</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Thao tác</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredPackages.map((pkg) => (
-                    <TableRow
-                      key={pkg.id || pkg.name}
-                      sx={{
-                        '&:first-child td, &:first-child th': { borderTop: '1px solid #E0E0E0' },
-                        '& td': { borderBottom: '1px solid #E0E0E0' }
-                      }}
-                    >
-                      <TableCell>{pkg.name}</TableCell>
-                      <TableCell>{pkg.price}</TableCell>
-                      <TableCell>{pkg.description}</TableCell>
-                      <TableCell>
-                        {pkg.image ? (
-                          <Box
-                            component="img"
-                            src={pkg.image}
-                            alt={pkg.name}
-                            sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
-                          />
-                        ) : (
-                          <Box sx={{ color: 'text.secondary' }}>N/A</Box>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={pkg.isActive ? "Đang hoạt động" : "Đã dừng"}
-                          color={pkg.isActive ? "success" : "error"}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>{pkg.duration}</TableCell>
-                      <TableCell>
-                        {new Date(pkg.createdAt).toLocaleDateString('vi-VN')}
-                      </TableCell>
-                      <TableCell>
-                        <Box className="flex items-center justify-center gap-4">
-                          <IconButton
-                            onClick={() => handleView(pkg.id)}
-                            size="medium"
-                            className="!bg-blue-100"
-                          >
-                            <IconEye size={18} className="text-blue-400" />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => openDeleteDialog(pkg.id)}
-                            size="medium"
-                            className="!bg-red-100"
-                          >
-                            <IconTrash size={18} className="text-red-400" />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 8, 10, 25]}
-              component="div"
-              count={data?.data.length || 0}
-              rowsPerPage={limit}
-              page={page}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelRowsPerPage="Dòng mỗi trang:"
-              labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 rounded shadow-sm"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IconSearch size={20} className="text-main-golden-orange" />
+                  </InputAdornment>
+                ),
+                className: "text-white rounded-lg hover:shadow-md transition-shadow",
+              }}
             />
-          </Paper>
-        </>
-      )}
+          </div>
+        }
+      />
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

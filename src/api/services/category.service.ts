@@ -10,7 +10,7 @@ export const createCategory = async (payload: ICreateCategory): Promise<ICategor
 }
 
 // Get all categories
-export const getAllCategories = async (params?: { page?: number; limit?: number }): Promise<ICategoryListResponse> => {
+export const getAllCategories = async (params?: { page?: number; take?: number }): Promise<ICategoryListResponse> => {
   const res = await sendGet(ConfigCategoryEndPoint.BASE, params)
   return res
 }
