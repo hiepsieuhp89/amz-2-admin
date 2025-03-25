@@ -73,8 +73,10 @@ const AdminPosPage = () => {
     const [filteredProducts, setFilteredProducts] = useState<IProduct[]>((productsData as any)?.data?.data || [])
     const [showShops, setShowShops] = useState(false)
     const [showProducts, setShowProducts] = useState(false)
+    const [searchUser, setSearchUser] = useState("");
     const { data: validUsers } = useGetValidUsers({
-        shopProductIds: selectedProducts.map(product => product.id)
+        shopProductIds: selectedProducts.map(product => product.id),
+        search: searchUser
     });
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [hoveredCustomer, setHoveredCustomer] = useState<any>(null);
@@ -213,7 +215,10 @@ const AdminPosPage = () => {
         setShowShops(true)
     }
 
-    console.log(shopsData)
+    const handleSearchUser = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchUser(e.target.value);
+    };
+
     return (
         <Box component="section" className={styles.storehouse}>
             <Box className="container px-4 py-4 mx-auto">
@@ -379,6 +384,7 @@ const AdminPosPage = () => {
                                             "& .MuiPopover-paper": {
                                                 overflow: "visible",
                                             },
+                                            border: "none",
                                         }}
                                         open={open}
                                         anchorEl={anchorEl}
@@ -396,13 +402,13 @@ const AdminPosPage = () => {
                                         {hoveredCustomer && (
                                             <Box
                                                 sx={{
-                                                    p: 3,
+                                                    p: 2,
                                                     maxWidth: 320,
                                                     bgcolor: "#ffffff",
-                                                    borderRadius: 2,
                                                     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                                                     border: "1px solid #f0f0f0",
                                                     position: "relative",
+                                                    borderRadius: "4px",
                                                     "&:before": {
                                                         content: '""',
                                                         position: "absolute",
@@ -450,7 +456,7 @@ const AdminPosPage = () => {
                                                             alignItems: "center",
                                                             justifyContent: "center",
                                                             fontWeight: 600,
-                                                            fontSize: 18,
+                                                            fontSize: 16,
                                                             ...getRandomColor(),
                                                         }}
                                                     >
@@ -461,24 +467,24 @@ const AdminPosPage = () => {
                                                         sx={{
                                                             fontWeight: "bold",
                                                             color: "#333",
-                                                            fontSize: "1.1rem",
+                                                            fontSize: "16px",
                                                         }}
                                                     >
                                                         {hoveredCustomer.shopName}
                                                     </Typography>
                                                 </Box>
 
-                                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                                                     <Typography
                                                         sx={{
                                                             display: "flex",
                                                             alignItems: "center",
                                                             color: "#555",
-                                                            fontSize: "0.95rem",
+                                                            fontSize: "14px",
                                                             "&:hover": { color: "#3F6AD8" },
                                                         }}
                                                     >
-                                                        <IconMail className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
+                                                        <IconMail className="w-4 h-4 mr-2" style={{ color: "#3F6AD8", flexShrink: 0 }} />
                                                         <Box component="span" sx={{ fontWeight: 500 }}>
                                                             Email:
                                                         </Box>
@@ -492,11 +498,10 @@ const AdminPosPage = () => {
                                                             display: "flex",
                                                             alignItems: "center",
                                                             color: "#555",
-                                                            fontSize: "0.95rem",
-                                                            "&:hover": { color: "#3F6AD8" },
+                                                            fontSize: "14px", "&:hover": { color: "#3F6AD8" },
                                                         }}
                                                     >
-                                                        <IconPhone className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
+                                                        <IconPhone className="w-4 h-4 mr-2" style={{ color: "#3F6AD8", flexShrink: 0 }} />
                                                         <Box component="span" sx={{ fontWeight: 500 }}>
                                                             Phone:
                                                         </Box>
@@ -510,11 +515,10 @@ const AdminPosPage = () => {
                                                             display: "flex",
                                                             alignItems: "flex-start",
                                                             color: "#555",
-                                                            fontSize: "0.95rem",
-                                                            "&:hover": { color: "#3F6AD8" },
+                                                            fontSize: "14px", "&:hover": { color: "#3F6AD8" },
                                                         }}
                                                     >
-                                                        <IconMapPin className="w-4 h-4 mr-2" style={{ color: "#3F6AD8", marginTop: "3px" }} />
+                                                        <IconMapPin className="w-4 h-4 mr-2" style={{ color: "#3F6AD8", flexShrink: 0 }} />
                                                         <Box component="span" sx={{ fontWeight: 500 }}>
                                                             Địa chỉ:
                                                         </Box>
@@ -527,14 +531,14 @@ const AdminPosPage = () => {
                                                         sx={{
                                                             display: "flex",
                                                             alignItems: "center",
-                                                            color: "#777",
-                                                            fontSize: "0.9rem",
+                                                            color: "#555",
+                                                            fontSize: "14px",
                                                             mt: 1,
                                                             pt: 1,
                                                             borderTop: "1px solid #f5f5f5",
                                                         }}
                                                     >
-                                                        <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#FCAF17" }} />
+                                                        <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#FCAF17", flexShrink: 0 }} />
                                                         <Box component="span" sx={{ fontWeight: 500 }}>
                                                             Ngày tạo:
                                                         </Box>
@@ -609,7 +613,7 @@ const AdminPosPage = () => {
                                                             <Box sx={{ display: 'flex', gap: 1 }}>
                                                                 <span>Lợi nhuận:</span>
                                                                 <span className="!text-red-500 font-bold">
-                                                                    ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
+                                                                    ${(item as any)?.profit}
                                                                 </span>
                                                             </Box>
                                                         </Box>
@@ -640,6 +644,8 @@ const AdminPosPage = () => {
                                 <OutlinedInput
                                     size="small"
                                     id="outlined-adornment-product"
+                                    value={searchUser}
+                                    onChange={handleSearchUser}
                                     startAdornment={
                                         <InputAdornment position="start">
                                             <IconSearch className="w-4 h-4" />
@@ -748,44 +754,26 @@ const AdminPosPage = () => {
                                             {selectedProducts.map((product, index) => (
                                                 <ListItem
                                                     key={`${product.id}-${index}`}
-                                                    secondaryAction={
-                                                        <IconButton edge="end" onClick={() => removeProduct(index)} color="error">
-                                                            <IconTrash className="w-4 h-4" />
-                                                        </IconButton>
-                                                    }
                                                     sx={{
                                                         borderBottom: "1px solid #e0e0e0",
                                                         "&:last-child": {
                                                             borderBottom: "none",
                                                         },
-                                                        padding: "0px",
+                                                        "&:first-child": {
+                                                            paddingTop: "0px",
+                                                        },
+                                                        padding: "8px 0px",
                                                     }}
                                                 >
                                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                        <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleQuantityChange(product.id, -1)}
-                                                                sx={{ border: "1px solid #e0e0e0" }}
-                                                            >
-                                                                <IconMinus className="w-3 h-3" />
-                                                            </IconButton>
-                                                            <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[product.id] || 1}</Box>
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleQuantityChange(product.id, 1)}
-                                                                sx={{ border: "1px solid #e0e0e0" }}
-                                                            >
-                                                                <IconPlus className="w-3 h-3" />
-                                                            </IconButton>
-                                                        </Box>
+
                                                         <ListItemAvatar>
                                                             <Image
                                                                 src={checkImageUrl(product.imageUrl || "")}
                                                                 alt={product.name}
-                                                                className="w-16 h-16 object-cover rounded-[4px] border"
-                                                                width={64}
-                                                                height={64}
+                                                                className="w-24 h-24 object-cover rounded-[4px] border"
+                                                                width={200}
+                                                                height={200}
                                                                 draggable={false}
                                                             />
                                                         </ListItemAvatar>
@@ -797,7 +785,7 @@ const AdminPosPage = () => {
                                                             <>
                                                                 <Box>{product.description}</Box>
                                                                 <Box>
-                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', mt: 1 }}>
                                                                         <Box sx={{ display: 'flex', gap: 1 }}>
                                                                             <span>Giá bán:</span>
                                                                             <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
@@ -817,13 +805,38 @@ const AdminPosPage = () => {
                                                             </>
                                                         }
                                                     />
+                                                    <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                                        <IconButton
+                                                            size="small"
+                                                            sx={{ border: "2px solid #FDEDE8", bgcolor: "#FDEDE8", mb: 1 }}
+                                                            onClick={() => removeProduct(index)} color="error">
+                                                            <IconTrash className="w-3 h-3" />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleQuantityChange(product.id, -1)}
+                                                            sx={{ border: "1px solid #e0e0e0" }}
+                                                        >
+                                                            <IconMinus className="w-3 h-3" />
+                                                        </IconButton>
+                                                        <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[product.id] || 1}</Box>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleQuantityChange(product.id, 1)}
+                                                            sx={{ border: "1px solid #e0e0e0" }}
+                                                        >
+                                                            <IconPlus className="w-3 h-3" />
+                                                        </IconButton>
+                                                    </Box>
                                                 </ListItem>
                                             ))}
                                         </List>
                                         <Box sx={{ p: 2 }}>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                                <span>Tổng:</span>
-                                                <span>
+                                                <Typography
+                                                    fontSize="14px"
+                                                    sx={{ fontWeight: 700, color: '#2c3e50' }}>Tổng:</Typography>
+                                                <span className="font-normal text-gray-400">
                                                     $
                                                     {selectedProducts
                                                         .reduce((sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1), 0)
@@ -831,8 +844,10 @@ const AdminPosPage = () => {
                                                 </span>
                                             </Box>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                                <span>Thuế (8%):</span>
-                                                <span>
+                                                <Typography
+                                                    fontSize="14px"
+                                                    sx={{ fontWeight: 700, color: '#2c3e50' }}>Thuế (8%):</Typography>
+                                                <span className="font-normal text-gray-400">
                                                     $
                                                     {(
                                                         selectedProducts.reduce(
@@ -843,12 +858,16 @@ const AdminPosPage = () => {
                                                 </span>
                                             </Box>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                                <span>Đang chuyển hàng:</span>
-                                                <span>$5.00</span>
+                                                <Typography
+                                                    fontSize="14px"
+                                                    sx={{ fontWeight: 700, color: '#2c3e50' }}>Đang chuyển hàng:</Typography>
+                                                <span className="font-normal text-gray-400">$5.00</span>
                                             </Box>
                                             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                                <span>Giảm giá:</span>
-                                                <span>$0.00</span>
+                                                <Typography
+                                                    fontSize="14px"
+                                                    sx={{ fontWeight: 700, color: '#2c3e50' }}>Giảm giá:</Typography>
+                                                <span className="font-normal text-gray-400">$0.00</span>
                                             </Box>
                                             <Box
                                                 sx={{
@@ -859,9 +878,12 @@ const AdminPosPage = () => {
                                                     borderTop: "1px solid #e0e0e0",
                                                 }}
                                             >
-                                                <strong>Toàn bộ:</strong>
-                                                <strong>
-                                                    $
+                                                <Typography
+                                                    fontSize="14px"
+                                                    sx={{ fontWeight: 700, color: '#2c3e50' }}>Toàn bộ:</Typography>
+
+                                                <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
+                                                    ${" "}
                                                     {(
                                                         selectedProducts.reduce(
                                                             (sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1),
@@ -870,7 +892,7 @@ const AdminPosPage = () => {
                                                         1.08 +
                                                         5
                                                     ).toFixed(2)}
-                                                </strong>
+                                                </Box>
                                             </Box>
                                         </Box>
                                     </>
