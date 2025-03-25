@@ -38,6 +38,8 @@ import {
     IconCalendar,
     IconBuildingStore,
     IconClipboardList,
+    IconBrandProducthunt,
+    IconAlertCircle,
 } from "@tabler/icons-react"
 import { useGetAllUsers } from "@/hooks/user"
 import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
@@ -75,17 +77,20 @@ const AdminPosPage = () => {
         shopProductIds: selectedProducts.map(product => product.id)
     });
     const [selectedUser, setSelectedUser] = useState<any>(null);
-    const handlePopoverOpen = (event: React.MouseEvent<HTMLDivElement>) => {
+    const [hoveredCustomer, setHoveredCustomer] = useState<any>(null);
+
+    const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
         const customer = event.currentTarget.dataset.customer;
         if (customer) {
             setAnchorEl(event.currentTarget);
-            setSelectedCustomer(JSON.parse(customer));
+            setHoveredCustomer(JSON.parse(customer));
         }
     };
 
     const handlePopoverClose = () => {
-        setAnchorEl(null)
-    }
+        setAnchorEl(null);
+        setHoveredCustomer(null);
+    };
 
     const open = Boolean(anchorEl)
     const addProduct = (product: IProduct) => {
@@ -159,7 +164,7 @@ const AdminPosPage = () => {
             address: user.address,
             userId: user.id
         });
-        message.success(`Đã thêm ${user.fullName} thành công`);
+        message.success(`Khách ảo: ${user.fullName} đã được thêm thành công`);
     };
 
     const handleCreateFakeOrder = () => {
@@ -302,7 +307,7 @@ const AdminPosPage = () => {
                                                     }}
                                                     onMouseEnter={(e) => {
                                                         e.currentTarget.dataset.customer = JSON.stringify(shop);
-                                                        handlePopoverOpen(e as any);
+                                                        handlePopoverOpen(e);
                                                     }}
                                                     onMouseLeave={handlePopoverClose}
                                                     onClick={() => handleCustomerSelect(shop)}
@@ -368,9 +373,186 @@ const AdminPosPage = () => {
                                             ))}
                                         </List>
                                     </Box>
+                                    <Popover
+                                        sx={{
+                                            pointerEvents: "none",
+                                            "& .MuiPopover-paper": {
+                                                overflow: "visible",
+                                            },
+                                        }}
+                                        open={open}
+                                        anchorEl={anchorEl}
+                                        anchorOrigin={{
+                                            vertical: "center",
+                                            horizontal: "right",
+                                        }}
+                                        transformOrigin={{
+                                            vertical: "center",
+                                            horizontal: "right",
+                                        }}
+                                        onClose={handlePopoverClose}
+                                        disableRestoreFocus
+                                    >
+                                        {hoveredCustomer && (
+                                            <Box
+                                                sx={{
+                                                    p: 3,
+                                                    maxWidth: 320,
+                                                    bgcolor: "#ffffff",
+                                                    borderRadius: 2,
+                                                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                                                    border: "1px solid #f0f0f0",
+                                                    position: "relative",
+                                                    "&:before": {
+                                                        content: '""',
+                                                        position: "absolute",
+                                                        left: -8,
+                                                        top: "50%",
+                                                        transform: "translateY(-50%)",
+                                                        width: 0,
+                                                        height: 0,
+                                                        borderTop: "8px solid transparent",
+                                                        borderBottom: "8px solid transparent",
+                                                        borderRight: "8px solid #ffffff",
+                                                        zIndex: 2,
+                                                    },
+                                                    "&:after": {
+                                                        content: '""',
+                                                        position: "absolute",
+                                                        left: -9,
+                                                        top: "50%",
+                                                        transform: "translateY(-50%)",
+                                                        width: 0,
+                                                        height: 0,
+                                                        borderTop: "9px solid transparent",
+                                                        borderBottom: "9px solid transparent",
+                                                        borderRight: "9px solid #f0f0f0",
+                                                        zIndex: 1,
+                                                    },
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 2,
+                                                        mb: 2,
+                                                        pb: 2,
+                                                        borderBottom: "1px solid #f5f5f5",
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: "50%",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            fontWeight: 600,
+                                                            fontSize: 18,
+                                                            ...getRandomColor(),
+                                                        }}
+                                                    >
+                                                        {hoveredCustomer?.shopName?.substring(0, 2).toUpperCase()}
+                                                    </Box>
+                                                    <Typography
+                                                        variant="h6"
+                                                        sx={{
+                                                            fontWeight: "bold",
+                                                            color: "#333",
+                                                            fontSize: "1.1rem",
+                                                        }}
+                                                    >
+                                                        {hoveredCustomer.shopName}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                                                    <Typography
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            color: "#555",
+                                                            fontSize: "0.95rem",
+                                                            "&:hover": { color: "#3F6AD8" },
+                                                        }}
+                                                    >
+                                                        <IconMail className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
+                                                        <Box component="span" sx={{ fontWeight: 500 }}>
+                                                            Email:
+                                                        </Box>
+                                                        <Box component="span" sx={{ ml: 1 }}>
+                                                            {hoveredCustomer.email}
+                                                        </Box>
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            color: "#555",
+                                                            fontSize: "0.95rem",
+                                                            "&:hover": { color: "#3F6AD8" },
+                                                        }}
+                                                    >
+                                                        <IconPhone className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
+                                                        <Box component="span" sx={{ fontWeight: 500 }}>
+                                                            Phone:
+                                                        </Box>
+                                                        <Box component="span" sx={{ ml: 1 }}>
+                                                            {hoveredCustomer.phone}
+                                                        </Box>
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems: "flex-start",
+                                                            color: "#555",
+                                                            fontSize: "0.95rem",
+                                                            "&:hover": { color: "#3F6AD8" },
+                                                        }}
+                                                    >
+                                                        <IconMapPin className="w-4 h-4 mr-2" style={{ color: "#3F6AD8", marginTop: "3px" }} />
+                                                        <Box component="span" sx={{ fontWeight: 500 }}>
+                                                            Địa chỉ:
+                                                        </Box>
+                                                        <Box component="span" sx={{ ml: 1 }}>
+                                                            {hoveredCustomer.shopAddress}
+                                                        </Box>
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            color: "#777",
+                                                            fontSize: "0.9rem",
+                                                            mt: 1,
+                                                            pt: 1,
+                                                            borderTop: "1px solid #f5f5f5",
+                                                        }}
+                                                    >
+                                                        <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#FCAF17" }} />
+                                                        <Box component="span" sx={{ fontWeight: 500 }}>
+                                                            Ngày tạo:
+                                                        </Box>
+                                                        <Box component="span" sx={{ ml: 1 }}>
+                                                            {new Date(hoveredCustomer.createdAt).toLocaleDateString("vi-VN", {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            })}
+                                                        </Box>
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        )}
+                                    </Popover>
                                 </Box>
                             ) : (
-                                <Box className="flex items-center justify-center h-[20%] col-span-3">
+                                <Box className="flex items-center justify-center h-[10%]">
                                     <Empty
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                         description={searchShop ? "Không tìm thấy shop phù hợp." : "Chưa có shop nào. Vui lòng nhập tìm kiếm shop."}
@@ -383,7 +565,7 @@ const AdminPosPage = () => {
                             <Box sx={{ mb: 4 }}>
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", backgroundColor: "#ECF2FF", borderRadius: "4px", color: "#5D87FF" }}>
-                                        <IconBuildingStore className="w-4 h-4" />
+                                        <IconBrandProducthunt className="w-4 h-4" />
                                     </Box>
                                     <Typography variant="h6" sx={{ fontWeight: 600, color: '#3F6AD8' }}>
                                         Sản phẩm hiện có ({(productsData?.data?.data as any)?.length})
@@ -415,19 +597,21 @@ const AdminPosPage = () => {
                                                             <strong>Mô tả: </strong>
                                                             {product.description}
                                                         </Box>
-                                                        <Box className={styles.priceInfo}>
-                                                            <span>Giá bán:</span>
-                                                            <span className="!text-green-500">{Number(product.salePrice).toFixed(2)}</span>
-                                                        </Box>
-                                                        <Box className={styles.priceInfo}>
-                                                            <span>Giá nhập:</span>
-                                                            <span className="!text-amber-500">{Number(product.price).toFixed(2)}</span>
-                                                        </Box>
-                                                        <Box className={styles.priceInfo}>
-                                                            <span>Lợi nhuận:</span>
-                                                            <span className="!text-red-500 font-bold">
-                                                                ${(item as any).profit}
-                                                            </span>
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <span>Giá bán:</span>
+                                                                <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <span>Giá nhập:</span>
+                                                                <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <span>Lợi nhuận:</span>
+                                                                <span className="!text-red-500 font-bold">
+                                                                    ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
+                                                                </span>
+                                                            </Box>
                                                         </Box>
                                                         <Box className={styles.addButton} onClick={() => addProduct({ ...product, shopId: item.id })}>
                                                             <Box className={styles.overlay}></Box>
@@ -480,7 +664,14 @@ const AdminPosPage = () => {
                                 <IconCopyCheck className="w-5 h-5" />
                             </IconButton>
                         </Box>
-
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", backgroundColor: "#FDEDE8", borderRadius: "4px", color: "#FB9F87" }}>
+                                <IconAlertCircle className="w-4 h-4" />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#FB9F87' }}>
+                                Vui lòng chọn khách ảo trước khi đặt hàng !
+                            </Typography>
+                        </Box>
                         {/* Valid users render here */}
                         {validUsers && validUsers.data.data.length > 0 && (
                             <Box sx={{ maxHeight: "40%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
@@ -543,9 +734,9 @@ const AdminPosPage = () => {
                         )}
                         {totalSelectedProducts > 0 && (
                             <Box className="my-3 text-center">
-                                <h5>
-                                    Tổng sản phẩm đã chọn: <strong>{totalSelectedProducts}</strong>
-                                </h5>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#3F6AD8' }}>
+                                    Tổng sản phẩm đã chọn ({totalSelectedProducts})
+                                </Typography>
                             </Box>
                         )}
 
@@ -606,11 +797,22 @@ const AdminPosPage = () => {
                                                             <>
                                                                 <Box>{product.description}</Box>
                                                                 <Box>
-                                                                    <span>Giá bán: ${Number(product.salePrice).toFixed(2)}</span>
-                                                                    <span>Giá nhập: ${Number(product.price).toFixed(2)}</span>
-                                                                    <span>
-                                                                        Lợi nhuận: ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
-                                                                    </span>
+                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                            <span>Giá bán:</span>
+                                                                            <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                                                        </Box>
+                                                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                            <span>Giá nhập:</span>
+                                                                            <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                                                        </Box>
+                                                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                            <span>Lợi nhuận:</span>
+                                                                            <span className="!text-red-500 font-bold">
+                                                                                ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
+                                                                            </span>
+                                                                        </Box>
+                                                                    </Box>
                                                                 </Box>
                                                             </>
                                                         }
@@ -673,7 +875,13 @@ const AdminPosPage = () => {
                                         </Box>
                                     </>
                                 ) : (
-                                    <Box>Chưa có sản phẩm nào được chọn</Box>
+                                    <Box className="flex items-center justify-center h-[20%] col-span-3">
+                                        <Empty
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            description={"Chưa có sản phẩm nào được chọn."}
+                                        />
+                                    </Box>
+
                                 )}
                             </Box>
                         </Card>
