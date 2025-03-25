@@ -575,57 +575,66 @@ const AdminPosPage = () => {
                                         Sản phẩm hiện có ({(productsData?.data?.data as any)?.length})
                                     </Typography>
                                 </Box>
-                                <Box className="grid grid-cols-2 gap-4 mb-10 overflow-y-auto md:grid-cols-3">
-                                    {productsData?.data?.data?.map((item) => {
-                                        const product = (item as any).product;
-                                        return (
-                                            <Box
-                                                key={product.id} className={styles.productCard}>
-                                                <Box className={`${styles.card} !rounded-[8px] overflow-hidden `}>
-                                                    <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-                                                        <Box className={styles.imageContainer}>
-                                                            <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
-                                                                Trong kho: {product.stock}
+                                <Box className="grid grid-cols-1 gap-4 mb-10 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
+                                    {productsData?.data?.data?.length === 0 ? (
+                                        <Box className="flex items-center justify-center h-full col-span-3">
+                                            <Empty
+                                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                description={"Shop chưa có sản phẩm."}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        productsData?.data?.data?.map((item) => {
+                                            const product = (item as any).product;
+                                            return (
+                                                <Box
+                                                    key={product.id} className={styles.productCard}>
+                                                    <Box className={`${styles.card} !rounded-[8px] overflow-hidden `}>
+                                                        <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
+                                                            <Box className={styles.imageContainer}>
+                                                                <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
+                                                                    Trong kho: {product.stock}
+                                                                </Box>
+                                                                <Image
+                                                                    src={checkImageUrl(product.imageUrl || "")}
+                                                                    alt={product.name}
+                                                                    className={`${styles.productImage}`}
+                                                                    width={140}
+                                                                    height={140}
+                                                                    draggable={false}
+                                                                />
                                                             </Box>
-                                                            <Image
-                                                                src={checkImageUrl(product.imageUrl || "")}
-                                                                alt={product.name}
-                                                                className={`${styles.productImage}`}
-                                                                width={140}
-                                                                height={140}
-                                                                draggable={false}
-                                                            />
-                                                        </Box>
-                                                        <Box className={styles.productName}>Tên sản phẩm: {product.name}</Box>
-                                                        <Box className={styles.productDescription}>
-                                                            <strong>Mô tả: </strong>
-                                                            {product.description}
-                                                        </Box>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <span>Giá bán:</span>
-                                                                <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                                            <Box className={styles.productName}>Tên sản phẩm: {product.name}</Box>
+                                                            <Box className={styles.productDescription}>
+                                                                <strong>Mô tả: </strong>
+                                                                {product.description}
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <span>Giá nhập:</span>
-                                                                <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                    <span>Giá bán:</span>
+                                                                    <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                    <span>Giá nhập:</span>
+                                                                    <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                    <span>Lợi nhuận:</span>
+                                                                    <span className="!text-red-500 font-bold">
+                                                                        ${(item as any)?.profit}
+                                                                    </span>
+                                                                </Box>
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <span>Lợi nhuận:</span>
-                                                                <span className="!text-red-500 font-bold">
-                                                                    ${(item as any)?.profit}
-                                                                </span>
+                                                            <Box className={styles.addButton} onClick={() => addProduct({ ...product, shopId: item.id })}>
+                                                                <Box className={styles.overlay}></Box>
+                                                                <IconPlus className={styles.plusIcon} />
                                                             </Box>
-                                                        </Box>
-                                                        <Box className={styles.addButton} onClick={() => addProduct({ ...product, shopId: item.id })}>
-                                                            <Box className={styles.overlay}></Box>
-                                                            <IconPlus className={styles.plusIcon} />
                                                         </Box>
                                                     </Box>
                                                 </Box>
-                                            </Box>
-                                        )
-                                    })}
+                                            )
+                                        })
+                                    )}
                                 </Box>
                             </Box>
                         )}
@@ -670,14 +679,14 @@ const AdminPosPage = () => {
                                 <IconCopyCheck className="w-5 h-5" />
                             </IconButton>
                         </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                        {validUsers && validUsers.data.data.length > 0 && <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", backgroundColor: "#FDEDE8", borderRadius: "4px", color: "#FB9F87" }}>
                                 <IconAlertCircle className="w-4 h-4" />
                             </Box>
                             <Typography variant="h6" sx={{ fontWeight: 600, color: '#FB9F87' }}>
                                 Vui lòng chọn khách ảo trước khi đặt hàng !
                             </Typography>
-                        </Box>
+                        </Box>}
                         {/* Valid users render here */}
                         {validUsers && validUsers.data.data.length > 0 && (
                             <Box sx={{ maxHeight: "40%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>

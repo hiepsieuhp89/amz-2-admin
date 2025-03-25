@@ -6,7 +6,14 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  CircularProgress
 } from "@mui/material"
 import {
   IconEye,
@@ -17,6 +24,10 @@ import { message } from "antd"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useState } from "react"
+import { Lightbox } from "yet-another-react-lightbox"
+import "yet-another-react-lightbox/styles.css"
+import Zoom from "yet-another-react-lightbox/plugins/zoom"
+import Download from "yet-another-react-lightbox/plugins/download"
 
 import DataTable from "@/components/DataTable"
 import { useDeleteProduct, useGetAllProducts } from "@/hooks/product"
@@ -28,6 +39,8 @@ function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [currentImage, setCurrentImage] = useState("")
 
   const { data: productData, isLoading, error } = useGetAllProducts({
     page,
@@ -72,6 +85,11 @@ function ProductsPage() {
     setPage(1)
   }
 
+  const handleImageClick = (imageUrl: string) => {
+    setCurrentImage(imageUrl)
+    setLightboxOpen(true)
+  }
+
   const filteredProducts = productData?.data?.data || []
   const pagination = productData?.data?.meta || {
     page: 1,
@@ -92,9 +110,29 @@ function ProductsPage() {
     { key: 'actions', label: 'Thao tác' },
   ];
 
-  const renderRow = (product: any) => (
-    <TableRow key={product.id}>
-      <TableCell>{product.name}</TableCell>
+  const renderRow = (product: any, index: number) => (
+    <TableRow
+      key={product.id}
+      sx={{
+        "&:first-child td, &:first-child th": { borderTop: "1px solid #E0E0E0" },
+        "& td": { borderBottom: "1px solid #E0E0E0" },
+        backgroundColor: index % 2 !== 1 ? '#F5F5F5' : '#FFFFFF'
+      }}
+    >
+      <TableCell sx={{ maxWidth: '200px', wordWrap: 'break-word' }}>
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
+          {product.name}
+        </Typography>
+      </TableCell>
       <TableCell>{product.price}</TableCell>
       <TableCell>{product.salePrice || '-'}</TableCell>
       <TableCell>
@@ -103,7 +141,17 @@ function ProductsPage() {
             component="img"
             src={product.imageUrl}
             alt={product.name}
-            sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+            sx={{ 
+              width: 50, 
+              height: 50, 
+              objectFit: 'cover', 
+              borderRadius: '4px',
+              cursor: 'pointer',
+              '&:hover': {
+                opacity: 0.8
+              }
+            }}
+            onClick={() => handleImageClick(product.imageUrl)}
           />
         ) : (
           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
@@ -112,7 +160,7 @@ function ProductsPage() {
       <TableCell>{product.stock}</TableCell>
       <TableCell>{product.category?.name || '-'}</TableCell>
       <TableCell>
-        <Box className="flex items-center justify-center gap-4">
+        <Box className="flex items-center gap-2">
           <IconButton
             onClick={() => handleView(product.id)}
             size="medium"
@@ -144,43 +192,89 @@ function ProductsPage() {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={filteredProducts}
-      isLoading={isLoading}
-      pagination={pagination}
-      onPageChange={setPage}
-      onRowsPerPageChange={(newRowsPerPage) => {
-        setRowsPerPage(newRowsPerPage);
-        setPage(1);
-      }}
-      renderRow={renderRow}
-      emptyMessage="Không tìm thấy sản phẩm nào"
-      createNewButton={{
-        label: "Tạo sản phẩm mới",
-        onClick: handleCreateNew
-      }}
-      searchComponent={
-        <div className="flex items-center gap-4">
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm sản phẩm..."
+    <>
+      <DataTable
+        columns={columns}
+        data={filteredProducts}
+        isLoading={isLoading}
+        pagination={pagination}
+        onPageChange={setPage}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage);
+          setPage(1);
+        }}
+        renderRow={renderRow}
+        emptyMessage="Không tìm thấy sản phẩm nào"
+        createNewButton={{
+          label: "Tạo sản phẩm mới",
+          onClick: handleCreateNew
+        }}
+        searchComponent={
+          <div className="flex items-center gap-4">
+            <TextField
+              size="small"
+              placeholder="Tìm kiếm sản phẩm..."
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 rounded shadow-sm"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IconSearch size={20} className="text-main-golden-orange" />
+                  </InputAdornment>
+                ),
+                className: "text-white rounded-lg hover:shadow-md transition-shadow",
+              }}
+            />
+          </div>
+        }
+      />
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">
+          Xác nhận xóa sản phẩm
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button
             variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
-          />
-        </div>
-      }
-    />
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            className="text-white transition-colors !bg-red-500"
+            disabled={deleteProductMutation.isPending}
+          >
+            {deleteProductMutation.isPending ?
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xóa...
+              </div> : "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={[{ src: currentImage }]}
+        plugins={[Zoom, Download]}
+      />
+    </>
   )
 }
 

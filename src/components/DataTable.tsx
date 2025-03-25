@@ -30,7 +30,7 @@ interface DataTableProps {
   };
   onPageChange: (newPage: number) => void;
   onRowsPerPageChange: (newRowsPerPage: number) => void;
-  renderRow: (row: any) => ReactNode;
+  renderRow: (row: any, index: number) => ReactNode;
   emptyMessage: string;
   createNewButton?: {
     label: string;
@@ -52,7 +52,7 @@ export default function DataTable({
   searchComponent,
 }: DataTableProps) {
   return (
-    <div className="p-6 space-y-6">
+    <div className="w-[100vw] p-6 space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         {searchComponent}
         {createNewButton && (
@@ -88,11 +88,25 @@ export default function DataTable({
           )}
         </Box>
       ) : (
-        <>
-          <Box sx={{ width: '100%', overflowX: 'auto' }}>
-            <Paper sx={{ width: 'max-content', minWidth: '100%', overflow: 'hidden', border: '1px solid #E0E0E0' }}>
-              <TableContainer sx={{ maxHeight: 440 }}>
-                <Table stickyHeader sx={{ minWidth: 650 }}>
+        <Box>
+          <Box sx={{ 
+             overflowX: 'auto',
+          }}>
+            <Paper sx={{ 
+              width: 'max-content', 
+              minWidth: '100%', 
+              overflow: 'hidden', 
+              border: '1px solid #E0E0E0',
+              borderRadius: 0
+            }}>
+              <TableContainer sx={{ 
+                maxHeight: 440, 
+                overflowX: 'auto',
+                width: '100%'
+              }}>
+                <Table stickyHeader sx={{ 
+                  minWidth: 650,
+                }}>
                   <TableHead>
                     <TableRow>
                       {columns.map((column) => (
@@ -101,7 +115,7 @@ export default function DataTable({
                           sx={{ 
                             fontSize: "14px", 
                             fontWeight: 600,
-                            width: column.width
+                            width: column.width,
                           }}
                         >
                           {column.label}
@@ -110,7 +124,7 @@ export default function DataTable({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.map((row) => renderRow(row))}
+                    {data.map((row, index) => renderRow(row, index))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -136,7 +150,7 @@ export default function DataTable({
               }}
             />
           </Paper>
-        </>
+        </Box>
       )}
     </div>
   );

@@ -4,6 +4,13 @@ import DataTable from "@/components/DataTable"
 import { useDeleteCategory, useGetAllCategories } from "@/hooks/category"
 import {
   Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   InputAdornment,
   TableCell,
@@ -27,11 +34,10 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
-
-  const { data: categoriesData, isLoading, error } = useGetAllCategories({ 
-    page, 
+  const { data: categoriesData, isLoading, error } = useGetAllCategories({
+    page,
     take: rowsPerPage,
-    order: "DESC" 
+    order: "DESC"
   })
   const deleteCategory = useDeleteCategory()
 
@@ -81,12 +87,13 @@ export default function CategoriesPage() {
     { key: 'actions', label: 'Thao tác' },
   ]
 
-  const renderRow = (category: any) => (
+  const renderRow = (category: any, index: number) => (
     <TableRow
       key={category.id}
       sx={{
         "&:first-child td, &:first-child th": { borderTop: "1px solid #E0E0E0" },
         "& td": { borderBottom: "1px solid #E0E0E0" },
+        backgroundColor: index % 2 !== 1 ? '#F5F5F5' : '#FFFFFF'
       }}
     >
       <TableCell>{category.name}</TableCell>
@@ -123,42 +130,78 @@ export default function CategoriesPage() {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={filteredCategories}
-      isLoading={isLoading}
-      pagination={pagination}
-      onPageChange={setPage}
-      onRowsPerPageChange={(newRowsPerPage) => {
-        setRowsPerPage(newRowsPerPage)
-        setPage(1)
-      }}
-      renderRow={renderRow}
-      emptyMessage="Không tìm thấy danh mục nào"
-      createNewButton={{
-        label: "Tạo danh mục mới",
-        onClick: handleCreateNew
-      }}
-      searchComponent={
-        <div className="flex items-center gap-4">
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm danh mục..."
+    <>
+      <DataTable
+        columns={columns}
+        data={filteredCategories}
+        isLoading={isLoading}
+        pagination={pagination}
+        onPageChange={setPage}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage)
+          setPage(1)
+        }}
+        renderRow={(row: any, index: number) => renderRow(row, index)}
+        emptyMessage="Không tìm thấy danh mục nào"
+        createNewButton={{
+          label: "Tạo danh mục mới",
+          onClick: handleCreateNew
+        }}
+        searchComponent={
+          <div className="flex items-center gap-4">
+            <TextField
+              size="small"
+              placeholder="Tìm kiếm danh mục..."
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 rounded shadow-sm"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IconSearch size={20} className="text-main-golden-orange" />
+                  </InputAdornment>
+                ),
+                className: "text-white rounded-lg hover:shadow-md transition-shadow",
+              }}
+            />
+          </div>
+        }
+      />
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button
             variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
-          />
-        </div>
-      }
-    />
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            className="text-white transition-colors !bg-red-500"
+            disabled={deleteCategory.isPending}
+          >
+            {deleteCategory.isPending ?
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xóa...
+              </div> : "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 } 

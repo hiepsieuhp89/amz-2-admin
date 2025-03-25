@@ -82,3 +82,18 @@ input::placeholder,
   padding-right: 5px;
   border-radius: 4px;
 }
+
+/* Ghi đè padding-right cho header */
+.MuiPaper-root.MuiAppBar-root {
+  padding-right: 0 !important;
+}
+
+/* Ghi đè padding-right cho toolbar */
+.MuiToolbar-root {
+  padding-right: 0 !important;
+}
+
+/* Ghi đè padding-right cho các thành phần con */
+.MuiToolbar-gutters {
+  padding-right: 0 !important;
+}

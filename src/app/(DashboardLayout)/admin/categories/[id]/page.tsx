@@ -205,13 +205,13 @@ function CategoryDetailPage() {
                 <Select
                   labelId="parentId-label"
                   name="parentId"
-                  value={formData.parentId}
+                  value={formData.parentId || ""}
                   label="Danh mục cha"
                   onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="">Không có</MenuItem>
                   {availableParentCategories.map((category) => (
-                    <MenuItem key={category.id} value={category.id}>
+                    <MenuItem key={category.id} value={category.id || ""}>
                       {category.name}
                     </MenuItem>
                   ))}

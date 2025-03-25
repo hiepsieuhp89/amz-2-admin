@@ -8,7 +8,14 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  CircularProgress
 } from "@mui/material"
 import { IconCopy, IconEye, IconSearch, IconTrash } from "@tabler/icons-react"
 import { message } from "antd"
@@ -98,12 +105,13 @@ function UsersPage() {
     { key: 'actions', label: 'Thao tác' },
   ];
 
-  const renderRow = (user: any) => (
+  const renderRow = (user: any, index: number) => (
     <TableRow
       key={user.id}
       sx={{
         "&:first-child td, &:first-child th": { borderTop: "1px solid #E0E0E0" },
         "& td": { borderBottom: "1px solid #E0E0E0" },
+        backgroundColor: index % 2 !== 1 ? '#F5F5F5' : '#FFFFFF'
       }}
     >
       <TableCell>{(page - 1) * rowsPerPage + filteredUsers.indexOf(user) + 1}</TableCell>
@@ -112,9 +120,12 @@ function UsersPage() {
           {user.email}
           <IconButton
             size="small"
-            onClick={() => navigator.clipboard.writeText(user.email || "")}
+            onClick={() => {
+              navigator.clipboard.writeText(user.email || "");
+              message.success(`Đã sao chép email: ${user.email}`);
+            }}
           >
-            <IconCopy size={16} />
+            <IconCopy size={16} className="text-blue-500"/>
           </IconButton>
         </Box>
       </TableCell>
@@ -125,9 +136,12 @@ function UsersPage() {
           {user.phone}
           <IconButton
             size="small"
-            onClick={() => navigator.clipboard.writeText(user.phone || "")}
+            onClick={() => {
+              navigator.clipboard.writeText(user.phone || "");
+              message.success(`Đã sao chép số điện thoại: ${user.phone}`);
+            }}
           >
-            <IconCopy size={16} />
+            <IconCopy size={16} className="text-blue-500"/>
           </IconButton>
         </Box>
       </TableCell>
@@ -136,9 +150,12 @@ function UsersPage() {
           {user.referralCode}
           <IconButton
             size="small"
-            onClick={() => navigator.clipboard.writeText(user.referralCode || "")}
+            onClick={() => {
+              navigator.clipboard.writeText(user.referralCode || "");
+              message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
+            }}
           >
-            <IconCopy size={16} />
+            <IconCopy size={16} className="text-blue-500"/>
           </IconButton>
         </Box>
       </TableCell>
@@ -200,43 +217,84 @@ function UsersPage() {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={filteredUsers}
-      isLoading={isLoading}
-      pagination={pagination}
-      onPageChange={setPage}
-      onRowsPerPageChange={(newRowsPerPage) => {
-        setRowsPerPage(newRowsPerPage);
-        setPage(1);
-      }}
-      renderRow={renderRow}
-      emptyMessage="Không tìm thấy người dùng nào"
-      createNewButton={{
-        label: "Tạo người dùng mới",
-        onClick: handleCreateNew
-      }}
-      searchComponent={
-        <div className="flex items-center gap-4">
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm người dùng..."
+    <>
+      <Box sx={{ overflowX: 'auto', width: '100%' }}>
+        <DataTable
+          columns={columns}
+          data={filteredUsers}
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage);
+            setPage(1);
+          }}
+          renderRow={renderRow}
+          emptyMessage="Không tìm thấy người dùng nào"
+          createNewButton={{
+            label: "Tạo người dùng mới",
+            onClick: handleCreateNew
+          }}
+          searchComponent={
+            <div className="flex items-center gap-4">
+              <TextField
+                size="small"
+                placeholder="Tìm kiếm người dùng..."
+                variant="outlined"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 rounded shadow-sm"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconSearch size={20} className="text-main-golden-orange" />
+                    </InputAdornment>
+                  ),
+                  className: "text-white rounded-lg hover:shadow-md transition-shadow",
+                }}
+              />
+            </div>
+          }
+        />
+      </Box>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">
+          Xác nhận xóa người dùng
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button
             variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
-          />
-        </div>
-      }
-    />
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            className="text-white transition-colors !bg-red-500"
+            disabled={deleteUserMutation.isPending}
+          >
+            {deleteUserMutation.isPending ?
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xóa...
+              </div> : "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 
