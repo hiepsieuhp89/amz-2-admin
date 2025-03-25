@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Card, message, Empty } from "antd"
+import { Card, message, Empty, Spin } from "antd"
 import { useGetAllShopProducts } from "@/hooks/shop-products"
 import type { IProduct } from "@/interface/response/product"
 import Image from "next/image"
@@ -36,13 +36,15 @@ import {
     IconPhone,
     IconMapPin,
     IconCalendar,
+    IconBuildingStore,
+    IconClipboardList,
 } from "@tabler/icons-react"
 import { useGetAllUsers } from "@/hooks/user"
 import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
 
 const AdminPosPage = () => {
 
-    const [selectedProducts, setSelectedProducts] = useState<IProduct[]>([])
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([])
     const [keyword, setKeyword] = useState("")
     const [minPrice, setMinPrice] = useState<number | undefined>()
     const [maxPrice, setMaxPrice] = useState<number | undefined>()
@@ -51,7 +53,7 @@ const AdminPosPage = () => {
     const [searchShop, setSearchShop] = useState("")
     const [selectedShopId, setSelectedShopId] = useState<string>("")
     // Hook
-    const { data: shopsData } = useGetAllUsers({
+    const { data: shopsData, isLoading: isLoadingShops } = useGetAllUsers({
         role: "shop",
         search: searchShop,
     })
@@ -62,7 +64,6 @@ const AdminPosPage = () => {
         shopId: selectedShopId,
         page: 1,
     })
-
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
     const [customerColors] = useState(new Map())
@@ -74,7 +75,6 @@ const AdminPosPage = () => {
         shopProductIds: selectedProducts.map(product => product.id)
     });
     const [selectedUser, setSelectedUser] = useState<any>(null);
-    console.log(selectedUser)
     const handlePopoverOpen = (event: React.MouseEvent<HTMLDivElement>) => {
         const customer = event.currentTarget.dataset.customer;
         if (customer) {
@@ -90,12 +90,10 @@ const AdminPosPage = () => {
     const open = Boolean(anchorEl)
     const addProduct = (product: IProduct) => {
         const productExists = selectedProducts.some((item) => item.id === product.id)
-
         if (productExists) {
             message.warning("Sản phẩm đã tồn tại trong danh sách")
             return
         }
-
         setSelectedProducts([...selectedProducts, product])
         setTotalSelectedProducts(totalSelectedProducts + 1)
     }
@@ -182,7 +180,7 @@ const AdminPosPage = () => {
 
         const payload = {
             items: selectedProducts.map(product => ({
-                shopProductId: product.id,
+                shopProductId: product.shopId,
                 quantity: quantities[product.id] || 1
             })),
             email: selectedUser.email,
@@ -210,6 +208,7 @@ const AdminPosPage = () => {
         setShowShops(true)
     }
 
+    console.log(shopsData)
     return (
         <Box component="section" className={styles.storehouse}>
             <Box className="container px-4 py-4 mx-auto">
@@ -270,105 +269,132 @@ const AdminPosPage = () => {
                             </FormControl>
                         </Box>
 
-                        {showShops && shopsData?.data?.data && shopsData.data.data.length > 0 && (
-                            <Box sx={{ maxHeight: "40%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
-                                <List>
-                                    {shopsData.data.data.map((shop, index) => (
-                                        <ListItem
-                                            key={shop.id}
-                                            sx={{
-                                                cursor: "pointer",
-                                                backgroundColor: index % 2 !== 0 ? "#f5f5f5" : "inherit",
-                                                "&:hover": { backgroundColor: "#e0e0e0" },
-                                                borderBottom: "1px solid #e0e0e0",
-                                                padding: "8px 16px",
-                                                "&:last-child": {
-                                                    borderBottom: "none",
-                                                },
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.dataset.customer = JSON.stringify(shop);
-                                                handlePopoverOpen(e as any);
-                                            }}
-                                            onMouseLeave={handlePopoverClose}
-                                            onClick={() => handleCustomerSelect(shop)}
-                                        >
-                                            <Box
-                                                sx={{
-                                                    width: 40,
-                                                    height: 40,
-                                                    borderRadius: "50%",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontWeight: 500,
-                                                    fontSize: 16,
-                                                    mr: 2,
-                                                    ...getCustomerColor(shop),
-                                                }}
-                                            >
-                                                {shop.shopName?.substring(0, 2).toUpperCase()}
-                                            </Box>
-                                            <ListItemText
-                                                primary={
-                                                    <Typography
-                                                        fontWeight={500}
-                                                        sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
-                                                    >
-                                                        {shop.shopName}
-                                                        <Box
-                                                            component="div"
-                                                            sx={{
-                                                                height: 20,
-                                                                width: 20,
-                                                                position: "relative",
-                                                                display: "inline-block",
-                                                                ml: 1,
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                draggable={false}
-                                                                quality={100}
-                                                                height={100}
-                                                                width={100}
-                                                                className="object-cover"
-                                                                src={"/images/logos/tick-icon.png"}
-                                                                alt="tick icon"
-                                                            />
-                                                        </Box>
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    <Typography
-                                                        sx={{ display: "flex", alignItems: "center" }}
-                                                        variant="body2"
-                                                        color="text.secondary"
-                                                    >
-                                                        <IconMail className="w-3 h-3 mr-1" /> {shop.email}
-                                                        <IconPhone className="w-3 h-3 ml-1 mr-1" /> {shop.phone}
-                                                    </Typography>
-                                                }
-                                                sx={{ my: 0 }}
-                                            />
-                                        </ListItem>
-                                    ))}
-                                </List>
+                        {/* Loading & Data Section */}
+                        {(isLoadingShops && searchShop) ? (
+                            <Box className="flex items-center justify-center h-[20%] col-span-3">
+                                <Spin size="default" />
                             </Box>
+                        ) : (
+                            shopsData?.data?.data && shopsData.data.data.length > 0 ? (
+                                <Box sx={{ mb: 4 }}>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", backgroundColor: "#ECF2FF", borderRadius: "4px", color: "#5D87FF" }}>
+                                            <IconBuildingStore className="w-4 h-4" />
+                                        </Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#3F6AD8' }}>
+                                            Các Shop hiện có ({shopsData.data.data.length})
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ maxHeight: "60vh", overflow: "auto", border: "1px solid #e0e0e0", borderRadius: "4px" }}>
+                                        <List>
+                                            {shopsData.data.data.map((shop, index) => (
+                                                <ListItem
+                                                    key={shop.id}
+                                                    sx={{
+                                                        cursor: "pointer",
+                                                        backgroundColor: index % 2 !== 0 ? "#f5f5f5" : "inherit",
+                                                        "&:hover": { backgroundColor: "#e0e0e0" },
+                                                        borderBottom: "1px solid #e0e0e0",
+                                                        padding: "8px 16px",
+                                                        "&:last-child": {
+                                                            borderBottom: "none",
+                                                        },
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.dataset.customer = JSON.stringify(shop);
+                                                        handlePopoverOpen(e as any);
+                                                    }}
+                                                    onMouseLeave={handlePopoverClose}
+                                                    onClick={() => handleCustomerSelect(shop)}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 40,
+                                                            height: 40,
+                                                            borderRadius: "50%",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            fontWeight: 500,
+                                                            fontSize: 16,
+                                                            mr: 2,
+                                                            ...getCustomerColor(shop),
+                                                        }}
+                                                    >
+                                                        {shop.shopName?.substring(0, 2).toUpperCase()}
+                                                    </Box>
+                                                    <ListItemText
+                                                        primary={
+                                                            <Typography
+                                                                fontWeight={500}
+                                                                sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
+                                                            >
+                                                                {shop.shopName}
+                                                                <Box
+                                                                    component="div"
+                                                                    sx={{
+                                                                        height: 20,
+                                                                        width: 20,
+                                                                        position: "relative",
+                                                                        display: "inline-block",
+                                                                        ml: 1,
+                                                                    }}
+                                                                >
+                                                                    <Image
+                                                                        draggable={false}
+                                                                        quality={100}
+                                                                        height={100}
+                                                                        width={100}
+                                                                        className="object-cover"
+                                                                        src={"/images/logos/tick-icon.png"}
+                                                                        alt="tick icon"
+                                                                    />
+                                                                </Box>
+                                                            </Typography>
+                                                        }
+                                                        secondary={
+                                                            <Typography
+                                                                sx={{ display: "flex", alignItems: "center" }}
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                            >
+                                                                <IconMail className="w-3 h-3 mr-1" /> {shop.email}
+                                                                <IconPhone className="w-3 h-3 ml-1 mr-1" /> {shop.phone}
+                                                            </Typography>
+                                                        }
+                                                        sx={{ my: 0 }}
+                                                    />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                <Box className="flex items-center justify-center h-[20%] col-span-3">
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description={searchShop ? "Không tìm thấy shop phù hợp." : "Chưa có shop nào. Vui lòng nhập tìm kiếm shop."}
+                                    />
+                                </Box>
+                            )
                         )}
 
-                       
-
                         {showProducts && (
-                            <Box className="grid flex-1 h-full grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3">
-                                {isLoading ? (
-                                    <Box className="flex items-center justify-center h-full col-span-2">
-                                        <CircularProgress size={24} />
+                            <Box sx={{ mb: 4 }}>
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", backgroundColor: "#ECF2FF", borderRadius: "4px", color: "#5D87FF" }}>
+                                        <IconBuildingStore className="w-4 h-4" />
                                     </Box>
-                                ) : (productsData?.data?.data as any)?.length > 0 ? (
-                                    productsData?.data?.data?.map((item) => {
+                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#3F6AD8' }}>
+                                        Sản phẩm hiện có ({(productsData?.data?.data as any)?.length})
+                                    </Typography>
+                                </Box>
+                                <Box className="grid grid-cols-2 gap-4 mb-10 overflow-y-auto md:grid-cols-3">
+                                    {productsData?.data?.data?.map((item) => {
                                         const product = (item as any).product;
                                         return (
-                                            <Box key={product.id} className={styles.productCard}>
+                                            <Box
+                                                key={product.id} className={styles.productCard}>
                                                 <Box className={`${styles.card} !rounded-[8px] overflow-hidden `}>
                                                     <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
                                                         <Box className={styles.imageContainer}>
@@ -403,7 +429,7 @@ const AdminPosPage = () => {
                                                                 ${(item as any).profit}
                                                             </span>
                                                         </Box>
-                                                        <Box className={styles.addButton} onClick={() => addProduct(product)}>
+                                                        <Box className={styles.addButton} onClick={() => addProduct({ ...product, shopId: item.id })}>
                                                             <Box className={styles.overlay}></Box>
                                                             <IconPlus className={styles.plusIcon} />
                                                         </Box>
@@ -411,15 +437,8 @@ const AdminPosPage = () => {
                                                 </Box>
                                             </Box>
                                         )
-                                    })
-                                ) : (
-                                    <Box className="flex items-center justify-center h-full col-span-3">
-                                        <Empty
-                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                            description="Chưa có sản phẩm nào. Vui lòng tìm kiếm shop"
-                                        />
-                                    </Box>
-                                )}
+                                    })}
+                                </Box>
                             </Box>
                         )}
 
@@ -463,7 +482,7 @@ const AdminPosPage = () => {
                         </Box>
 
                         {/* Valid users render here */}
- {validUsers && validUsers.data.data.length > 0 && (
+                        {validUsers && validUsers.data.data.length > 0 && (
                             <Box sx={{ maxHeight: "40%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
                                 <List>
                                     {validUsers.data.data.map((user, index) => (
@@ -685,5 +704,4 @@ const AdminPosPage = () => {
         </Box>
     )
 }
-
 export default AdminPosPage
