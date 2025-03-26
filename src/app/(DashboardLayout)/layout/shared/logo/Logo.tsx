@@ -5,7 +5,7 @@ const Logo = () => {
   return (
     <Link
       href="/"
-      className="relative block w-full pt-4 h-14 bg-white"
+      className="relative block w-full h-16 pt-6"
     >
       <Image
         quality={100}

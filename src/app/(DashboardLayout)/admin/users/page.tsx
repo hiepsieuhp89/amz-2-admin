@@ -48,15 +48,6 @@ function UsersPage() {
   }
   const deleteUserMutation = useDeleteUser()
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage + 1)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(1)
-  }
-
   const handleCreateNew = () => {
     router.push("/admin/users/create-new")
   }

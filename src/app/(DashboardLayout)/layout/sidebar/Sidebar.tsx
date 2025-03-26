@@ -55,10 +55,10 @@ const Sidebar = ({
               height: "100%",
             }}
           >
-            <Box px={0} className="!w-full bg-red-500 flex justify-center">
+            <Box px={0} className="!w-full flex justify-center">
               <Logo />
             </Box>
-            <Box>
+            <Box >
               <SidebarItems />
             </Box>
           </Box>
@@ -77,10 +77,11 @@ const Sidebar = ({
         sx: {
           ...sidebarStyle,
           boxShadow: (theme) => theme.shadows[8],
+          backgroundColor: "#131921",
         }
       }}
     >
-      <Box px={2}>
+      <Box px={2} >
         <Logo />
       </Box>
       <SidebarItems />

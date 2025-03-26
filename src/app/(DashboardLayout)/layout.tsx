@@ -3,11 +3,13 @@ import { styled, Container, Box } from '@mui/material';
 import React, { useState } from 'react';
 import Header from '@/app/(DashboardLayout)/layout/header/Header';
 import Sidebar from '@/app/(DashboardLayout)/layout/sidebar/Sidebar';
+import { inter } from '@/fonts';
 
 const MainWrapper = styled('div')(() => ({
   display: 'flex',
   minHeight: '100vh',
   width: '100%',
+  fontFamily: inter.style.fontFamily,
 }));
 
 const PageWrapper = styled('div')(() => ({

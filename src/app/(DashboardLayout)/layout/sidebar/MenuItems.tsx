@@ -9,6 +9,7 @@ import {
   IconShoppingCart,
   IconLayoutGridAdd,
   IconPrinter,
+  IconLayoutDashboard,
 } from "@tabler/icons-react"
 
 const generateUniqueId = (() => {
@@ -27,6 +28,12 @@ const Menuitems = [
   {
     navlabel: true,
     subheader: "Menu",
+  },
+  {
+    id: generateUniqueId(),
+    title: "Bảng điều khiển",
+    icon: IconLayoutDashboard,
+    href: "/",
   },
   {
     id: generateUniqueId(),

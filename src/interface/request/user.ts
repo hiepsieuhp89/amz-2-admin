@@ -5,15 +5,6 @@ export enum UserStatus {
     PENDING = "pending",
 }
 
-export interface IAddress {
-    street?: string
-    city?: string
-    state?: string
-    postalCode?: string
-    country?: string
-    isDefault?: boolean
-}
-
 export interface ICreateUser {
     email: string
     username: string
@@ -22,8 +13,18 @@ export interface ICreateUser {
     phone?: string
     role?: string
     status?: UserStatus
-    balance?: number
-    addresses?: IAddress[]
+    balance?: string
+    fedexBalance?: string
+    bankName?: string | null
+    bankAccountNumber?: string | null
+    bankAccountName?: string | null
+    bankBranch?: string | null
+    bankNumber?: string | null
+    bankCode?: string | null
+    address?: string | null
+    city?: string
+    country?: string
+    ward?: string
     dateOfBirth?: string
     gender?: "male" | "female" | "other"
     isActive?: boolean
@@ -35,9 +36,17 @@ export interface ICreateUser {
     sellerPackageExpiry?: string | null
     spreadPackageExpiry?: string | null
     invitationCode?: string
-    referralCode?: string
+    referralCode?: string | null
     shopName?: string
-    shopAddress?: string    
+    shopAddress?: string
+    countryId?: string | null
+    stateId?: string | null
+    cityId?: string | null
+    districtId?: string | null
+    postalCodeId?: string | null
+    stars?: number
+    reputationPoints?: number
+    view?: number
 }
 
 export interface IUpdateUser {
@@ -48,20 +57,21 @@ export interface IUpdateUser {
     phone?: string
     role?: string
     status?: UserStatus
-    balance?: number
-    fedexBalance?: number
-    bankName?: string
-    bankAccountNumber?: string
-    bankAccountName?: string
-    bankBranch?: string
-    bankNumber?: string
-    bankCode?: string
-    address?: string
+    balance?: string
+    fedexBalance?: string
+    bankName?: string | null
+    bankAccountNumber?: string | null
+    bankAccountName?: string | null
+    bankBranch?: string | null
+    bankNumber?: string | null
+    bankCode?: string | null
+    address?: string | null
     city?: string
     district?: string
     ward?: string
+    country?: string
     stars?: number
-    addresses?: IAddress[]
+    reputationPoints?: number
     dateOfBirth?: string
     gender?: "male" | "female" | "other"
     isEmailVerified?: boolean
@@ -70,11 +80,19 @@ export interface IUpdateUser {
     metadata?: Record<string, any>
     shopName?: string
     shopAddress?: string
-    sellerPackageExpiry?: string
-    spreadPackageExpiry?: string
+    sellerPackageExpiry?: string | null
+    spreadPackageExpiry?: string | null
     invitationCode?: string
-    referralCode?: string
+    referralCode?: string | null
     sellerPackageId?: string
     spreadPackageId?: string
+    view?: number
+    sellerPackage?: any
+    spreadPackage?: any
+    countryId?: string | null
+    stateId?: string | null
+    cityId?: string | null
+    districtId?: string | null
+    postalCodeId?: string | null
 }
 

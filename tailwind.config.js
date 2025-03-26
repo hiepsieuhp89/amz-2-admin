@@ -21,7 +21,7 @@ module.exports = {
         'main-dark-blue': '#131921',
         'main-charcoal-blue': '#232F3E',
         // Màu xám, dành cho background và disabled icon
-        'main-gunmetal-blue': '#252C35',
+        'main-gunmetal-blue': '#2c3e50',
         // Màu cam logo Amazon
         'main-golden-orange': '#FCAF17',
 

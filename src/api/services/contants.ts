@@ -87,3 +87,18 @@ export const ConfigShopProductEndPoint = {
   UPDATE: (id: string) => `/admin/shop-products/${id}`,
   DELETE: (id: string) => `/admin/shop-products/${id}`,
 };
+
+export const ConfigCountryEndPoint = {
+  BASE: "/admin/countries",
+  GET_BY_ID: (id: string) => `/admin/countries/${id}`
+}
+
+export const ConfigStateEndPoint = {
+  BASE: "/admin/states",
+  GET_BY_ID: (id: string) => `/admin/states/${id}`
+}
+
+export const ConfigCityEndPoint = {
+  BASE: "/admin/cities",
+  GET_BY_ID: (id: string) => `/admin/cities/${id}`
+}
