@@ -62,8 +62,8 @@ const HomePage = () => {
       {/* SMTP Configuration Alert */}
       <Box className="mb-6">
         <Box className="flex items-center p-4 text-blue-800 bg-blue-100 rounded-md">
-          <Typography>Vui lòng Định cấu hình Cài đặt SMTP để hoạt động tất cả chức năng gửi email,</Typography>
-          <Typography component="a" href="#" className="ml-2 font-semibold text-blue-800 hover:underline">
+          <Typography>Vui lòng định cấu hình. Cài đặt SMTP để hoạt động tất cả chức năng gửi email.{" "}</Typography>
+          <Typography component="a" href="#" className="pl-1 font-semibold text-blue-800 hover:underline">
             Định cấu hình ngay
           </Typography>
         </Box>
@@ -73,7 +73,7 @@ const HomePage = () => {
         {/* First Row - Left Column */}
         <Box className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {/* Total Customer */}
-          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-lg shadow-sm">
+          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-[4px] !important shadow-sm">
             <Box className="flex justify-between">
               <Box>
                 <Typography variant="h4" className="mb-1 text-3xl font-semibold text-gray-800">
@@ -95,7 +95,7 @@ const HomePage = () => {
           </Box>
 
           {/* Total Products */}
-          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-lg shadow-sm">
+          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-[4px] !important shadow-sm">
             <Box className="flex justify-between">
               <Box>
                 <Typography variant="h4" className="mb-1 text-3xl font-semibold text-gray-800">
@@ -128,7 +128,7 @@ const HomePage = () => {
           </Box>
 
           {/* Total Category */}
-          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-lg shadow-sm">
+          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-[4px] !important shadow-sm">
             <Box className="flex justify-between">
               <Box>
                 <Typography variant="h4" className="mb-1 text-3xl font-semibold text-gray-800">
@@ -144,7 +144,7 @@ const HomePage = () => {
           </Box>
 
           {/* Total Brands */}
-          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-lg shadow-sm">
+          <Box className="flex flex-col justify-between h-56 p-6 bg-white rounded-[4px] !important shadow-sm">
             <Box className="flex justify-between">
               <Box>
                 <Typography variant="h4" className="mb-1 text-3xl font-semibold text-gray-800">
@@ -167,7 +167,7 @@ const HomePage = () => {
         <Box className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {/* Total Sales */}
           <Box
-            className="flex flex-col justify-between p-6 rounded-lg shadow-sm bg-blue-50"
+            className="flex flex-col justify-between p-6 rounded-[4px] !important shadow-sm bg-blue-50"
             style={{ height: "470px" }}
           >
             <Box>
@@ -214,7 +214,7 @@ const HomePage = () => {
           </Box>
 
           {/* Total Sellers */}
-          <Box className="flex flex-col justify-between p-6 bg-white rounded-lg shadow-sm" style={{ height: "470px" }}>
+          <Box className="flex flex-col justify-between p-6 bg-white rounded-[4px] !important shadow-sm" style={{ height: "470px" }}>
             <Box>
               <Typography variant="h4" className="mb-1 text-3xl font-semibold text-gray-800">
                 {mockData.sellers.total}
@@ -262,7 +262,7 @@ const HomePage = () => {
         </Box>
 
         {/* Second Row - Orders */}
-        <Box className="p-6 bg-white rounded-lg shadow-sm">
+        <Box className="p-6 bg-white rounded-[4px] !important shadow-sm">
           <Box className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* Total Orders */}
             <Box>
@@ -342,7 +342,7 @@ const HomePage = () => {
         {/* Second Row - Top Category & Top Brands */}
         <Box className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {/* Top Category */}
-          <Box className="overflow-hidden bg-white rounded-lg shadow-sm" style={{ height: "474px" }}>
+          <Box className="overflow-hidden bg-white rounded-[4px] !important shadow-sm" style={{ height: "474px" }}>
             <Box className="p-6">
               <Typography variant="h6" className="mb-1 text-base font-semibold text-blue-500">
                 In-house Top Category
@@ -372,7 +372,7 @@ const HomePage = () => {
           </Box>
 
           {/* Top Brands */}
-          <Box className="overflow-hidden bg-white rounded-lg shadow-sm" style={{ height: "474px" }}>
+          <Box className="overflow-hidden bg-white rounded-[4px] !important shadow-sm" style={{ height: "474px" }}>
             <Box className="p-6">
               <Typography variant="h6" className="mb-1 text-base font-semibold text-red-500">
                 In-house Top Brands
@@ -403,7 +403,7 @@ const HomePage = () => {
         </Box>
 
         {/* Third Row - In-house Store */}
-        <Box className="p-6 bg-white rounded-lg shadow-sm">
+        <Box className="p-6 bg-white rounded-[4px] !important shadow-sm">
           <Box className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* In-house Store */}
             <Box className="flex flex-col justify-between">
@@ -458,7 +458,7 @@ const HomePage = () => {
         </Box>
 
         {/* Third Row - Top Seller & Products */}
-        <Box className="p-6 bg-white rounded-lg shadow-sm" style={{ height: "474px" }}>
+        <Box className="p-6 bg-white rounded-[4px] !important shadow-sm" style={{ height: "474px" }}>
           <Box className="flex items-center justify-between mb-6">
             <Box>
               <Typography variant="h6" className="mb-2 text-base font-semibold text-gray-800">
