@@ -31,8 +31,8 @@ export interface IUser {
   shopAddress: string | null;
   sellerPackageExpiry: string | null;
   spreadPackageExpiry: string | null;
-  sellerPackage: string | null;
-  spreadPackage: string | null;
+  sellerPackageId: string | null;
+  spreadPackageId: string | null;
 }
 
 export interface ICreateUser {

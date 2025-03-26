@@ -1,41 +1,47 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
 import {
-  Typography,
-  Button,
   Box,
-  Paper,
+  Button,
   CircularProgress,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  TextField,
-  Switch,
-  FormControlLabel,
-  MenuItem,
-  Select,
+  DialogTitle,
   FormControl,
+  FormControlLabel,
   InputLabel,
-} from "@mui/material"
-import {
-  IconArrowLeft,
-  IconEdit,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react"
-import { message } from "antd"
+  MenuItem,
+  Paper,
+  Select,
+  SelectChangeEvent,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { IconArrowLeft, IconEdit, IconTrash } from "@tabler/icons-react";
+import { message } from "antd";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user"
+import { useGetAllSellerPackages } from "@/hooks/seller-package";
+import { useGetAllSpreadPackages } from "@/hooks/spread-package";
+import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user";
+import { ISellerPackage } from "@/interface/response/seller-package";
+import { ISpreadPackage } from "@/interface/response/spread-package";
+
+const formatDateForInput = (dateString: string) => {
+  if (!dateString) return "";
+  // Add T00:00 to match datetime-local format
+  return `${dateString}T00:00`;
+};
 function UserDetailPage() {
-  const router = useRouter()
-  const params = useParams()
-  const id = params.id as string
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -62,16 +68,26 @@ function UserDetailPage() {
     sellerPackageExpiry: "",
     spreadPackageExpiry: "",
     invitationCode: "",
-    referralCode: ""
-  })
+    referralCode: "",
+    sellerPackageId: "",
+    spreadPackageId: "",
+  });
   const [errors, setErrors] = useState({
     email: "",
-    phone: ""
-  })
+    phone: "",
+  });
+  const [sellerPackages, setSellerPackages] = useState<ISellerPackage[]>([]);
+  const [spreadPackages, setSpreadPackages] = useState<ISpreadPackage[]>([]);
 
-  const { data: userData, isLoading, error } = useGetUserById(id)
-  const deleteUserMutation = useDeleteUser()
-  const updateUserMutation = useUpdateUser()
+  const { data: userData, isLoading, error } = useGetUserById(id);
+  const deleteUserMutation = useDeleteUser();
+  const updateUserMutation = useUpdateUser();
+  const { data: sellerPackageData } = useGetAllSellerPackages({
+    limit: 9999999,
+  });
+  const { data: spreadPackageData } = useGetAllSpreadPackages({
+    limit: 9999999,
+  });
 
   useEffect(() => {
     if (userData?.data) {
@@ -98,71 +114,94 @@ function UserDetailPage() {
         reputationPoints: Number(userData.data.reputationPoints),
         shopName: userData.data.shopName || "",
         shopAddress: userData.data.shopAddress || "",
-        sellerPackageExpiry: userData.data.sellerPackageExpiry || "",
-        spreadPackageExpiry: userData.data.spreadPackageExpiry || "",
+        sellerPackageExpiry: formatDateForInput(
+          userData.data.sellerPackageExpiry || ""
+        ),
+        spreadPackageExpiry: formatDateForInput(
+          userData.data.spreadPackageExpiry || ""
+        ),
         invitationCode: userData.data.invitationCode || "",
-        referralCode: userData.data.referralCode || ""
-      })
+        referralCode: userData.data.referralCode || "",
+        sellerPackageId: userData.data.sellerPackageId || "",
+        spreadPackageId: userData.data.spreadPackageId || "",
+      });
     }
-  }, [userData])
+    if (sellerPackageData?.data) {
+      setSellerPackages(sellerPackageData.data);
+    }
+    if (spreadPackageData?.data) {
+      setSpreadPackages(spreadPackageData.data);
+    }
+  }, [userData, sellerPackageData, spreadPackageData]);
 
   const validateForm = () => {
-    let isValid = true
+    let isValid = true;
     const newErrors = {
       email: "",
-      phone: ""
-    }
+      phone: "",
+    };
 
     // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ"
-      isValid = false
+      newErrors.email = "Email không hợp lệ";
+      isValid = false;
     }
 
     // Validate phone
-    const phoneRegex = /^[0-9]{10,11}$/
+    const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ (10-11 số)"
-      isValid = false
+      newErrors.phone = "Số điện thoại không hợp lệ (10-11 số)";
+      isValid = false;
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleBack = () => {
-    router.push("/admin/users")
-  }
+    router.push("/admin/users");
+  };
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteUserMutation.mutateAsync(id)
-      message.success("Người dùng đã được xóa thành công!")
-      router.push("/admin/users")
+      await deleteUserMutation.mutateAsync(id);
+      message.success("Người dùng đã được xóa thành công!");
+      router.push("/admin/users");
     } catch (error) {
-      message.error("Không thể xóa người dùng. Vui lòng thử lại.")
-      console.error(error)
+      message.error("Không thể xóa người dùng. Vui lòng thử lại.");
+      console.error(error);
     }
-  }
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement
+  const handleChange = (
+    e: React.ChangeEvent<
+      | HTMLInputElement
+      | { name?: string; value: unknown }
+      | SelectChangeEvent<string>
+    >
+  ) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
 
     if (name) {
       setFormData({
         ...formData,
-        [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value,
-      })
+        [name]:
+          type === "checkbox"
+            ? checked
+            : type === "number"
+            ? Number(value)
+            : value,
+      });
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      message.error("Vui lòng kiểm tra lại thông tin nhập")
-      return
+      message.error("Vui lòng kiểm tra lại thông tin nhập");
+      return;
     }
 
     try {
@@ -178,23 +217,29 @@ function UserDetailPage() {
           shopAddress: formData.shopAddress,
           balance: formData.balance,
           fedexBalance: formData.fedexBalance,
-          invitationCode: formData.invitationCode
+          invitationCode: formData.invitationCode,
+          sellerPackageId: formData.sellerPackageId,
+          sellerPackageExpiry: formData.sellerPackageExpiry,
+          spreadPackageId: formData.spreadPackageId,
+          spreadPackageExpiry: formData.spreadPackageExpiry,
         },
-      })
-      message.success("Thông tin người dùng đã được cập nhật!")
-      setIsEditing(false)
+      });
+      message.success("Thông tin người dùng đã được cập nhật!");
+      setIsEditing(false);
     } catch (error) {
-      message.error("Không thể cập nhật thông tin người dùng. Vui lòng thử lại.")
-      console.error(error)
+      message.error(
+        "Không thể cập nhật thông tin người dùng. Vui lòng thử lại."
+      );
+      console.error(error);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <Box className="flex items-center justify-center p-6 py-12">
         <CircularProgress className="text-main-golden-orange" />
       </Box>
-    )
+    );
   }
 
   if (error || !userData) {
@@ -215,7 +260,7 @@ function UserDetailPage() {
           Quay lại danh sách
         </Button>
       </Box>
-    )
+    );
   }
 
   return (
@@ -317,7 +362,13 @@ function UserDetailPage() {
                   name="role"
                   value={formData.role}
                   label="Vai trò"
-                  onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
+                  onChange={(e) =>
+                    handleChange(
+                      e as React.ChangeEvent<
+                        HTMLInputElement | { name?: string; value: unknown }
+                      >
+                    )
+                  }
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
                   <MenuItem value="seller">Người bán</MenuItem>
@@ -342,10 +393,7 @@ function UserDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Typography
-              fontSize={14}
-              variant="subtitle1"
-            >
+            <Typography fontSize={14} variant="subtitle1">
               Trạng thái tài khoản
             </Typography>
             <FormControlLabel
@@ -421,6 +469,80 @@ function UserDetailPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small" disabled={!isEditing}>
+                <InputLabel>Gói Seller</InputLabel>
+                <Select
+                  name="sellerPackageId"
+                  value={formData.sellerPackageId || ""}
+                  label="Gói Seller"
+                  onChange={(e) => handleChange(e as SelectChangeEvent<string>)}
+                >
+                  {sellerPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Seller Package"
+                name="sellerPackageExpiry"
+                type="datetime-local"
+                value={formData.sellerPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small" disabled={!isEditing}>
+                <InputLabel>Gói Spread</InputLabel>
+                <Select
+                  name="spreadPackageId"
+                  value={formData.spreadPackageId || ""}
+                  label="Gói Spread"
+                  onChange={(e) => handleChange(e as SelectChangeEvent<string>)}
+                >
+                  {spreadPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Spread Package"
+                name="spreadPackageExpiry"
+                type="datetime-local"
+                value={formData.spreadPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </div>
+
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
@@ -476,17 +598,18 @@ function UserDetailPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
+        <DialogTitle className="!text-lg font-bold text-main-dark-blue">
+          Xác nhận xóa
+        </DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
-            Bạn có chắc chắn muốn xóa người dùng &quot;{formData.fullName || formData.username}&quot;? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa người dùng &quot;
+            {formData.fullName || formData.username}&quot;? Hành động này không
+            thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions className="!p-4 !pb-6">
-          <Button
-            variant="outlined"
-            onClick={() => setDeleteDialogOpen(false)}
-          >
+          <Button variant="outlined" onClick={() => setDeleteDialogOpen(false)}>
             Hủy bỏ
           </Button>
           <Button
@@ -495,16 +618,19 @@ function UserDetailPage() {
             className="text-white transition-colors !bg-red-500"
             disabled={deleteUserMutation.isPending}
           >
-            {deleteUserMutation.isPending ?
+            {deleteUserMutation.isPending ? (
               <div className="flex items-center gap-2 text-white">
                 <CircularProgress size={16} className="text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div>
+            ) : (
+              "Xóa"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
     </div>
-  )
+  );
 }
 
-export default UserDetailPage; 
+export default UserDetailPage;

@@ -30,6 +30,12 @@ export interface ICreateUser {
     isPhoneVerified?: boolean
     notes?: string
     metadata?: Record<string, any>
+    sellerPackageId?: string
+    spreadPackageId?: string
+    sellerPackageExpiry?: string
+    spreadPackageExpiry?: string
+    invitationCode?: string
+    referralCode?: string
 }
 
 export interface IUpdateUser {
@@ -66,5 +72,7 @@ export interface IUpdateUser {
     spreadPackageExpiry?: string
     invitationCode?: string
     referralCode?: string
+    sellerPackageId?: string
+    spreadPackageId?: string
 }
 

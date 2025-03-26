@@ -102,6 +102,10 @@ function UsersPage() {
     { key: 'bankAccountNumber', label: 'Số tài khoản' },
     { key: 'bankAccountName', label: 'Tên tài khoản' },
     { key: 'bankBranch', label: 'Chi nhánh' },
+    { key: 'sellerPackageName', label: 'Gói Seller' },
+    { key: 'sellerPackageExpiry', label: 'Hết hạn Seller' },
+    { key: 'spreadPackageName', label: 'Gói Spread' },
+    { key: 'spreadPackageExpiry', label: 'Hết hạn Spread' },
     { key: 'actions', label: 'Thao tác' },
   ];
 
@@ -192,6 +196,20 @@ function UsersPage() {
       <TableCell>{user.bankAccountNumber}</TableCell>
       <TableCell>{user.bankAccountName}</TableCell>
       <TableCell>{user.bankBranch}</TableCell>
+      <TableCell>{user.sellerPackage?.name || ''}</TableCell>
+      <TableCell>
+        {user.sellerPackageExpiry ? 
+          new Date(user.sellerPackageExpiry).toLocaleDateString() : 
+          ''
+        }
+      </TableCell>
+      <TableCell>{user.spreadPackage?.name || ''}</TableCell>
+      <TableCell>
+        {user.spreadPackageExpiry ? 
+          new Date(user.spreadPackageExpiry).toLocaleDateString() : 
+          ''
+        }
+      </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
           <IconButton onClick={() => handleView(user.id)} size="medium" className="!bg-blue-100">

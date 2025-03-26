@@ -36,6 +36,7 @@ function HomePage() {
     const { data: images, isLoading: imagesLoading } = useGetAllImages();
     const { data: sellerPackages, isLoading: packagesLoading } = useGetAllSellerPackages();
 
+    console.log(profileData);
     return (
         <Box className='p-8'>
             <Typography variant="h2" mb={4}>Bảng điều khiển tổng quan</Typography>
@@ -44,8 +45,8 @@ function HomePage() {
                 {/* User Profile Card */}
                 <Grid item xs={12} sm={6} lg={3}>
                     <StatCard
-                        title="Welcome"
-                        value={profileData?.fullName || profileData?.username || 'User'}
+                        title="Xin chào"
+                        value={profileData?.fullName || profileData?.username || 'Người dùng'}
                         icon={<PersonOutline sx={{ fontSize: 40 }} />}
                         loading={profileLoading}
                     />
@@ -54,7 +55,7 @@ function HomePage() {
                 {/* Categories Count */}
                 <Grid item xs={12} sm={6} lg={3}>
                     <StatCard
-                        title="Total Categories"
+                        title="Tổng danh mục"
                         value={categories?.data?.meta?.itemCount || 0}
                         icon={<CategoryOutlined sx={{ fontSize: 40 }} />}
                         loading={categoriesLoading}
@@ -64,7 +65,7 @@ function HomePage() {
                 {/* Images Count */}
                 <Grid item xs={12} sm={6} lg={3}>
                     <StatCard
-                        title="Total Images"
+                        title="Tổng hình ảnh"
                         value={images?.data?.length || 0}
                         icon={<ImageOutlined sx={{ fontSize: 40 }} />}
                         loading={imagesLoading}
@@ -74,7 +75,7 @@ function HomePage() {
                 {/* Seller Packages Count */}
                 <Grid item xs={12} sm={6} lg={3}>
                     <StatCard
-                        title="Seller Packages"
+                        title="Gói bán hàng"
                         value={sellerPackages?.data?.length || 0}
                         icon={<ShoppingBagOutlined sx={{ fontSize: 40 }} />}
                         loading={packagesLoading}
@@ -85,7 +86,7 @@ function HomePage() {
             {/* Additional content can be added here */}
             <Box mt={4}>
                 <Typography variant="body1" color="textSecondary">
-                    Chào mừng đến với bảng điều khiển của bạn. Ở đây bạn có thể quản lý danh mục, hình ảnh và gói bán hàng của bạn.
+                    Chào mừng đến với bảng điều khiển của bạn. Ở đây bạn có thể quản lý danh mục, hình ảnh và gói bán hàng của mình.
                 </Typography>
             </Box>
         </Box>
