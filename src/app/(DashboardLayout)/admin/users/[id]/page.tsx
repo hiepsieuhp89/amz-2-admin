@@ -477,7 +477,7 @@ function UserDetailPage() {
                   name="sellerPackageId"
                   value={formData.sellerPackageId || ""}
                   label="Gói Seller"
-                  onChange={(e) => handleChange(e as SelectChangeEvent<string>)}
+                  onChange={(e) => handleChange(e as any)}
                 >
                   {sellerPackages.map((pkg) => (
                     <MenuItem key={pkg.id} value={pkg.id}>
@@ -514,7 +514,7 @@ function UserDetailPage() {
                   name="spreadPackageId"
                   value={formData.spreadPackageId || ""}
                   label="Gói Spread"
-                  onChange={(e) => handleChange(e as SelectChangeEvent<string>)}
+                  onChange={(e) => handleChange(e as any)}
                 >
                   {spreadPackages.map((pkg) => (
                     <MenuItem key={pkg.id} value={pkg.id}>
