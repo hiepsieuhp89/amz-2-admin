@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { 
   TextField, 
@@ -23,6 +23,10 @@ import { IconArrowLeft } from "@tabler/icons-react"
 import { message } from "antd"
 
 import { useCreateUser } from "@/hooks/user"
+import { useGetAllSellerPackages } from "@/hooks/seller-package"
+import { useGetAllSpreadPackages } from "@/hooks/spread-package"
+import { ISellerPackage } from "@/interface/response/seller-package"
+import { ISpreadPackage } from "@/interface/response/spread-package"
 
 export default function CreateUserPage() {
   const router = useRouter()
@@ -36,15 +40,42 @@ export default function CreateUserPage() {
     phone: "",
     role: "user" ,
     isActive: true,
-    balance: 0
+    balance: 0,
+    sellerPackageId: "",
+    spreadPackageId: "",
+    sellerPackageExpiry: "",
+    spreadPackageExpiry: "",
+    shopName: "",
+    shopAddress: ""
   })
 
   const [errors, setErrors] = useState({
     email: "",
     username: "",
     password: "",
-    phone: ""
+    phone: "",
+    shopName: "",
+    shopAddress: ""
   })
+
+  const [sellerPackages, setSellerPackages] = useState<ISellerPackage[]>([])
+  const [spreadPackages, setSpreadPackages] = useState<ISpreadPackage[]>([])
+
+  const { data: sellerPackageData } = useGetAllSellerPackages({
+    limit: 9999999,
+  })
+  const { data: spreadPackageData } = useGetAllSpreadPackages({
+    limit: 9999999,
+  })
+
+  useEffect(() => {
+    if (sellerPackageData?.data) {
+      setSellerPackages(sellerPackageData.data)
+    }
+    if (spreadPackageData?.data) {
+      setSpreadPackages(spreadPackageData.data)
+    }
+  }, [sellerPackageData, spreadPackageData])
 
   const validateForm = () => {
     let isValid = true
@@ -52,7 +83,9 @@ export default function CreateUserPage() {
       email: "",
       username: "",
       password: "",
-      phone: ""
+      phone: "",
+      shopName: "",
+      shopAddress: ""
     }
 
     // Validate email
@@ -105,7 +138,13 @@ export default function CreateUserPage() {
     }
     
     try {
-      await createUserMutation.mutateAsync(formData)
+      await createUserMutation.mutateAsync({
+        ...formData,
+        sellerPackageId: formData.sellerPackageId || null,
+        spreadPackageId: formData.spreadPackageId || null,
+        sellerPackageExpiry: formData.sellerPackageExpiry || null,
+        spreadPackageExpiry: formData.spreadPackageExpiry || null
+      })
       message.success("Người dùng đã được tạo thành công!")
       router.push("/admin/users")
     } catch (error) {
@@ -268,6 +307,78 @@ export default function CreateUserPage() {
                     color="primary" 
                   />
                 }
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small">
+                <InputLabel>Gói Seller</InputLabel>
+                <Select
+                  name="sellerPackageId"
+                  value={formData.sellerPackageId}
+                  label="Gói Seller"
+                  onChange={(e) => handleChange(e as any)}
+                >
+                  {sellerPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Seller Package"
+                name="sellerPackageExpiry"
+                type="datetime-local"
+                value={formData.sellerPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small">
+                <InputLabel>Gói Spread</InputLabel>
+                <Select
+                  name="spreadPackageId"
+                  value={formData.spreadPackageId}
+                  label="Gói Spread"
+                  onChange={(e) => handleChange(e as any)}
+                >
+                  {spreadPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Spread Package"
+                name="spreadPackageExpiry"
+                type="datetime-local"
+                value={formData.spreadPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
             </div>
           </div>
