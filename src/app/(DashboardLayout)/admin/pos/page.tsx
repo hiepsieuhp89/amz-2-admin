@@ -307,20 +307,6 @@ const AdminPosPage = () => {
     }
   }
 
-  const tinhThanhOptions = selectedCountry
-    ? geographicData[selectedCountry as keyof typeof geographicData]?.provinces || []
-    : []
-
-  const quanHuyenOptions =
-    selectedCountry && selectedState
-      ? geographicData[selectedCountry as keyof typeof geographicData]?.city[selectedState] || []
-      : []
-
-  const phuongXaOptions =
-    selectedCountry && selectedState && selectedCity
-      ? geographicData[selectedCountry as keyof typeof geographicData]?.ward[selectedCity] || []
-      : []
-
   return (
     <Box component="section" className={styles.storehouse}>
       <Box className="px-4 py-4 mx-auto ">
@@ -358,7 +344,6 @@ const AdminPosPage = () => {
                   label="Tìm sản phẩm"
                 />
               </FormControl>
-
               <FormControl fullWidth variant="outlined">
                 <TextField
                   size="small"
@@ -1112,19 +1097,19 @@ const AdminPosPage = () => {
           },
         }}
       >
-        <DialogTitle>Thêm địa chỉ mới</DialogTitle>
+        <DialogTitle fontSize={18}>Thêm địa chỉ mới</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <Box sx={{ mt: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2,  mt: 2 }}>
+            <Box>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Chọn người dùng</InputLabel>
                     <Select
                       value={selectedUserId}
                       onChange={(e) => setSelectedUserId(e.target.value)}
                       label="Chọn người dùng"
-                      size="medium"
+                      size="small"
                     >
                       {shopsData?.data?.data.map((user) => (
                         <MenuItem key={user.id} value={user.id}>
@@ -1136,7 +1121,7 @@ const AdminPosPage = () => {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Quốc gia</InputLabel>
                     <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
                       {Object.keys(geographicData).map((country) => (
@@ -1149,7 +1134,7 @@ const AdminPosPage = () => {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Tỉnh/Thành phố</InputLabel>
                     <Select
                       value={selectedState}
@@ -1170,7 +1155,7 @@ const AdminPosPage = () => {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Thành phố/Quận</InputLabel>
                     <Select
                       value={selectedCity}
@@ -1191,7 +1176,7 @@ const AdminPosPage = () => {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Quận/Huyện</InputLabel>
                     <Select
                       value={selectedDistrict}
@@ -1212,7 +1197,7 @@ const AdminPosPage = () => {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Mã bưu điện</InputLabel>
                     <Select
                       value={selectedPostalCode}
@@ -1237,14 +1222,18 @@ const AdminPosPage = () => {
                     value={address}
                     onChange={handleAddressChange}
                     margin="normal"
+                    size="small"
                   />
                 </Grid>
               </Grid>
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Huỷ</Button>
+        <DialogActions className="mx-4 mb-4">
+          <Button 
+          className="!normal-case" 
+          variant="outlined"
+          onClick={handleCloseDialog}>Huỷ bỏ</Button>
           <Button className="!normal-case" onClick={handleSaveAddress} variant="contained">
             Lưu địa chỉ
           </Button>
@@ -1252,7 +1241,7 @@ const AdminPosPage = () => {
       </Dialog>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Xác nhận đơn hàng</DialogTitle>
+        <DialogTitle fontSize={18}>Xác nhận đơn hàng</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>

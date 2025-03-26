@@ -140,10 +140,11 @@ export default function CreateUserPage() {
     try {
       await createUserMutation.mutateAsync({
         ...formData,
-        sellerPackageId: formData.sellerPackageId || null,
-        spreadPackageId: formData.spreadPackageId || null,
-        sellerPackageExpiry: formData.sellerPackageExpiry || null,
-        spreadPackageExpiry: formData.spreadPackageExpiry || null
+        balance: formData.balance?.toString(), // Convert number to string
+        sellerPackageId: formData?.sellerPackageId || undefined,
+        spreadPackageId: formData?.spreadPackageId || undefined,
+        sellerPackageExpiry: formData?.sellerPackageExpiry || undefined,
+        spreadPackageExpiry: formData?.spreadPackageExpiry || undefined
       })
       message.success("Người dùng đã được tạo thành công!")
       router.push("/admin/users")

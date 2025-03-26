@@ -235,7 +235,7 @@ function SpreadPackagesPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="!text-lg font-bold text-main-dark-blue">Xác nhận xóa</DialogTitle>
+        <DialogTitle fontSize={18}>Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
             Bạn có chắc chắn muốn xóa gói quảng bá này không? Hành động này không thể hoàn tác.

@@ -238,7 +238,7 @@ function ProductsPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="!text-lg font-bold text-main-dark-blue">
+        <DialogTitle fontSize={18}>
           Xác nhận xóa sản phẩm
         </DialogTitle>
         <DialogContent>

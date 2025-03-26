@@ -31,10 +31,10 @@ export interface ICreateUser {
     isPhoneVerified?: boolean
     notes?: string
     metadata?: Record<string, any>
-    sellerPackageId?: string | null
-    spreadPackageId?: string | null
-    sellerPackageExpiry?: string | null
-    spreadPackageExpiry?: string | null
+    sellerPackageId?: string
+    spreadPackageId?: string 
+    sellerPackageExpiry?: string
+    spreadPackageExpiry?: string
     invitationCode?: string
     referralCode?: string | null
     shopName?: string

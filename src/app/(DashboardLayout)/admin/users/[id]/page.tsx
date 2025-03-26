@@ -215,8 +215,8 @@ function UserDetailPage() {
           role: formData.role,
           shopName: formData.shopName,
           shopAddress: formData.shopAddress,
-          balance: formData.balance,
-          fedexBalance: formData.fedexBalance,
+          balance: formData.balance.toString(),
+          fedexBalance: formData.fedexBalance.toString(),
           invitationCode: formData.invitationCode,
           sellerPackageId: formData.sellerPackageId,
           sellerPackageExpiry: formData.sellerPackageExpiry,
@@ -598,7 +598,7 @@ function UserDetailPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle className="!text-lg font-bold text-main-dark-blue">
+        <DialogTitle fontSize={18}>
           Xác nhận xóa
         </DialogTitle>
         <DialogContent>

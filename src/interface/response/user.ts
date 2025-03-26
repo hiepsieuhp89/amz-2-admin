@@ -43,6 +43,10 @@ export interface ICreateUser {
   phone?: string;
   role?: string;
   invitationCode?: string;
+  sellerPackageId?: string;
+  spreadPackageId?: string;
+  sellerPackageExpiry?: string;
+  spreadPackageExpiry?: string;
 }
 
 export interface IReferral {
