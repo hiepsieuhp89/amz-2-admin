@@ -52,74 +52,57 @@ const Menuitems = [
     icon: IconLayoutGridAdd,
     href: "/admin/categories",
   },
-  {
-    id: generateUniqueId(),
-    title: "Quản lý cửa hàng",
-    icon: IconBuildingWarehouse,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách cửa hàng",
-        href: "/admin/stores",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thêm cửa hàng mới",
-        href: "/admin/stores/create",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Phê duyệt cửa hàng",
-        href: "/admin/stores/approval",
-      },
-    ],
-  },
-  {
-    id: generateUniqueId(),
-    title: "Quản lý giới thiệu",
-    icon: IconGift,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Danh sách giới thiệu",
-        href: "/referrals",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Cấu hình hoa hồng",
-        href: "/referrals/commission",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Thống kê giới thiệu",
-        href: "/referrals/statistics",
-      },
-    ],
-  },
+  // {
+  //   id: generateUniqueId(),
+  //   title: "Quản lý cửa hàng",
+  //   icon: IconBuildingWarehouse,
+  //   href: "javascript:void(0)",
+  //   children: [
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Danh sách cửa hàng",
+  //       href: "/admin/stores",
+  //     },
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Thêm cửa hàng mới",
+  //       href: "/admin/stores/create",
+  //     },
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Phê duyệt cửa hàng",
+  //       href: "/admin/stores/approval",
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: generateUniqueId(),
+  //   title: "Quản lý giới thiệu",
+  //   icon: IconGift,
+  //   href: "javascript:void(0)",
+  //   children: [
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Danh sách giới thiệu",
+  //       href: "/referrals",
+  //     },
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Cấu hình hoa hồng",
+  //       href: "/referrals/commission",
+  //     },
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Thống kê giới thiệu",
+  //       href: "/referrals/statistics",
+  //     },
+  //   ],
+  // },
   {
     id: generateUniqueId(),
     title: "Quản lý nạp/rút",
     icon: IconTransactionDollar,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Lịch sử giao dịch",
-        href: "/transaction/history",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Yêu cầu nạp tiền",
-        href: "/transaction/recharge",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Yêu cầu rút tiền",
-        href: "/transaction/withdraw",
-      },
-    ],
+    href: "/transaction/history",
   },
   {
     id: generateUniqueId(),
