@@ -5,6 +5,7 @@ export interface IPostalCode {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  data: any
 }
 
 export interface IPostalCodeResponse {

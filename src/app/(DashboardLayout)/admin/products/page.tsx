@@ -47,7 +47,6 @@ function ProductsPage() {
     take: rowsPerPage,
     search: searchTerm
   })
-  console.log(productData)
   const deleteProductMutation = useDeleteProduct()
 
   const handleCreateNew = () => {

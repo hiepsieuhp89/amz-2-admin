@@ -6,6 +6,7 @@ export interface IDistrict {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  data: any
 }
 
 export interface IDistrictResponse {

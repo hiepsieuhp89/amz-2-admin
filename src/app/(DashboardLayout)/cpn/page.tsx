@@ -123,7 +123,6 @@ const Table: React.FC = () => {
   };
 
   const handleToggleStar = (id: string) => {
-    // In a real application, this would update the data source
     console.log(`Toggle star for contact ${id}`);
   };
 

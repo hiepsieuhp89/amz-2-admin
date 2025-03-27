@@ -7,6 +7,7 @@ export interface IState {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  data: any
 }
 
 export interface IStateResponse {

@@ -10,6 +10,7 @@ export interface IGetPostalCodesRequest {
   take?: number
   search?: string
   status?: string
+  districtId?: string
 }
 
 export interface IUpdatePostalCodeRequest {

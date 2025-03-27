@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Card, message, Empty, Spin } from "antd"
+import { message, Empty, Spin } from "antd"
 import { useGetAllShopProducts } from "@/hooks/shop-products"
 import type { IProduct } from "@/interface/response/product"
 import Image from "next/image"
@@ -28,7 +28,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
   Paper,
   Collapse,
   ListItemIcon,
@@ -39,7 +38,6 @@ import {
   Checkbox,
 } from "@mui/material"
 import {
-  IconCopyCheck,
   IconPlus,
   IconSearch,
   IconTrash,
@@ -60,9 +58,13 @@ import {
 } from "@tabler/icons-react"
 import { useGetAllUsers, useUpdateUser } from "@/hooks/user"
 import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
-import { geographicData } from "@/helper/nations"
 import type { SelectChangeEvent } from "@mui/material"
 import { IValidUser } from "@/interface/response/fake-order"
+import { useGetCountries } from "@/hooks/countries"
+import { useGetStates } from "@/hooks/states"
+import { useGetCities } from "@/hooks/cities"
+import {useGetDistricts } from "@/hooks/districts"
+import {useGetPostalCodes } from "@/hooks/postal-codes"
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -80,7 +82,7 @@ const AdminPosPage = () => {
   })
 
   const { data: allShopUsers, isLoading: isLoadingAllShopUsers } = useGetAllUsers({
-    role: "shop",
+    role: "user",
   })
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -113,14 +115,17 @@ const AdminPosPage = () => {
   const [address, setAddress] = useState<string>("")
   const updateUserMutation = useUpdateUser()
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [selectedShops, setSelectedShops] = useState<string[]>([])
   const [page, setPage] = useState(0)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false)
   const [selectedInvalidUser, setSelectedInvalidUser] = useState<IValidUser>()
-  const [showUserList, setShowUserList] = useState(false)
   const [showAddressList, setShowAddressList] = useState(true)
 
+  const { data: countries } = useGetCountries()
+  const { data: states } = useGetStates({ countryId: selectedCountry })
+  const { data: cities } = useGetCities({ stateId: selectedState })
+  const { data: districts } = useGetDistricts({ cityId: selectedCity })
+  const { data: postalCodes } = useGetPostalCodes({ districtId: selectedDistrict })
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     const customer = event.currentTarget.dataset.customer
     if (customer) {
@@ -270,7 +275,6 @@ const AdminPosPage = () => {
   const handleSearchShop = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchShop(e.target.value)
     setShowShops(true)
-    console.log(shopsData)
   }
 
   const handleSearchUser = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -404,7 +408,7 @@ const AdminPosPage = () => {
               </Box>
               <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
                 <Box className="">
-                  <Box className="w-full !p-4 flex justify-between gap-2 mb-3">
+                  <Box className="w-full !p-4 flex justify-between gap-2">
                     <FormControl variant="outlined">
                       <InputLabel htmlFor="outlined-adornment-email">Tìm shop</InputLabel>
                       <OutlinedInput
@@ -1270,9 +1274,10 @@ const AdminPosPage = () => {
                             },
                             display: "flex",
                             flexDirection: "column",
+                            padding: "16px 0px",
                           }}
                         >
-                          <Box className="flex items-start gap-2 ">
+                          <Box className="flex items-start w-full gap-2">
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
                               <Image
                                 src={checkImageUrl(product.imageUrl || "")}
@@ -1326,18 +1331,18 @@ const AdminPosPage = () => {
                               </IconButton>
                             </Box>
                           </Box>
-                          <Box sx={{ display: "flex", mt: 1, width: "100%", justifyContent: "space-between" }}>
+                          <Box sx={{display: "flex", mt: 2, width: "100%", justifyContent: "space-between"}}>
                             <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
-                              <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                              <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
+                              <span className="text-xs !text-green-500">${Number(product.salePrice).toFixed(2)}</span>
                             </Box>
                             <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="font-semibold text-main-gunmetal-blue">Giá nhập:</span>
-                              <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                              <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
+                              <span className="text-xs !text-amber-500">${Number(product.price).toFixed(2)}</span>
                             </Box>
                             <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
-                              <span className="!text-red-500 font-bold">
+                              <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
+                              <span className="text-xs !text-red-500 font-bold">
                                 ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
                               </span>
                             </Box>
@@ -1472,7 +1477,7 @@ const AdminPosPage = () => {
                     >
                       {allShopUsers?.data?.data.map((user) => (
                         <MenuItem key={user.id} value={user.id}>
-                          {user.fullName}
+                         <span>{user.fullName}</span><span className="ml-1 text-gray-500 !font-xs">({user.email})</span>
                         </MenuItem>
                       ))}
                     </Select>
@@ -1483,9 +1488,9 @@ const AdminPosPage = () => {
                   <FormControl fullWidth size="small">
                     <InputLabel>Quốc gia</InputLabel>
                     <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
-                      {Object.keys(geographicData).map((country) => (
-                        <MenuItem key={country} value={country}>
-                          {country}
+                      {countries?.data?.data.map((country) => (
+                        <MenuItem key={country.id} value={country.id}>
+                          {country.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -1501,14 +1506,11 @@ const AdminPosPage = () => {
                       label="Tỉnh/Thành phố"
                       disabled={!selectedCountry}
                     >
-                      {selectedCountry &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
-                          (province: any) => (
-                            <MenuItem key={province.code} value={province.code}>
-                              {province.name}
-                            </MenuItem>
-                          ),
-                        )}
+                      {states?.data?.data.map((state: any) => (
+                        <MenuItem key={state.id} value={state.id}>
+                          {state.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1522,14 +1524,11 @@ const AdminPosPage = () => {
                       label="Thành phố/Quận"
                       disabled={!selectedState}
                     >
-                      {selectedState &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.map((city: any) => (
-                          <MenuItem key={city.code} value={city.code}>
-                            {city.name}
-                          </MenuItem>
-                        ))}
+                      {cities?.data?.data.map((city: any) => (
+                        <MenuItem key={city.id} value={city.id}>
+                          {city.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1543,14 +1542,11 @@ const AdminPosPage = () => {
                       label="Quận/Huyện"
                       disabled={!selectedCity}
                     >
-                      {selectedCity &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
-                          (ward: any) => (
-                            <MenuItem key={ward.code} value={ward.code}>
-                              {ward.name}
-                            </MenuItem>
-                          ),
-                        )}
+                      {districts?.data?.data.map((district: any) => (
+                        <MenuItem key={district.id} value={district.id}>
+                          {district.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1564,12 +1560,11 @@ const AdminPosPage = () => {
                       label="Mã bưu điện"
                       disabled={!selectedDistrict}
                     >
-                      {selectedDistrict &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
-                          <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
-                        )}
+                      {postalCodes?.data?.data.map((postalCode: any) => (
+                        <MenuItem key={postalCode.id} value={postalCode.id}>
+                          {postalCode.code}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1630,9 +1625,9 @@ const AdminPosPage = () => {
                   <FormControl fullWidth size="small">
                     <InputLabel>Quốc gia</InputLabel>
                     <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
-                      {Object.keys(geographicData).map((country) => (
-                        <MenuItem key={country} value={country}>
-                          {country}
+                      {countries?.data?.data.map((country) => (
+                        <MenuItem key={country.id} value={country.id}>
+                          {country.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -1648,14 +1643,11 @@ const AdminPosPage = () => {
                       label="Tỉnh/Thành phố"
                       disabled={!selectedCountry}
                     >
-                      {selectedCountry &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
-                          (province: any) => (
-                            <MenuItem key={province.code} value={province.code}>
-                              {province.name}
-                            </MenuItem>
-                          ),
-                        )}
+                      {states?.data?.data.map((state: any) => (
+                        <MenuItem key={state.id} value={state.id}>
+                          {state.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1669,14 +1661,11 @@ const AdminPosPage = () => {
                       label="Thành phố/Quận"
                       disabled={!selectedState}
                     >
-                      {selectedState &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.map((city: any) => (
-                          <MenuItem key={city.code} value={city.code}>
-                            {city.name}
-                          </MenuItem>
-                        ))}
+                      {cities?.data?.data.map((city: any) => (
+                        <MenuItem key={city.id} value={city.id}>
+                          {city.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1690,14 +1679,11 @@ const AdminPosPage = () => {
                       label="Quận/Huyện"
                       disabled={!selectedCity}
                     >
-                      {selectedCity &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
-                          (ward: any) => (
-                            <MenuItem key={ward.code} value={ward.code}>
-                              {ward.name}
-                            </MenuItem>
-                          ),
-                        )}
+                      {districts?.data?.data.map((district: any) => (
+                        <MenuItem key={district.id} value={district.id}>
+                          {district.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -1711,12 +1697,11 @@ const AdminPosPage = () => {
                       label="Mã bưu điện"
                       disabled={!selectedDistrict}
                     >
-                      {selectedDistrict &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
-                          <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
-                        )}
+                      {postalCodes?.data?.data.map((postalCode: any) => (
+                        <MenuItem key={postalCode.id} value={postalCode.id}>
+                          {postalCode.code}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>

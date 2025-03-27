@@ -11,6 +11,7 @@ export interface IGetDistrictsRequest {
   take?: number
   search?: string
   status?: string
+  cityId?: string
 }
 
 export interface IUpdateDistrictRequest {

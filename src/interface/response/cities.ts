@@ -7,6 +7,7 @@ export interface ICity {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  data: any
 }
 
 export interface ICityResponse {
