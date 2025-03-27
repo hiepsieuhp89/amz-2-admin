@@ -92,6 +92,8 @@ const AdminPosPage = () => {
     page: currentPage,
     take: rowsPerPage,
   })
+
+  console.log(productsData)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
   const [customerColors] = useState(new Map())
@@ -140,13 +142,13 @@ const AdminPosPage = () => {
   }
 
   const open = Boolean(anchorEl)
-  const addProduct = (product: IProduct) => {
-    const productExists = selectedProducts.some((item) => item.id === product.id)
+  const addProduct = (item: any) => {
+    const productExists = selectedProducts.some((product) => product.id === item.id)
     if (productExists) {
       message.warning("Sản phẩm đã tồn tại trong danh sách")
       return
     }
-    setSelectedProducts([...selectedProducts, product])
+    setSelectedProducts([...selectedProducts, item])
     setTotalSelectedProducts(totalSelectedProducts + 1)
   }
 
@@ -247,12 +249,11 @@ const AdminPosPage = () => {
     }
 
     const payload = {
-      items: selectedProducts.map((product) => ({
-        shopProductId: product.shopId,
-        quantity: quantities[product.id] || 1,
+      items: selectedProducts.map((item) => ({
+        shopProductId: item.shopId,
+        quantity: quantities[item.id] || 1,
       })),
       email: selectedUser.email,
-      // phone: selectedUser.phone || "",
       address: selectedUser.address || "New York, USA",
       userId: selectedUser.id,
     }
@@ -338,11 +339,6 @@ const AdminPosPage = () => {
       await updateUserMutation.mutateAsync({
         id: selectedUserId,
         payload: {
-          // countryId: selectedCountry,
-          // stateId: selectedState,
-          // cityId: selectedCity,
-          // districtId: selectedDistrict,
-          // postalCodeId: selectedPostalCode,
           address: address,
         },
       })
@@ -406,7 +402,7 @@ const AdminPosPage = () => {
                   Các Shop hiện có ({shopsData?.data?.data.length || 0}). Vui lòng nhấn chọn một Shop để hiển thị sản phẩm.
                 </Typography>
               </Box>
-              <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
+              <Paper elevation={1} sx={{ borderRadius: 1 }}>
                 <Box className="">
                   <Box className="w-full !p-4 flex justify-between gap-2">
                     <FormControl variant="outlined">
@@ -859,11 +855,11 @@ const AdminPosPage = () => {
                                   <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                                     <Box sx={{ display: "flex", gap: 1 }}>
                                       <span>Giá niêm yết:</span>
-                                      <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                      <span className="!text-green-500">${Number((item as any).salePrice)}</span>
                                     </Box>
                                     <Box sx={{ display: "flex", gap: 1 }}>
                                       <span>Giá nhập:</span>
-                                      <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                      <span className="!text-amber-500">${Number((item as any).price)}</span>
                                     </Box>
                                     <Box sx={{ display: "flex", gap: 1 }}>
                                       <span>Lợi nhuận:</span>
@@ -872,7 +868,7 @@ const AdminPosPage = () => {
                                   </Box>
                                   <Box
                                     className={styles.addButton}
-                                    onClick={() => addProduct({ ...product, shopId: item.id })}
+                                    onClick={() => addProduct(item)}
                                   >
                                     <Box className={styles.overlay}></Box>
                                     <IconPlus className={styles.plusIcon} />
@@ -900,11 +896,19 @@ const AdminPosPage = () => {
                     )}
                   </>
                 ) : (
-                  <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
+                  <Paper elevation={1} sx={{ borderRadius: 1 }}>
                     <List sx={{ padding: 0 }} className="!px-0">
+                      {/* Thêm header */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.12)', fontWeight: 600 }}>
+                        <Box sx={{ width: '100px', mr: 2 }}>Hình ảnh</Box>
+                        <Box sx={{ width: '200px' }}>Tên sản phẩm</Box>
+                        <Box sx={{ width: '150px' }}>Giá niêm yết</Box>
+                        <Box sx={{ width: '150px' }}>Giá nhập</Box>
+                        <Box sx={{ width: '150px' }}>Lợi nhuận</Box>
+                      </Box>
                       {productsData?.data?.data?.map((item, index) => {
                         const product = (item as any).product
-                        const isSelected = selectedProducts.some(p => p.shopId === item.id)
+                        const isSelected = selectedProducts.some(p => p.id === item.id)
                         return (
                           <div key={item.id}>
                             <Collapse in={true} timeout="auto" unmountOnExit>
@@ -920,15 +924,25 @@ const AdminPosPage = () => {
                                   checked={isSelected}
                                   onChange={() => {
                                     if (isSelected) {
-                                      const index = selectedProducts.findIndex(p => p.shopId === item.id)
+                                      const index = selectedProducts.findIndex(p => p.id === item.id)
                                       removeProduct(index)
                                     } else {
-                                      addProduct({ ...product, shopId: item.id })
+                                      addProduct(item)
                                     }
                                   }}
                                   sx={{ mr: 1 }}
                                   size="small"
                                 />
+                                {/* Thêm hình ảnh sản phẩm */}
+                                <Box sx={{ width: '100px', mr: 2 }}>
+                                  <Image
+                                    src={checkImageUrl(product.imageUrl || "")}
+                                    alt={product.name}
+                                    width={80}
+                                    height={80}
+                                    style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                  />
+                                </Box>
                                 <ListItemText
                                   primary={
                                     <Stack direction="row" spacing={2}>
@@ -941,19 +955,19 @@ const AdminPosPage = () => {
                                           {product.name.length > 50 && "..."}
                                         </Typography>
                                       </div>
-                                      <div style={{ width: '200px' }}>
+                                      <div style={{ width: '150px' }}>
                                         <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          Giá niêm yết: ${Number(product.salePrice).toFixed(2)}
+                                          ${Number((item as any).salePrice)}
                                         </Box>
                                       </div>
                                       <div style={{ width: '150px' }}>
                                         <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          Giá nhập: ${Number(product.price).toFixed(2)}
+                                          ${Number((item as any).price)}
                                         </Box>
                                       </div>
                                       <div style={{ width: '150px' }}>
                                         <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          Lợi nhuận: ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
+                                          ${Number((item as any).profit)}
                                         </Box>
                                       </div>
                                     </Stack>
@@ -1067,7 +1081,7 @@ const AdminPosPage = () => {
                   <IconMapPinPin className="w-5 h-5" />
                 </IconButton>
               </Box>
-                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
+                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, borderRadius: "4px" }}>
                   <List>
                     {validUsers && (
                       validUsers.data.data.map((user, index) => (
@@ -1176,7 +1190,7 @@ const AdminPosPage = () => {
                     Danh sách địa chỉ hiện có
                   </Typography>
                 </Box>
-                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, border: "1px solid #e0e0e0", borderRadius: "4px" }}>
+                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, borderRadius: "4px" }}>
                   <List>
                     {allShopUsers && (
                       allShopUsers.data.data
@@ -1261,94 +1275,93 @@ const AdminPosPage = () => {
                 {selectedProducts.length > 0 ? (
                   <>
                     <List>
-                      {selectedProducts.map((product, index) => (
-                        <ListItem
-                          key={`${product.id}-${index}`}
-                          sx={{
-                            borderBottom: "1px solid #e0e0e0",
-                            "&:last-child": {
-                              borderBottom: "none",
-                            },
-                            "&:first-child": {
-                              paddingTop: "0px",
-                            },
-                            display: "flex",
-                            flexDirection: "column",
-                            padding: "16px 0px",
-                          }}
-                        >
-                          <Box className="flex items-start w-full gap-2">
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
-                              <Image
-                                src={checkImageUrl(product.imageUrl || "")}
-                                alt={product.name}
-                                className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
-                                width={200}
-                                height={200}
-                                draggable={false}
-                              />
+                      {selectedProducts.map((item, index) => {
+                        const product = (item as any).product;
+                        return (
+                          <ListItem
+                            key={`${item.id}-${index}`}
+                            sx={{
+                              borderBottom: "1px solid #e0e0e0",
+                              "&:last-child": { borderBottom: "none" },
+                              "&:first-child": { paddingTop: "0px" },
+                              display: "flex",
+                              flexDirection: "column",
+                              padding: "16px 0px",
+                            }}
+                          >
+                            <Box className="flex items-start w-full gap-2">
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+                                <Image
+                                  src={checkImageUrl(product.imageUrl || "")}
+                                  alt={product.name}
+                                  className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
+                                  width={200}
+                                  height={200}
+                                  draggable={false}
+                                />
+                              </Box>
+                              <Box>
+                                <Typography variant="body1">
+                                  {product.name.slice(0, 50) + (product.name.length > 50 ? "..." : "")}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                <IconButton
+                                  size="small"
+                                  sx={{ border: "2px solid #FDEDE8", bgcolor: "#FDEDE8", mb: 1 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    removeProduct(index)
+                                  }}
+                                  color="error"
+                                >
+                                  <IconTrash className="w-3 h-3" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleQuantityChange(item.id, -1)
+                                  }}
+                                  sx={{ border: "1px solid #e0e0e0" }}
+                                >
+                                  <IconMinus className="w-3 h-3" />
+                                </IconButton>
+                                <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[item.id] || 1}</Box>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleQuantityChange(item.id, 1)
+                                  }}
+                                  sx={{ border: "1px solid #e0e0e0" }}
+                                >
+                                  <IconPlus className="w-3 h-3" />
+                                </IconButton>
+                              </Box>
                             </Box>
-                            <Box>
-                              <Typography variant="body1">
-                                {product.name.slice(0, 50) + (product.name.length > 50 ? "..." : "")}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
-                              </Typography>
+                            <Box sx={{display: "flex", mt: 2, width: "100%", justifyContent: "space-between"}}>
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
+                                <span className="text-xs !text-green-500">${Number(item.salePrice)}</span>
+                              </Box>
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
+                                <span className="text-xs !text-amber-500">${Number(item.price)}</span>
+                              </Box>
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
+                                <span className="text-xs !text-red-500 font-bold">
+                                ${Number(item.profit)}
+                                </span>
+                              </Box>
                             </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                              <IconButton
-                                size="small"
-                                sx={{ border: "2px solid #FDEDE8", bgcolor: "#FDEDE8", mb: 1 }}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  removeProduct(index)
-                                }}
-                                color="error"
-                              >
-                                <IconTrash className="w-3 h-3" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleQuantityChange(product.id, -1)
-                                }}
-                                sx={{ border: "1px solid #e0e0e0" }}
-                              >
-                                <IconMinus className="w-3 h-3" />
-                              </IconButton>
-                              <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[product.id] || 1}</Box>
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleQuantityChange(product.id, 1)
-                                }}
-                                sx={{ border: "1px solid #e0e0e0" }}
-                              >
-                                <IconPlus className="w-3 h-3" />
-                              </IconButton>
-                            </Box>
-                          </Box>
-                          <Box sx={{display: "flex", mt: 2, width: "100%", justifyContent: "space-between"}}>
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
-                              <span className="text-xs !text-green-500">${Number(product.salePrice).toFixed(2)}</span>
-                            </Box>
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
-                              <span className="text-xs !text-amber-500">${Number(product.price).toFixed(2)}</span>
-                            </Box>
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
-                              <span className="text-xs !text-red-500 font-bold">
-                                ${(Number(product.salePrice) - Number(product.price)).toFixed(2)}
-                              </span>
-                            </Box>
-                          </Box>
-                        </ListItem>
-                      ))}
+                          </ListItem>
+                        )
+                      })}
                     </List>
                     <Box sx={{ width: "100%", pt: 2, borderTop: "1px solid #e0e0e0" }}>
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -1358,8 +1371,8 @@ const AdminPosPage = () => {
                         <span className="font-normal text-gray-400">
                           $
                           {selectedProducts
-                            .reduce((sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1), 0)
-                            .toFixed(2)}
+                            .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
+                            }
                         </span>
                       </Box>
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -1370,10 +1383,10 @@ const AdminPosPage = () => {
                           $
                           {(
                             selectedProducts.reduce(
-                              (sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1),
+                              (sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1),
                               0,
                             ) * 0.08
-                          ).toFixed(2)}
+                          )}
                         </span>
                       </Box>
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -1404,13 +1417,10 @@ const AdminPosPage = () => {
                         <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
                           ${" "}
                           {(
-                            selectedProducts.reduce(
-                              (sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1),
-                              0,
-                            ) *
+                            selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) *
                             1.08 +
                             5
-                          ).toFixed(2)}
+                          )}
                         </Box>
                       </Box>
                     </Box>
@@ -1731,9 +1741,7 @@ const AdminPosPage = () => {
       </Dialog>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle fontSize={18}>
-          Xác nhận đơn hàng
-        </DialogTitle>
+        <DialogTitle fontSize={18}>Xác nhận đơn hàng</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -1801,42 +1809,45 @@ const AdminPosPage = () => {
                 </Typography>
               </Box>
 
-              <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
+              <Paper elevation={1} sx={{ borderRadius: 1 }}>
                 <Box>
-                  <Box sx={{ display: "flex", mb: 1, fontWeight: 600, p: 2 }}>
+                  <Box sx={{ display: "flex", mb: 1, fontWeight: 600, p: 2, pb: 1 }}>
                     <Box sx={{ width: "50%" }}>Tên sản phẩm</Box>
                     <Box sx={{ width: "20%" }}>Số lượng</Box>
                     <Box sx={{ width: "15%" }}>Đơn giá</Box>
                     <Box sx={{ width: "15%" }}>Thành tiền</Box>
                   </Box>
-                  {selectedProducts.map((product, index) => (
-                    <Box
-                      key={product.id}
-                      sx={{
-                        display: "flex",
-                        py: 1,
-                        px: 2,
-                        borderBottom: "1px solid #f0f0f0",
-                        alignItems: "center",
-                        backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit"
-                      }}
-                    >
-                      <Box sx={{ width: "50%" }}>
-                        <Typography className="font-semibold">{product.name}</Typography>
+                  {selectedProducts.map((item, index) => {
+                    const product = (item as any).product;
+                    return (
+                      <Box
+                        key={item.id}
+                        sx={{
+                          display: "flex",
+                          py: 1,
+                          px: 2,
+                          borderBottom: "1px solid #f0f0f0",
+                          alignItems: "center",
+                          backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit"
+                        }}
+                      >
+                        <Box sx={{ width: "50%" }}>
+                          <Typography className="font-semibold">{product.name}</Typography>
+                        </Box>
+                        <Box sx={{ width: "20%" }}>
+                          <Typography>{quantities[item.id] || 1}</Typography>
+                        </Box>
+                        <Box sx={{ width: "15%" }}>
+                          <Typography>${Number(item.salePrice).toFixed(2)}</Typography>
+                        </Box>
+                        <Box sx={{ width: "15%" }}>
+                          <Typography fontWeight={600}>
+                            ${(Number(item.salePrice) * (quantities[item.id] || 1)).toFixed(2)}
+                          </Typography>
+                        </Box>
                       </Box>
-                      <Box sx={{ width: "20%" }}>
-                        <Typography>{quantities[product.id] || 1}</Typography>
-                      </Box>
-                      <Box sx={{ width: "15%" }}>
-                        <Typography>${Number(product.salePrice).toFixed(2)}</Typography>
-                      </Box>
-                      <Box sx={{ width: "15%" }}>
-                        <Typography fontWeight={600}>
-                          ${(Number(product.salePrice) * (quantities[product.id] || 1)).toFixed(2)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
+                    )
+                  })}
                 </Box>
               </Paper>
             </Box>
@@ -1847,9 +1858,9 @@ const AdminPosPage = () => {
               </Typography>
               <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none w-fit">
                 ${(
-                  selectedProducts.reduce((sum, p) => sum + Number(p.salePrice) * (quantities[p.id] || 1), 0) * 1.08 +
+                  selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) * 1.08 +
                   5
-                ).toFixed(2)}
+                )}
               </Box>
             </Box>
           </Box>
