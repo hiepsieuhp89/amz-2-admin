@@ -54,8 +54,8 @@ const NavItem = ({ item, level, pathDirect, onClick }: ItemType) => {
     ".MuiButtonBase-root": {
       whiteSpace: "nowrap",
       marginBottom: "2px",
-      padding: "8px 10px",
-      borderRadius: "6px",
+      padding: "6px 10px",
+      // borderRadius: "6px",
       backgroundColor: level > 1 ? "transparent !important" : "inherit",
       color: theme.palette.text.secondary,
       paddingLeft: "10px",
@@ -72,16 +72,16 @@ const NavItem = ({ item, level, pathDirect, onClick }: ItemType) => {
       "&:hover": {
         backgroundColor: "#3A3F50",
         color: theme.palette.primary.light,
-        borderRadius: "6px",
+        // borderRadius: "6px",
       },
       "&.Mui-selected": {
         color: "white",
         backgroundColor: "#3A3F50",
-        borderRadius: "6px",
+        // borderRadius: "6px",
         "&:hover": {
           backgroundColor: "#3A3F50",
           color: "white",
-          borderRadius: "6px",
+          // borderRadius: "6px",
         },
       },
     },

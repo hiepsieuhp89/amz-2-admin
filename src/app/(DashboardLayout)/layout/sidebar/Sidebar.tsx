@@ -47,21 +47,13 @@ const Sidebar = ({
           open={isSidebarOpen}
           variant="permanent"
           PaperProps={{
-            sx: sidebarStyle
+            sx: sidebarStyle,
           }}
         >
-          <Box
-            sx={{
-              height: "100%",
-            }}
-          >
             <Box px={0} className="!w-full flex justify-center">
               <Logo />
             </Box>
-            <Box >
-              <SidebarItems />
-            </Box>
-          </Box>
+            <SidebarItems />
         </Drawer>
       </Box>
     );

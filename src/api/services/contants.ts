@@ -102,3 +102,13 @@ export const ConfigCityEndPoint = {
   BASE: "/admin/cities",
   GET_BY_ID: (id: string) => `/admin/cities/${id}`
 }
+
+export const ConfigDistrictEndPoint = {
+  BASE: "/admin/districts",
+  GET_BY_ID: (id: string) => `/admin/districts/${id}`
+}
+
+export const ConfigPostalCodeEndPoint = {
+  BASE: "/admin/postal-codes",
+  GET_BY_ID: (id: string) => `/admin/postal-codes/${id}`
+}

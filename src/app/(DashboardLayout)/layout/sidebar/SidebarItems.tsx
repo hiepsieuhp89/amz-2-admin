@@ -12,8 +12,7 @@ const SidebarItems = ({ toggleMobileSidebar }: any) => {
 
 
   return (
-    <Box sx={{ px: 2 }}>
-      <List sx={{ pt: 0 }} className="sidebarNav" component="div">
+      <List sx={{ pt: 0}} className="sidebarNav" component="div">
         {Menuitems.map((item) => {
           if (item.subheader) {
             return <NavGroup item={item} key={item.subheader} />;
@@ -29,7 +28,6 @@ const SidebarItems = ({ toggleMobileSidebar }: any) => {
           }
         })}
       </List>
-    </Box>
   );
 };
 export default SidebarItems;
