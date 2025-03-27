@@ -48,6 +48,8 @@ const Sidebar = ({
           variant="permanent"
           PaperProps={{
             sx: sidebarStyle,
+            backgroundColor: "#131921 !important",
+
           }}
         >
             <Box px={0} className="!w-full flex justify-center">

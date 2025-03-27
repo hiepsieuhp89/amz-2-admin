@@ -59,6 +59,7 @@ import { useGetAllUsers, useUpdateUser } from "@/hooks/user"
 import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
 import { geographicData } from "@/helper/nations"
 import type { SelectChangeEvent } from "@mui/material"
+import { IValidUser } from "@/interface/response/fake-order"
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -108,6 +109,9 @@ const AdminPosPage = () => {
   const [selectedShops, setSelectedShops] = useState<string[]>([])
   const [page, setPage] = useState(0)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false)
+  const [selectedInvalidUser, setSelectedInvalidUser] = useState<IValidUser>()
+
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     const customer = event.currentTarget.dataset.customer
     if (customer) {
@@ -185,15 +189,20 @@ const AdminPosPage = () => {
   }
 
   const handleSelectUser = (user: any) => {
-    setSelectedUser(user)
+    if (!user?.address) {
+      message.warning(`Khách ảo: ${user.fullName} chưa có địa chỉ`);
+      return;
+    }
+    
+    setSelectedUser(user);
     setSelectedCustomer({
       ...selectedCustomer,
       email: user.email,
       phone: user.phone,
       address: user.address,
       userId: user.id,
-    })
-    message.success(`Khách ảo: ${user.fullName} đã được thêm thành công`)
+    });
+    message.success(`Khách ảo: ${user.fullName} đã được thêm thành công`);
   }
 
   const handleCreateFakeOrder = () => {
@@ -308,16 +317,17 @@ const AdminPosPage = () => {
       await updateUserMutation.mutateAsync({
         id: selectedUserId,
         payload: {
-          countryId: selectedCountry,
-          stateId: selectedState,
-          cityId: selectedCity,
-          districtId: selectedDistrict,
-          postalCodeId: selectedPostalCode,
+          // countryId: selectedCountry,
+          // stateId: selectedState,
+          // cityId: selectedCity,
+          // districtId: selectedDistrict,
+          // postalCodeId: selectedPostalCode,
           address: address,
         },
       })
       message.success("Đã cập nhật địa chỉ cho người dùng.")
       handleCloseDialog()
+      setOpenUpdateDialog(false)
     } catch (error) {
       message.error("Có lỗi xảy ra khi cập nhật địa chỉ")
     }
@@ -338,7 +348,14 @@ const AdminPosPage = () => {
     page * rowsPerPage + rowsPerPage
   ) || []
 
-  console.log(productsData?.data?.data)
+
+  const handleOpenAddressDialog = (user: IValidUser) => {
+    setSelectedInvalidUser(user);
+    setSelectedUserId(user.id);
+    setOpenUpdateDialog(true);
+
+  };
+
   return (
     <Box component="section" className={styles.storehouse}>
       <Box className="px-4 py-4 mx-auto ">
@@ -776,84 +793,87 @@ const AdminPosPage = () => {
                         Lưới
                       </Button>
                     </ButtonGroup>
-                </Box>
+                  </Box>
                 </Box>
                 {viewMode === 'grid' ? (
-                <Box className="grid grid-cols-1 gap-4 mb-10 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
-                  {productsData?.data?.data?.length === 0 ? (
-                    <Box className="flex items-center justify-center h-full col-span-3">
-                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Shop chưa có sản phẩm."} />
-                    </Box>
-                  ) : (
-                    productsData?.data?.data?.map((item) => {
-                      const product = (item as any).product
-                      return (
-                        <Box key={item.id} className={styles.productCard}>
-                          <Box className={`${styles.card} !rounded-[8px] overflow-hidden`}>
-                            <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-                              <Box className={styles.imageContainer}>
-                                <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
-                                  Trong kho: {product.stock}
+                  <>
+                    <Box className="grid grid-cols-1 gap-4 mb-10 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
+                      {productsData?.data?.data?.length === 0 ? (
+                        <Box className="flex items-center justify-center h-full col-span-3">
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Shop chưa có sản phẩm."} />
+                        </Box>
+                      ) : (
+                        productsData?.data?.data?.map((item) => {
+                          const product = (item as any).product
+                          return (
+                            <Box key={item.id} className={styles.productCard}>
+                              <Box className={`${styles.card} !rounded-[8px] overflow-hidden`}>
+                                <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
+                                  <Box className={styles.imageContainer}>
+                                    <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
+                                      Trong kho: {product.stock}
+                                    </Box>
+                                    <Image
+                                      src={checkImageUrl(product.imageUrl || "")}
+                                      alt={product.name}
+                                      className={`${styles.productImage}`}
+                                      width={140}
+                                      height={140}
+                                      draggable={false}
+                                    />
+                                  </Box>
+                                  <Box className={styles.productName}>
+                                    Tên sản phẩm: {product.name.slice(0, 50)}
+                                    {product.name.length > 50 && "..."}
+                                  </Box>
+                                  <Box className={styles.productDescription}>
+                                    <strong>Mô tả: </strong>
+                                    {product.description.slice(0, 100)}
+                                    {product.description.length > 100 && "..."}
+                                  </Box>
+                                  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                                    <Box sx={{ display: "flex", gap: 1 }}>
+                                      <span>Giá bán:</span>
+                                      <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
+                                    </Box>
+                                    <Box sx={{ display: "flex", gap: 1 }}>
+                                      <span>Giá nhập:</span>
+                                      <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
+                                    </Box>
+                                    <Box sx={{ display: "flex", gap: 1 }}>
+                                      <span>Lợi nhuận:</span>
+                                      <span className="!text-red-500 font-bold">${(item as any).profit}</span>
+                                    </Box>
+                                  </Box>
+                                  <Box
+                                    className={styles.addButton}
+                                    onClick={() => addProduct({ ...product, shopId: item.id })}
+                                  >
+                                    <Box className={styles.overlay}></Box>
+                                    <IconPlus className={styles.plusIcon} />
+                                  </Box>
                                 </Box>
-                                <Image
-                                  src={checkImageUrl(product.imageUrl || "")}
-                                  alt={product.name}
-                                  className={`${styles.productImage}`}
-                                  width={140}
-                                  height={140}
-                                  draggable={false}
-                                />
-                              </Box>
-                              <Box className={styles.productName}>
-                                Tên sản phẩm: {product.name.slice(0, 50)}
-                                {product.name.length > 50 && "..."}
-                              </Box>
-                              <Box className={styles.productDescription}>
-                                <strong>Mô tả: </strong>
-                                {product.description.slice(0, 100)}
-                                {product.description.length > 100 && "..."}
-                              </Box>
-                              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                                <Box sx={{ display: "flex", gap: 1 }}>
-                                  <span>Giá bán:</span>
-                                  <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
-                                </Box>
-                                <Box sx={{ display: "flex", gap: 1 }}>
-                                  <span>Giá nhập:</span>
-                                  <span className="!text-amber-500">${Number(product.price).toFixed(2)}</span>
-                                </Box>
-                                <Box sx={{ display: "flex", gap: 1 }}>
-                                  <span>Lợi nhuận:</span>
-                                  <span className="!text-red-500 font-bold">${(item as any).profit}</span>
-                                </Box>
-                              </Box>
-                              <Box
-                                className={styles.addButton}
-                                onClick={() => addProduct({ ...product, shopId: item.id })}
-                              >
-                                <Box className={styles.overlay}></Box>
-                                <IconPlus className={styles.plusIcon} />
                               </Box>
                             </Box>
-                          </Box>
-                        </Box>
-                      )
-                    })
-                  )}
-                  {(productsData?.data?.meta as any)?.itemCount > (productsData?.data?.meta as any)?.take && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 8 }}>
-                    <Pagination
-                      count={Math.ceil(
-                        (productsData?.data?.meta as any)?.itemCount / (productsData?.data?.meta as any)?.take,
+                          )
+                        })
                       )}
-                      page={currentPage}
-                      onChange={handlePageChange}
-                      variant="outlined"
-                      color="primary"
-                    />
-                  </Box>
-                )}
-                </Box>
+
+                    </Box>
+                    {(productsData?.data?.meta as any)?.itemCount > (productsData?.data?.meta as any)?.take && (
+                      <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 8 }}>
+                        <Pagination
+                          count={Math.ceil(
+                            (productsData?.data?.meta as any)?.itemCount / (productsData?.data?.meta as any)?.take,
+                          )}
+                          page={currentPage}
+                          onChange={handlePageChange}
+                          variant="outlined"
+                          color="primary"
+                        />
+                      </Box>
+                    )}
+                  </>
                 ) : (
                   <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
                     <List sx={{ padding: 0 }} className="!px-0">
@@ -947,7 +967,7 @@ const AdminPosPage = () => {
                     />
                   </Paper>
                 )}
-                
+
               </Box>
             )}
           </Box>
@@ -1040,7 +1060,6 @@ const AdminPosPage = () => {
                           borderBottom: "none",
                         },
                       }}
-                      onClick={() => handleSelectUser(user)}
                     >
                       <Box
                         sx={{
@@ -1068,16 +1087,42 @@ const AdminPosPage = () => {
                           </Typography>
                         }
                         secondary={
-                          <Typography
-                            sx={{ display: "flex", alignItems: "center" }}
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            <IconMail className="w-3 h-3 mr-1" /> {user.email}
-                          </Typography>
+                          <>
+                            <Typography
+                              sx={{ display: "flex", alignItems: "center" }}
+                              variant="body2"
+                              color="text.secondary"
+                            >
+                              <IconMail className="w-3 h-3 mr-1" /> {user.email}
+                            </Typography>
+                            <Typography
+                              sx={{ display: "flex", alignItems: "center", mt: 0.5 }}
+                              variant="body2"
+                              color="text.secondary"
+                            >
+                              <IconMapPin className="w-3 h-3 mr-1" /> 
+                              <span className="italic">{user?.address || "Chưa có địa chỉ"}</span>
+                            </Typography>
+                          </>
                         }
                         sx={{ my: 0 }}
                       />
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAddressDialog(user);
+                        }}
+                        sx={{
+                          ml: 2,
+                          color: "#5D87FF",
+                          "&:hover": {
+                            backgroundColor: "#ECF2FF",
+                          },
+                        }}
+                      >
+                        <IconMapPinPin className="w-4 h-4" />
+                      </IconButton>
                     </ListItem>
                   ))}
                 </List>
@@ -1091,7 +1136,7 @@ const AdminPosPage = () => {
               </Box>
             )}
 
-            <Box sx={{ padding: 0}}>
+            <Box sx={{ padding: 0 }}>
               <Box className={styles.selectedProducts}>
                 {selectedProducts.length > 0 ? (
                   <>
@@ -1295,149 +1340,295 @@ const AdminPosPage = () => {
       >
         <DialogTitle fontSize={18}>Thêm địa chỉ mới</DialogTitle>
         <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-          <Box sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              <Box sx={{ width: '100%' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Chọn người dùng</InputLabel>
-                  <Select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    label="Chọn người dùng"
-                    size="small"
-                  >
-                    {shopsData?.data?.data.map((user) => (
-                      <MenuItem key={user.id} value={user.id}>
-                        {user.fullName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Quốc gia</InputLabel>
-                  <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
-                    {Object.keys(geographicData).map((country) => (
-                      <MenuItem key={country} value={country}>
-                        {country}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Tỉnh/Thành phố</InputLabel>
-                  <Select
-                    value={selectedState}
-                    onChange={handleStateChange}
-                    label="Tỉnh/Thành phố"
-                    disabled={!selectedCountry}
-                  >
-                    {selectedCountry &&
-                      (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
-                        (province: any) => (
-                          <MenuItem key={province.code} value={province.code}>
-                            {province.name}
-                          </MenuItem>
-                        ),
-                      )}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Thành phố/Quận</InputLabel>
-                  <Select
-                    value={selectedCity}
-                    onChange={handleCityChange}
-                    label="Thành phố/Quận"
-                    disabled={!selectedState}
-                  >
-                    {selectedState &&
-                      (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                        selectedState
-                      ]?.map((city: any) => (
-                        <MenuItem key={city.code} value={city.code}>
-                          {city.name}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <Box sx={{ width: '100%' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Chọn người dùng</InputLabel>
+                    <Select
+                      value={selectedUserId}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                      label="Chọn người dùng"
+                      size="small"
+                    >
+                      {shopsData?.data?.data.map((user) => (
+                        <MenuItem key={user.id} value={user.id}>
+                          {user.fullName}
                         </MenuItem>
                       ))}
-                  </Select>
-                </FormControl>
-              </Box>
+                    </Select>
+                  </FormControl>
+                </Box>
 
-              <Box sx={{ width: 'calc(50% - 8px)' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Quận/Huyện</InputLabel>
-                  <Select
-                    value={selectedDistrict}
-                    onChange={handleDistrictChange}
-                    label="Quận/Huyện"
-                    disabled={!selectedCity}
-                  >
-                    {selectedCity &&
-                      (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
-                        (ward: any) => (
-                          <MenuItem key={ward.code} value={ward.code}>
-                            {ward.name}
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Quốc gia</InputLabel>
+                    <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
+                      {Object.keys(geographicData).map((country) => (
+                        <MenuItem key={country} value={country}>
+                          {country}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Tỉnh/Thành phố</InputLabel>
+                    <Select
+                      value={selectedState}
+                      onChange={handleStateChange}
+                      label="Tỉnh/Thành phố"
+                      disabled={!selectedCountry}
+                    >
+                      {selectedCountry &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
+                          (province: any) => (
+                            <MenuItem key={province.code} value={province.code}>
+                              {province.name}
+                            </MenuItem>
+                          ),
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Thành phố/Quận</InputLabel>
+                    <Select
+                      value={selectedCity}
+                      onChange={handleCityChange}
+                      label="Thành phố/Quận"
+                      disabled={!selectedState}
+                    >
+                      {selectedState &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                          selectedState
+                        ]?.map((city: any) => (
+                          <MenuItem key={city.code} value={city.code}>
+                            {city.name}
                           </MenuItem>
-                        ),
-                      )}
-                  </Select>
-                </FormControl>
-              </Box>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </Box>
 
-              <Box sx={{ width: 'calc(50% - 8px)' }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Mã bưu điện</InputLabel>
-                  <Select
-                    value={selectedPostalCode}
-                    onChange={handlePostalCodeChange}
-                    label="Mã bưu điện"
-                    disabled={!selectedDistrict}
-                  >
-                    {selectedDistrict &&
-                      (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                        selectedState
-                      ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
-                        <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
-                      )}
-                  </Select>
-                </FormControl>
-              </Box>
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Quận/Huyện</InputLabel>
+                    <Select
+                      value={selectedDistrict}
+                      onChange={handleDistrictChange}
+                      label="Quận/Huyện"
+                      disabled={!selectedCity}
+                    >
+                      {selectedCity &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
+                          (ward: any) => (
+                            <MenuItem key={ward.code} value={ward.code}>
+                              {ward.name}
+                            </MenuItem>
+                          ),
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
 
-              <Box sx={{ width: '100%' }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Địa chỉ chi tiết"
-                  value={address}
-                  onChange={handleAddressChange}
-                  margin="normal"
-                />
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Mã bưu điện</InputLabel>
+                    <Select
+                      value={selectedPostalCode}
+                      onChange={handlePostalCodeChange}
+                      label="Mã bưu điện"
+                      disabled={!selectedDistrict}
+                    >
+                      {selectedDistrict &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                          selectedState
+                        ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
+                          <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: '100%' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Địa chỉ chi tiết"
+                    value={address}
+                    onChange={handleAddressChange}
+                    margin="normal"
+                  />
+                </Box>
               </Box>
             </Box>
           </Box>
-        </Box>
         </DialogContent>
         <DialogActions className="mx-4 mb-4">
-          <Button 
-          className="!normal-case" 
-          variant="outlined"
-          onClick={handleCloseDialog}>Huỷ bỏ</Button>
+          <Button
+            className="!normal-case"
+            variant="outlined"
+            onClick={handleCloseDialog}>Huỷ bỏ</Button>
           <Button className="!normal-case" onClick={handleSaveAddress} variant="contained">
             Lưu địa chỉ
           </Button>
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={openUpdateDialog}
+        onClose={() => setOpenUpdateDialog(false)}
+        maxWidth="md"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "60vw",
+            maxWidth: "none",
+          },
+        }}
+      >
+        <DialogTitle fontSize={18}>Cập nhật địa chỉ</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <Box sx={{ width: '100%' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={selectedInvalidUser ? selectedInvalidUser.fullName : ''}
+                    disabled
+                    margin="normal"
+                  />
+                </Box>
+
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Quốc gia</InputLabel>
+                    <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
+                      {Object.keys(geographicData).map((country) => (
+                        <MenuItem key={country} value={country}>
+                          {country}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Tỉnh/Thành phố</InputLabel>
+                    <Select
+                      value={selectedState}
+                      onChange={handleStateChange}
+                      label="Tỉnh/Thành phố"
+                      disabled={!selectedCountry}
+                    >
+                      {selectedCountry &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
+                          (province: any) => (
+                            <MenuItem key={province.code} value={province.code}>
+                              {province.name}
+                            </MenuItem>
+                          ),
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Thành phố/Quận</InputLabel>
+                    <Select
+                      value={selectedCity}
+                      onChange={handleCityChange}
+                      label="Thành phố/Quận"
+                      disabled={!selectedState}
+                    >
+                      {selectedState &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                          selectedState
+                        ]?.map((city: any) => (
+                          <MenuItem key={city.code} value={city.code}>
+                            {city.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Quận/Huyện</InputLabel>
+                    <Select
+                      value={selectedDistrict}
+                      onChange={handleDistrictChange}
+                      label="Quận/Huyện"
+                      disabled={!selectedCity}
+                    >
+                      {selectedCity &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
+                          (ward: any) => (
+                            <MenuItem key={ward.code} value={ward.code}>
+                              {ward.name}
+                            </MenuItem>
+                          ),
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Mã bưu điện</InputLabel>
+                    <Select
+                      value={selectedPostalCode}
+                      onChange={handlePostalCodeChange}
+                      label="Mã bưu điện"
+                      disabled={!selectedDistrict}
+                    >
+                      {selectedDistrict &&
+                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                          selectedState
+                        ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
+                          <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
+                        )}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ width: '100%' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Địa chỉ chi tiết"
+                    value={address}
+                    onChange={handleAddressChange}
+                    margin="normal"
+                  />
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions className="mx-4 mb-4">
+          <Button className="!normal-case" variant="outlined" onClick={() => setOpenUpdateDialog(false)}>
+            Huỷ bỏ
+          </Button>
+          <Button className="!normal-case" onClick={handleSaveAddress} variant="contained">
+            Cập nhật
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="md" fullWidth>
-      <DialogTitle fontSize={18}>Xác nhận đơn hàng</DialogTitle>
+        <DialogTitle fontSize={18}>Xác nhận đơn hàng</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1489,10 +1680,10 @@ const AdminPosPage = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button 
-          className="!normal-case" 
-          variant="outlined"
-          onClick={() => setConfirmOpen(false)}>Hủy bỏ</Button>
+          <Button
+            className="!normal-case"
+            variant="outlined"
+            onClick={() => setConfirmOpen(false)}>Hủy bỏ</Button>
           <Button className="!normal-case" onClick={handleConfirmOrder} variant="contained">
             Xác nhận đặt hàng
           </Button>
