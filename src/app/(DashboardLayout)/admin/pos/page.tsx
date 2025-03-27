@@ -76,9 +76,11 @@ const AdminPosPage = () => {
   })
 
   const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
   const { data: productsData, isLoading } = useGetAllShopProducts({
     shopId: selectedShopId,
     page: currentPage,
+    take: rowsPerPage,
   })
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
@@ -105,9 +107,7 @@ const AdminPosPage = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [selectedShops, setSelectedShops] = useState<string[]>([])
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
-
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     const customer = event.currentTarget.dataset.customer
     if (customer) {
@@ -327,13 +327,10 @@ const AdminPosPage = () => {
     setSelectedShopId(shopId)
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1);
   }
 
   const displayedShops = shopsData?.data?.data.slice(
@@ -341,12 +338,7 @@ const AdminPosPage = () => {
     page * rowsPerPage + rowsPerPage
   ) || []
 
-  const uniqueProducts = productsData?.data?.data?.filter((item, index, self) =>
-    index === self.findIndex((t) => (
-      t.product.id === item.product.id
-    ))
-  ).slice(0, 5) || [];
-
+  console.log(productsData?.data?.data)
   return (
     <Box component="section" className={styles.storehouse}>
       <Box className="px-4 py-4 mx-auto ">
@@ -543,11 +535,13 @@ const AdminPosPage = () => {
                             component="div"
                             count={shopsData?.data?.data.length || 0}
                             page={page}
-                            onPageChange={handleChangePage}
+                            onPageChange={(e, newPage) => {
+                              setPage(newPage);
+                            }}
                             rowsPerPage={rowsPerPage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            rowsPerPageOptions={[]}
-                            labelRowsPerPage=""
+                            rowsPerPageOptions={[5, 10, 25]}
+                            labelRowsPerPage="Số hàng mỗi trang:"
                             labelDisplayedRows={({ from, to, count }) =>
                               `${from}–${to} của ${count}`
                             }
@@ -863,9 +857,9 @@ const AdminPosPage = () => {
                 ) : (
                   <Paper elevation={1} sx={{ borderRadius: 1, border: "1px solid #E0E0E0" }}>
                     <List sx={{ padding: 0 }} className="!px-0">
-                      {uniqueProducts.map((item, index) => {
+                      {productsData?.data?.data?.map((item, index) => {
                         const product = (item as any).product
-                        const isSelected = selectedProducts.some(p => p.id === product.id)
+                        const isSelected = selectedProducts.some(p => p.shopId === item.id)
                         return (
                           <div key={item.id}>
                             <Collapse in={true} timeout="auto" unmountOnExit>
@@ -881,7 +875,7 @@ const AdminPosPage = () => {
                                   checked={isSelected}
                                   onChange={() => {
                                     if (isSelected) {
-                                      const index = selectedProducts.findIndex(p => p.id === product.id)
+                                      const index = selectedProducts.findIndex(p => p.shopId === item.id)
                                       removeProduct(index)
                                     } else {
                                       addProduct({ ...product, shopId: item.id })
@@ -934,12 +928,21 @@ const AdminPosPage = () => {
                     </List>
                     <TablePagination
                       component="div"
-                      count={uniqueProducts.length}
+                      count={productsData?.data?.meta?.itemCount || 0}
                       page={currentPage - 1}
-                      onPageChange={(e, page) => setCurrentPage(page + 1)}
-                      rowsPerPage={5}
-                      onRowsPerPageChange={(e) => {
-                        // Handle rows per page change if needed
+                      onPageChange={(e, newPage) => setCurrentPage(newPage + 1)}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      rowsPerPageOptions={[]}
+                      labelDisplayedRows={({ from, to, count }) =>
+                        `${from}–${to} của ${count}`
+                      }
+                      sx={{
+                        borderTop: '1px solid rgba(0, 0, 0, 0.12)',
+                        '& .MuiTablePagination-toolbar': {
+                          paddingLeft: 2,
+                          paddingRight: 2,
+                        }
                       }}
                     />
                   </Paper>
@@ -1088,7 +1091,7 @@ const AdminPosPage = () => {
               </Box>
             )}
 
-            <Box sx={{ padding: 0 }}>
+            <Box sx={{ padding: 0}}>
               <Box className={styles.selectedProducts}>
                 {selectedProducts.length > 0 ? (
                   <>
@@ -1106,7 +1109,6 @@ const AdminPosPage = () => {
                             },
                             display: "flex",
                             flexDirection: "column",
-                            padding: "12px 0px",
                           }}
                         >
                           <Box className="flex items-start gap-2 ">
@@ -1293,135 +1295,135 @@ const AdminPosPage = () => {
       >
         <DialogTitle fontSize={18}>Thêm địa chỉ mới</DialogTitle>
         <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2,  mt: 2 }}>
-            <Box sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Chọn người dùng</InputLabel>
-                    <Select
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      label="Chọn người dùng"
-                      size="small"
-                    >
-                      {shopsData?.data?.data.map((user) => (
-                        <MenuItem key={user.id} value={user.id}>
-                          {user.fullName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Quốc gia</InputLabel>
-                    <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
-                      {Object.keys(geographicData).map((country) => (
-                        <MenuItem key={country} value={country}>
-                          {country}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    <Select
-                      value={selectedState}
-                      onChange={handleStateChange}
-                      label="Tỉnh/Thành phố"
-                      disabled={!selectedCountry}
-                    >
-                      {selectedCountry &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
-                          (province: any) => (
-                            <MenuItem key={province.code} value={province.code}>
-                              {province.name}
-                            </MenuItem>
-                          ),
-                        )}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Thành phố/Quận</InputLabel>
-                    <Select
-                      value={selectedCity}
-                      onChange={handleCityChange}
-                      label="Thành phố/Quận"
-                      disabled={!selectedState}
-                    >
-                      {selectedState &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.map((city: any) => (
-                          <MenuItem key={city.code} value={city.code}>
-                            {city.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      value={selectedDistrict}
-                      onChange={handleDistrictChange}
-                      label="Quận/Huyện"
-                      disabled={!selectedCity}
-                    >
-                      {selectedCity &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
-                          (ward: any) => (
-                            <MenuItem key={ward.code} value={ward.code}>
-                              {ward.name}
-                            </MenuItem>
-                          ),
-                        )}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={4}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Mã bưu điện</InputLabel>
-                    <Select
-                      value={selectedPostalCode}
-                      onChange={handlePostalCodeChange}
-                      label="Mã bưu điện"
-                      disabled={!selectedDistrict}
-                    >
-                      {selectedDistrict &&
-                        (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
-                          selectedState
-                        ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
-                          <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
-                        )}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ width: '100%' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Chọn người dùng</InputLabel>
+                  <Select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    label="Chọn người dùng"
                     size="small"
-                    label="Địa chỉ chi tiết"
-                    value={address}
-                    onChange={handleAddressChange}
-                    margin="normal"
-                  />
-                </Grid>
-              </Grid>
+                  >
+                    {shopsData?.data?.data.map((user) => (
+                      <MenuItem key={user.id} value={user.id}>
+                        {user.fullName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Quốc gia</InputLabel>
+                  <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
+                    {Object.keys(geographicData).map((country) => (
+                      <MenuItem key={country} value={country}>
+                        {country}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Tỉnh/Thành phố</InputLabel>
+                  <Select
+                    value={selectedState}
+                    onChange={handleStateChange}
+                    label="Tỉnh/Thành phố"
+                    disabled={!selectedCountry}
+                  >
+                    {selectedCountry &&
+                      (geographicData[selectedCountry as keyof typeof geographicData] as any).provinces.map(
+                        (province: any) => (
+                          <MenuItem key={province.code} value={province.code}>
+                            {province.name}
+                          </MenuItem>
+                        ),
+                      )}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Thành phố/Quận</InputLabel>
+                  <Select
+                    value={selectedCity}
+                    onChange={handleCityChange}
+                    label="Thành phố/Quận"
+                    disabled={!selectedState}
+                  >
+                    {selectedState &&
+                      (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                        selectedState
+                      ]?.map((city: any) => (
+                        <MenuItem key={city.code} value={city.code}>
+                          {city.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: 'calc(50% - 8px)' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Quận/Huyện</InputLabel>
+                  <Select
+                    value={selectedDistrict}
+                    onChange={handleDistrictChange}
+                    label="Quận/Huyện"
+                    disabled={!selectedCity}
+                  >
+                    {selectedCity &&
+                      (geographicData[selectedCountry as keyof typeof geographicData] as any).ward[selectedCity]?.map(
+                        (ward: any) => (
+                          <MenuItem key={ward.code} value={ward.code}>
+                            {ward.name}
+                          </MenuItem>
+                        ),
+                      )}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: 'calc(50% - 8px)' }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Mã bưu điện</InputLabel>
+                  <Select
+                    value={selectedPostalCode}
+                    onChange={handlePostalCodeChange}
+                    label="Mã bưu điện"
+                    disabled={!selectedDistrict}
+                  >
+                    {selectedDistrict &&
+                      (geographicData[selectedCountry as keyof typeof geographicData] as any).city[
+                        selectedState
+                      ]?.find((city: any) => city.code === selectedCity)?.postalCodeId && (
+                        <MenuItem value={selectedPostalCode}>{selectedPostalCode}</MenuItem>
+                      )}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ width: '100%' }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Địa chỉ chi tiết"
+                  value={address}
+                  onChange={handleAddressChange}
+                  margin="normal"
+                />
+              </Box>
             </Box>
           </Box>
+        </Box>
         </DialogContent>
         <DialogActions className="mx-4 mb-4">
           <Button 

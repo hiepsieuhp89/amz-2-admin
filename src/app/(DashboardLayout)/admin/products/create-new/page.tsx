@@ -128,8 +128,8 @@ export default function CreateProductPage() {
 
       <Paper className="p-6 border">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <Box className="flex flex-col gap-6">
+            <Box>
               <TextField
                 size="small"
                 label="Tên sản phẩm"
@@ -141,66 +141,70 @@ export default function CreateProductPage() {
                 variant="outlined"
                 className="rounded"
               />
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Giá"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
+            <Box className="flex gap-6">
+              <Box className="flex-1">
+                <TextField
+                  size="small"
+                  label="Giá"
+                  name="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                />
+              </Box>
+              
+              <Box className="flex-1">
+                <TextField
+                  size="small"
+                  label="Giá khuyến mãi"
+                  name="salePrice"
+                  type="number"
+                  value={formData.salePrice}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                />
+              </Box>
+            </Box>
             
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Giá khuyến mãi"
-                name="salePrice"
-                type="number"
-                value={formData.salePrice}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
+            <Box className="flex gap-6">
+              <Box className="flex-1">
+                <TextField
+                  size="small"
+                  label="Số lượng"
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                />
+              </Box>
+              
+              <Box className="flex-1">
+                <TextField
+                  size="small"
+                  label="ID Danh mục"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                />
+              </Box>
+            </Box>
             
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="Số lượng"
-                name="stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
-                required
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                label="ID Danh mục"
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
+            <Box>
               <TextField
                 size="small"
                 label="Mô tả chi tiết"
@@ -214,9 +218,9 @@ export default function CreateProductPage() {
                 variant="outlined"
                 className="rounded"
               />
-            </Grid>
+            </Box>
             
-            <Grid item xs={12}>
+            <Box>
               <Typography fontSize={14} variant="subtitle1" className="mb-2">
                 Hình ảnh sản phẩm
               </Typography>
@@ -244,8 +248,8 @@ export default function CreateProductPage() {
                   <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                 </label>
               )}
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
           
           <Box className="flex justify-end gap-4">
             <Button
