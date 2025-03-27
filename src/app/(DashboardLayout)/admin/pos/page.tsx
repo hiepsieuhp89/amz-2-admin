@@ -854,7 +854,7 @@ const AdminPosPage = () => {
                                   </Box>
                                   <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                                     <Box sx={{ display: "flex", gap: 1 }}>
-                                      <span>Giá bán:</span>
+                                      <span>Giá niêm yết:</span>
                                       <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
                                     </Box>
                                     <Box sx={{ display: "flex", gap: 1 }}>
@@ -939,7 +939,7 @@ const AdminPosPage = () => {
                                       </div>
                                       <div style={{ width: '200px' }}>
                                         <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          Giá bán: ${Number(product.salePrice).toFixed(2)}
+                                          Giá niêm yết: ${Number(product.salePrice).toFixed(2)}
                                         </Box>
                                       </div>
                                       <div style={{ width: '150px' }}>
@@ -1328,7 +1328,7 @@ const AdminPosPage = () => {
                           </Box>
                           <Box sx={{ display: "flex", mt: 1, width: "100%", justifyContent: "space-between" }}>
                             <Box sx={{ display: "flex", gap: 1 }}>
-                              <span className="font-semibold text-main-gunmetal-blue">Giá bán:</span>
+                              <span className="font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
                               <span className="!text-green-500">${Number(product.salePrice).toFixed(2)}</span>
                             </Box>
                             <Box sx={{ display: "flex", gap: 1 }}>
