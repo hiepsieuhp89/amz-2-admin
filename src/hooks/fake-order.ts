@@ -24,7 +24,7 @@ export const useGetValidUsers = (
   return useQuery({
     queryKey: [VALID_USERS_KEY, params],
     queryFn: () => getValidUsers(params),
-    enabled: !!params.shopProductIds,
+    enabled: !!params.search,
   })
 }
 

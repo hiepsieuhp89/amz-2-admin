@@ -7,7 +7,6 @@ export interface IValidUserParams {
   take?: number
   search?: string
   status?: string
-  shopProductIds: string[]
 }
 
 export interface IFakeOrderItem {
@@ -17,8 +16,8 @@ export interface IFakeOrderItem {
 
 export interface ICreateFakeOrderPayload {
   items: IFakeOrderItem[]
-  email: string
-  phone: string
+  email?: string
+  phone?: string
   address: string
   userId: string
 }

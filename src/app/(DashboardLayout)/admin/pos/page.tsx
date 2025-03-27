@@ -91,9 +91,10 @@ const AdminPosPage = () => {
   const [showProducts, setShowProducts] = useState(false)
   const [searchUser, setSearchUser] = useState("")
   const { data: validUsers } = useGetValidUsers({
-    shopProductIds: selectedProducts.map((product) => product.id),
     search: searchUser,
   })
+
+  console.log(validUsers)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [hoveredCustomer, setHoveredCustomer] = useState<any>(null)
   const [openDialog, setOpenDialog] = useState(false)
@@ -225,14 +226,21 @@ const AdminPosPage = () => {
       return
     }
 
+    // Kiểm tra số điện thoại hợp lệ
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (selectedUser.phone && !phoneRegex.test(selectedUser.phone)) {
+      message.warning("Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại có từ 10-15 chữ số");
+      return;
+    }
+
     const payload = {
       items: selectedProducts.map((product) => ({
         shopProductId: product.shopId,
         quantity: quantities[product.id] || 1,
       })),
       email: selectedUser.email,
-      phone: selectedUser.phone,
-      address: selectedUser.address || "Việt Nam",
+      // phone: selectedUser.phone || "",
+      address: selectedUser.address || "New York, USA",
       userId: selectedUser.id,
     }
 
@@ -973,7 +981,6 @@ const AdminPosPage = () => {
           </Box>
 
           <Box className="md:w-[400px]">
-            {validUsers && validUsers.data.data.length > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                 <Box
                   sx={{
@@ -993,7 +1000,6 @@ const AdminPosPage = () => {
                   Vui lòng chọn khách ảo trước khi đặt hàng !
                 </Typography>
               </Box>
-            )}
             <Box className="flex items-center gap-2 mb-3">
               <FormControl fullWidth variant="outlined">
                 <InputLabel htmlFor="outlined-adornment-product">Tìm khách ảo (Tên, email, sdt)</InputLabel>
@@ -1049,6 +1055,7 @@ const AdminPosPage = () => {
                 <List>
                   {validUsers.data.data.map((user, index) => (
                     <ListItem
+                      onClick={() => handleSelectUser(user)}
                       key={user.id}
                       sx={{
                         cursor: "pointer",
