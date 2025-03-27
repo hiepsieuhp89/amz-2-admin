@@ -13,12 +13,17 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  CircularProgress
+  CircularProgress,
+  ButtonGroup,
+  Paper
 } from "@mui/material"
 import {
   IconEye,
   IconSearch,
-  IconTrash
+  IconTrash,
+  IconList,
+  IconTable,
+  IconPlus
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -41,6 +46,7 @@ function ProductsPage() {
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [currentImage, setCurrentImage] = useState("")
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
 
   const { data: productData, isLoading, error } = useGetAllProducts({
     page,
@@ -190,34 +196,21 @@ function ProductsPage() {
       </Box>
     )
   }
-
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={filteredProducts}
-        isLoading={isLoading}
-        pagination={pagination}
-        onPageChange={setPage}
-        onRowsPerPageChange={(newRowsPerPage) => {
-          setRowsPerPage(newRowsPerPage);
-          setPage(1);
-        }}
-        renderRow={renderRow}
-        emptyMessage="Không tìm thấy sản phẩm nào"
-        createNewButton={{
-          label: "Tạo sản phẩm mới",
-          onClick: handleCreateNew
-        }}
-        searchComponent={
-          <div className="flex items-center gap-4">
+      <Box>
+        <Box sx={{ 
+          padding: 3,
+          paddingBottom: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ flex: 1, mr: 2 }}>
             <TextField
               size="small"
               placeholder="Tìm kiếm sản phẩm..."
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 rounded shadow-sm"
+              fullWidth
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -227,10 +220,130 @@ function ProductsPage() {
                 className: "text-white rounded-lg hover:shadow-md transition-shadow",
               }}
             />
-          </div>
-        }
-      />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              endIcon={<IconPlus size={18} />}
+              variant="contained"
+              onClick={handleCreateNew}
+              className="text-white transition-colors !normal-case"
+            >
+              Tạo sản phẩm mới
+            </Button>
+            <ButtonGroup variant="outlined" aria-label="outlined button group">
+              <Button
+                variant={viewMode === 'table' ? 'contained' : 'outlined'}
+                onClick={() => setViewMode('table')}
+                startIcon={<IconList />}
+              >
+                Bảng
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+                onClick={() => setViewMode('grid')}
+                startIcon={<IconTable />}
+              >
+                Lưới
+              </Button>
+            </ButtonGroup>
+          </Box>
+        </Box>
 
+        {viewMode === 'table' ? (
+          <DataTable
+            columns={columns}
+            data={filteredProducts}
+            isLoading={isLoading}
+            pagination={pagination}
+            onPageChange={setPage}
+            onRowsPerPageChange={(newRowsPerPage) => {
+              setRowsPerPage(newRowsPerPage)
+              setPage(1)
+            }}
+            renderRow={renderRow}
+            emptyMessage="Không tìm thấy sản phẩm nào"
+          />
+        ) : (
+          <Box className="grid grid-cols-2 gap-4 p-6 pt-12 mb-10 overflow-y-auto md:grid-cols-3 lg:grid-cols-4">
+            {filteredProducts.length === 0 ? (
+              <Box className="flex items-center justify-center h-full col-span-3">
+                <Typography variant="h6">Không tìm thấy sản phẩm nào</Typography>
+              </Box>
+            ) : (
+              filteredProducts.map((product) => (
+                <Box key={product.id} className="overflow-hidden transition-shadow border !rounded-[8px] shadow-sm hover:shadow-md">
+                  <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
+                    <Box sx={{ position: 'relative', mb: 2 }}>
+                      {product.imageUrl && (
+                        <Box
+                          component="img"
+                          src={product.imageUrl}
+                          alt={product.name}
+                          sx={{
+                            width: '100%',
+                            height: 200,
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => handleImageClick(product.imageUrl)}
+                        />
+                      )}
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        bgcolor: '#FEF5E5',
+                        color: '#FCAF17',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: '4px'
+                      }}>
+                        Trong kho: {product.stock}
+                      </Box>
+                    </Box>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      {product.name.slice(0, 50)}
+                      {product.name.length > 50 && "..."}
+                    </Typography>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <span>Giá:</span>
+                        <span className="!text-green-500">${product.price}</span>
+                      </Box>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <span>Giá khuyến mãi:</span>
+                        <span className="!text-amber-500">${product.salePrice || '-'}</span>
+                      </Box>
+                    </Box>
+                    <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleView(product.id)}
+                        startIcon={<IconEye size={16} />}
+                      >
+                        Xem
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => openDeleteDialog(product.id)}
+                        startIcon={<IconTrash size={16} />}
+                      >
+                        Xóa
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              ))
+            )}
+          </Box>
+        )}
+      </Box>
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

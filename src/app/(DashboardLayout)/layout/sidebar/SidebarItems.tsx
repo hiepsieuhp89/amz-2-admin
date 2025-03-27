@@ -9,8 +9,6 @@ import './style.css'
 const SidebarItems = ({ toggleMobileSidebar }: any) => {
   const pathname = usePathname();
   const pathDirect = pathname;
-
-
   return (
       <List sx={{ pt: 0}} className="sidebarNav" component="div">
         {Menuitems.map((item) => {

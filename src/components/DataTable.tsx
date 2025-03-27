@@ -132,17 +132,13 @@ export default function DataTable({
           </Box>
           <Paper sx={{ mt: 2, border: '1px solid #E0E0E0' }}>
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[]}
               component="div"
               count={pagination.itemCount}
-              rowsPerPage={pagination.take}
+              rowsPerPage={0}
               page={pagination.page - 1}
               onPageChange={(_, newPage) => onPageChange(newPage + 1)}
               onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
-              labelRowsPerPage="Số hàng mỗi trang:"
-              labelDisplayedRows={({ from, to, count }) => 
-                `${from}-${to} trong ${count}`
-              }
               sx={{
                 '& .MuiTablePagination-toolbar': {
                   padding: '0 16px'

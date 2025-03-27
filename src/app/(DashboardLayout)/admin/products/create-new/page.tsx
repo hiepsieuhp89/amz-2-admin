@@ -127,127 +127,139 @@ export default function CreateProductPage() {
       </Box>
 
       <Paper className="p-6 border">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Box className="flex flex-col gap-6">
-            <Box>
-              <TextField
-                size="small"
-                label="Tên sản phẩm"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                fullWidth
-                variant="outlined"
-                className="rounded"
-              />
-            </Box>
-            
-            <Box className="flex gap-6">
-              <Box className="flex-1">
-                <TextField
-                  size="small"
-                  label="Giá"
-                  name="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-              </Box>
-              
-              <Box className="flex-1">
-                <TextField
-                  size="small"
-                  label="Giá khuyến mãi"
-                  name="salePrice"
-                  type="number"
-                  value={formData.salePrice}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-              </Box>
-            </Box>
-            
-            <Box className="flex gap-6">
-              <Box className="flex-1">
-                <TextField
-                  size="small"
-                  label="Số lượng"
-                  name="stock"
-                  type="number"
-                  value={formData.stock}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-              </Box>
-              
-              <Box className="flex-1">
-                <TextField
-                  size="small"
-                  label="ID Danh mục"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                />
-              </Box>
-            </Box>
-            
-            <Box>
-              <TextField
-                size="small"
-                label="Mô tả chi tiết"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                fullWidth
-                multiline
-                rows={4}
-                variant="outlined"
-                className="rounded"
-              />
-            </Box>
-            
-            <Box>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
-                Hình ảnh sản phẩm
-              </Typography>
-              {imagePreview ? (
-                <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="Product preview"
-                    className="object-cover w-full h-full"
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Box className="flex gap-6">
+            {/* Left Column */}
+          
+            <Box className="w-2/3">
+            <Typography fontSize={14} variant="subtitle1" className="!mb-4">
+                  Thông tin sản phẩm
+                </Typography>
+              <Box className="flex flex-col gap-6">
+                <Box>
+                  <TextField
+                    size="small"
+                    label="Tên sản phẩm"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
                   />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                  >
-                    <IconX size={16} color="white" />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <IconUpload size={24} className="mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-400">Upload hình ảnh</p>
+                </Box>
+                
+                <Box className="flex gap-6">
+                  <Box className="flex-1">
+                    <TextField
+                      size="small"
+                      label="Giá"
+                      name="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={handleChange}
+                      required
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                  </Box>
+                  
+                  <Box className="flex-1">
+                    <TextField
+                      size="small"
+                      label="Giá khuyến mãi"
+                      name="salePrice"
+                      type="number"
+                      value={formData.salePrice}
+                      onChange={handleChange}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                  </Box>
+                </Box>
+                
+                <Box className="flex gap-6">
+                  <Box className="flex-1">
+                    <TextField
+                      size="small"
+                      label="Số lượng"
+                      name="stock"
+                      type="number"
+                      value={formData.stock}
+                      onChange={handleChange}
+                      required
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                  </Box>
+                  
+                  <Box className="flex-1">
+                    <TextField
+                      size="small"
+                      label="ID Danh mục"
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onChange={handleChange}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                  </Box>
+                </Box>
+                
+                <Box>
+                  <TextField
+                    size="small"
+                    label="Mô tả chi tiết"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                    fullWidth
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                    className="rounded"
+                  />
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Right Column - Image Upload */}
+            <Box className="w-1/3">
+              <Box>
+                <Typography fontSize={14} variant="subtitle1" className="!mb-4">
+                  Hình ảnh sản phẩm
+                </Typography>
+                {imagePreview ? (
+                  <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
+                    <img
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Product preview"
+                      className="object-cover w-full h-full"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                    >
+                      <IconX size={16} color="white" />
+                    </button>
                   </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                </label>
-              )}
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                    <div className="flex flex-col items-center justify-center py-4">
+                      <IconUpload size={24} className="mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-400">Upload hình ảnh</p>
+                    </div>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                  </label>
+                )}
+              </Box>
             </Box>
           </Box>
           

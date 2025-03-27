@@ -157,7 +157,8 @@ const NavItem = ({ item, level, pathDirect, onClick }: ItemType) => {
             }),
             pl: 4,
             '& .MuiListItemButton-root': {
-              transition: 'none'
+              transition: 'none',
+              outline: '2px dotted transparent',
             }
           }}
         >
