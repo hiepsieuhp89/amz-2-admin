@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useGetMessages, useSendMessage, useMarkAsRead, useDeleteMessage } from "@/hooks/admin-chat";
 import { useState, useEffect, useRef } from "react";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconCheck, IconTrash } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 
 interface ChatDialogProps {
@@ -240,9 +240,17 @@ export default function ChatDialog({
                           <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
                             {senderInfo}
                           </Typography>
-                          <Box>
-                            <button onClick={() => handleMarkAsRead(msg.id)}>Đánh dấu đã đọc</button>
-                            <button onClick={() => handleDeleteMessage(msg.id)}>Xóa</button>
+                          <Box display="flex" gap={1}>
+                            <IconCheck
+                              size={20}
+                              style={{ cursor: "pointer", color: "#4caf50" }}
+                              onClick={() => handleMarkAsRead(msg.id)}
+                            />
+                            <IconTrash
+                              size={20}
+                              style={{ cursor: "pointer", color: "#f44336" }}
+                              onClick={() => handleDeleteMessage(msg.id)}
+                            />
                           </Box>
                         </Box>
                         <Typography>{msg.message}</Typography>
