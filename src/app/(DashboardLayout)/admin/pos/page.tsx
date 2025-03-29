@@ -78,6 +78,7 @@ const AdminPosPage = () => {
   // Hook
   const { data: shopsData, isLoading: isLoadingShops } = useGetAllUsers({
     role: "shop",
+    take: 9999999999,
     search: searchShop,
   })
 
@@ -104,7 +105,7 @@ const AdminPosPage = () => {
   const { data: validUsers } = useGetValidUsers({
     search: searchUser,
   })
-
+  console.log("validUsers", validUsers)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [hoveredCustomer, setHoveredCustomer] = useState<any>(null)
   const [openDialog, setOpenDialog] = useState(false)
@@ -250,7 +251,7 @@ const AdminPosPage = () => {
 
     const payload = {
       items: selectedProducts.map((item) => ({
-        shopProductId: item.shopId,
+        shopProductId: item.id,
         quantity: quantities[item.id] || 1,
       })),
       email: selectedUser.email,

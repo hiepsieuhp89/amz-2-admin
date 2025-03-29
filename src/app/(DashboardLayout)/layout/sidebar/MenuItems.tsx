@@ -67,12 +67,13 @@ const Menuitems = [
         title: "Tất cả sản phẩm",
         href: "/admin/products",
       },
-      {
-        id: generateUniqueId(),
-        title: "Đánh giá sản phẩm",
-        href: "/admin/products/reviews",
-      },
     ],
+  },
+  {
+    id: generateUniqueId(),
+    title: "Quản lý đánh giá",
+    icon: IconLayoutGridAdd,
+    href: "/admin/fake-reviews",
   },
   {
     id: generateUniqueId(),

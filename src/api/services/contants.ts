@@ -119,3 +119,8 @@ export const ConfigAdminChatEndPoint = {
   MARK_AS_READ: (messageId: string) => `/admin/chat/${messageId}/read`,
   DELETE_MESSAGE: (messageId: string) => `/admin/chat/${messageId}`,
 }
+
+export const ConfigFakeReviewEndPoint = {
+  BASE: '/admin/fake-reviews',
+  GET_USER_ORDERS: (userId: string) => `/admin/fake-reviews/user-orders?userId=${userId}`
+}
