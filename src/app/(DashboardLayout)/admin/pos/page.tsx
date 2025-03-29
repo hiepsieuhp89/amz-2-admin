@@ -1,70 +1,64 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { message, Empty, Spin } from "antd"
+import { useGetCities } from "@/hooks/cities"
+import { useGetCountries } from "@/hooks/countries"
+import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
 import { useGetAllShopProducts } from "@/hooks/shop-products"
-import type { IProduct } from "@/interface/response/product"
-import Image from "next/image"
-import styles from "./storehouse.module.scss"
+import { useGetStates } from "@/hooks/states"
+import { useCreateUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
+import { IValidUser } from "@/interface/response/fake-order"
+import type { SelectChangeEvent } from "@mui/material"
 import {
-  TextField,
+  Autocomplete,
+  Box,
+  Button,
+  ButtonGroup,
+  Checkbox,
+  CircularProgress,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
-  IconButton,
-  Box,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  InputAdornment,
-  Button,
-  Select,
   MenuItem,
-  Popover,
-  Typography,
   Pagination,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Paper,
-  Collapse,
-  ListItemIcon,
+  Popover,
+  Select,
   Stack,
   TablePagination,
-  Radio,
-  ButtonGroup,
-  Checkbox,
+  TextField,
+  Typography
 } from "@mui/material"
 import {
+  IconAlertCircle,
+  IconBrandProducthunt,
+  IconBuildingStore,
+  IconCalendar,
+  IconList,
+  IconMail,
+  IconMapPin,
+  IconMapPinPin,
+  IconMinus,
+  IconPhone,
   IconPlus,
   IconSearch,
-  IconTrash,
-  IconMinus,
-  IconMail,
-  IconPhone,
-  IconMapPin,
-  IconCalendar,
-  IconBuildingStore,
-  IconBrandProducthunt,
-  IconAlertCircle,
-  IconMapPinPin,
-  IconList,
   IconTable,
-  IconUser,
-  IconUserPin,
-  IconEyeOff,
+  IconTrash,
+  IconUser
 } from "@tabler/icons-react"
-import { useGetAllUsers, useUpdateUser } from "@/hooks/user"
-import { useCreateFakeOrder, useGetValidUsers } from "@/hooks/fake-order"
-import type { SelectChangeEvent } from "@mui/material"
-import { IValidUser } from "@/interface/response/fake-order"
-import { useGetCountries } from "@/hooks/countries"
-import { useGetStates } from "@/hooks/states"
-import { useGetCities } from "@/hooks/cities"
-import {useGetDistricts } from "@/hooks/districts"
-import {useGetPostalCodes } from "@/hooks/postal-codes"
+import { Empty, message } from "antd"
+import Image from "next/image"
+import type React from "react"
+import { useState } from "react"
+import styles from "./storehouse.module.scss"
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -102,8 +96,8 @@ const AdminPosPage = () => {
   const [showShops, setShowShops] = useState(false)
   const [showProducts, setShowProducts] = useState(false)
   const [searchUser, setSearchUser] = useState("")
-  const { data: validUsers } = useGetValidUsers({
-    search: searchUser,
+  const { data: validUsers, isLoading: isLoadingValidUsers } = useGetValidUsers({
+    search: searchUser || undefined,
   })
   console.log("validUsers", validUsers)
   const [selectedUser, setSelectedUser] = useState<any>(null)
@@ -113,7 +107,6 @@ const AdminPosPage = () => {
   const [selectedCountry, setSelectedCountry] = useState<string>("")
   const [selectedState, setSelectedState] = useState<string>("")
   const [selectedCity, setSelectedCity] = useState<string>("")
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("")
   const [selectedPostalCode, setSelectedPostalCode] = useState<string>("")
   const [address, setAddress] = useState<string>("")
   const updateUserMutation = useUpdateUser()
@@ -123,12 +116,17 @@ const AdminPosPage = () => {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false)
   const [selectedInvalidUser, setSelectedInvalidUser] = useState<IValidUser>()
   const [showAddressList, setShowAddressList] = useState(true)
+  const [newUserName, setNewUserName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
 
-  const { data: countries } = useGetCountries()
-  const { data: states } = useGetStates({ countryId: selectedCountry })
-  const { data: cities } = useGetCities({ stateId: selectedState })
-  const { data: districts } = useGetDistricts({ cityId: selectedCity })
-  const { data: postalCodes } = useGetPostalCodes({ districtId: selectedDistrict })
+  const { data: countries } = useGetCountries({ take: 9999999999 })
+  const { data: states } = useGetStates({ countryId: selectedCountry, take: 9999999999 })
+  const { data: cities } = useGetCities({ stateId: selectedState, take: 9999999999 })
+  // const { data: postalCodes } = useGetPostalCodes({ cityId: selectedCity, take: 9999999999 })
+  const { mutate: createUser } = useCreateUser()
+  const [isCopied, setIsCopied] = useState(false)
+
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     const customer = event.currentTarget.dataset.customer
     if (customer) {
@@ -300,25 +298,17 @@ const AdminPosPage = () => {
     setSelectedCountry(e.target.value)
     setSelectedState("")
     setSelectedCity("")
-    setSelectedDistrict("")
     setSelectedPostalCode("")
   }
 
   const handleStateChange = (e: SelectChangeEvent<string>) => {
     setSelectedState(e.target.value)
     setSelectedCity("")
-    setSelectedDistrict("")
     setSelectedPostalCode("")
   }
 
   const handleCityChange = (e: SelectChangeEvent<string>) => {
     setSelectedCity(e.target.value)
-    setSelectedDistrict("")
-    setSelectedPostalCode("")
-  }
-
-  const handleDistrictChange = (e: SelectChangeEvent<string>) => {
-    setSelectedDistrict(e.target.value)
     setSelectedPostalCode("")
   }
 
@@ -378,11 +368,86 @@ const AdminPosPage = () => {
     setShowAddressList(!showAddressList);
   };
 
+  const handleSaveAddressAndCreateUser = async () => {
+    if (!newUserName) {
+      message.warning("Vui lòng nhập tên người nhận hàng");
+      return;
+    }
+
+    try {
+      // Tạo username từ tên người dùng
+      const username = newUserName.toLowerCase().replace(/\s+/g, '') + new Date().getTime();
+
+      // Tạo payload mới, sử dụng fullName thay vì username
+      const payload = {
+        fullName: newUserName,
+        email: email || undefined,
+        phone: phone || undefined,
+        username: username,
+        password: 'password123',
+        role: 'user',
+        shopName: selectedCustomer?.shopName || undefined,
+        shopAddress: selectedCustomer?.shopAddress || undefined,
+        balance: 0,
+        fedexBalance: 0,
+        status: 'active',
+        invitationCode: selectedCustomer?.invitationCode || undefined,
+        referralCode: selectedCustomer?.referralCode || undefined,
+        isActive: true,
+        bankName: selectedCustomer?.bankName || undefined,
+        bankAccountNumber: selectedCustomer?.bankAccountNumber || undefined,
+        bankAccountName: selectedCustomer?.bankAccountName || undefined,
+        bankBranch: selectedCustomer?.bankBranch || undefined,
+        bankNumber: selectedCustomer?.bankNumber || undefined,
+        bankCode: selectedCustomer?.bankCode || undefined,
+        address: address || undefined,
+        countryId: selectedCountry || undefined,
+        stateId: selectedState || undefined,
+        cityId: selectedCity || undefined,
+        postalCode: selectedPostalCode || undefined,
+        stars: 0,
+        reputationPoints: 0
+      };
+
+      // Gọi API createUser từ @user.ts
+      await createUser(payload as any, {
+        onSuccess: () => {
+          message.success('Tạo người dùng và lưu địa chỉ thành công!');
+          handleCloseDialog();
+          // Reset các trường nhập liệu
+          setNewUserName('');
+          setEmail('');
+          setPhone('');
+          setSelectedCountry('');
+          setSelectedState('');
+          setSelectedCity('');
+          setSelectedPostalCode('');
+          setAddress('');
+        },
+        onError: (error) => {
+          message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+          console.error(error);
+        }
+      });
+
+    } catch (error) {
+      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+      console.error(error);
+    }
+  };
+
+  const handleCopyCode = () => {
+    const orderCode = 'Mã đơn hàng'; // Thay thế bằng mã đơn hàng thực tế
+    navigator.clipboard.writeText(orderCode);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 3000);
+  };
+
   return (
     <Box component="section" className={styles.storehouse}>
       <Box className="px-4 py-4 mx-auto ">
         <Box className="flex flex-col gap-4 md:flex-row">
-          <Box className="flex flex-col h-screen md:flex-1">
+          <Box className="flex flex-col md:flex-1">
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                 <Box
@@ -403,202 +468,88 @@ const AdminPosPage = () => {
                   Các Shop hiện có ({shopsData?.data?.data.length || 0}). Vui lòng nhấn chọn một Shop để hiển thị sản phẩm.
                 </Typography>
               </Box>
-              <Paper elevation={1} sx={{ borderRadius: 1 }}>
-                <Box className="">
-                  <Box className="w-full !p-4 flex justify-between gap-2">
-                    <FormControl variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-email">Tìm shop</InputLabel>
-                      <OutlinedInput
-                        value={searchShop}
-                        onChange={handleSearchShop}
-                        size="small"
-                        id="outlined-adornment-email"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <IconSearch className="w-4 h-4" />
-                          </InputAdornment>
-                        }
-                        label="Tìm shop"
-                      />
-                    </FormControl>
 
-                    {/* <FormControl fullWidth variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-product">Tìm sản phẩm</InputLabel>
-                      <OutlinedInput
-                        size="small"
-                        id="outlined-adornment-product"
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <IconSearch className="w-4 h-4" />
-                          </InputAdornment>
-                        }
-                        label="Tìm sản phẩm"
-                      />
-                    </FormControl> */}
-                    <Box className="flex items-center gap-2">
-                      <FormControl fullWidth variant="outlined">
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={minPrice}
-                          onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
-                          label="Giá bắt đầu"
-                        />
-                      </FormControl>
 
-                      <FormControl fullWidth variant="outlined">
-                        <TextField
-                          size="small"
-                          id="outlined-adornment-maxprice"
-                          type="number"
-                          value={maxPrice}
-                          onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
-                          label="Giá kết thúc"
-                        />
-                      </FormControl>
-                    </Box>
-                  </Box>
-                  {isLoadingShops ? (
-                    <Box className="flex items-center justify-center h-[200px]">
-                      <Spin size="default" />
-                    </Box>
-                  ) : (
-                    <>
-                      {displayedShops.length === 0 ? (
-                        <Box className="flex items-center justify-center">
-                          <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description={
-                              searchShop ? "Không tìm thấy shop phù hợp." : "Chưa có shop nào. Vui lòng nhập tìm kiếm shop."
-                            }
-                          />
-                        </Box>
-                      ) :
-                        <>
-                          <List sx={{ padding: 0 }} className="!px-0">
-                            {displayedShops.map((shop, index) => (
-                              <div key={shop.id}>
-                                <Collapse in={true} timeout="auto" unmountOnExit>
-                                  <ListItem
-                                    sx={{
-                                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                                      cursor: 'pointer',
-                                      '&:hover': { backgroundColor: '#f5f5f5' },
-                                      backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.dataset.customer = JSON.stringify(shop)
-                                      handlePopoverOpen(e)
-                                    }}
-                                    onMouseLeave={handlePopoverClose}
-                                    onClick={() => handleCustomerSelect(shop)}
-                                  >
-                                    <Radio
-                                      checked={selectedShopId === shop.id}
-                                      onChange={(e) => {
-                                        e.stopPropagation()
-                                        handleSelectShop(shop.id)
-                                      }}
-                                      sx={{ mr: 1 }}
-                                      size="small"
-                                    />
-                                    <ListItemIcon sx={{ minWidth: 'auto', marginRight: 1 }}>
-                                      <Box
-                                        sx={{
-                                          width: 40,
-                                          height: 40,
-                                          borderRadius: "50%",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          fontWeight: 500,
-                                          fontSize: 16,
-                                          ...getCustomerColor(shop),
-                                        }}
-                                      >
-                                        {shop.shopName?.substring(0, 2).toUpperCase()}
-                                      </Box>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                      primary={
-                                        <Stack direction="row" spacing={2}>
-                                          <div style={{ width: '200px' }}>
-                                            <Typography
-                                              fontWeight={500}
-                                              sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
-                                            >
-                                              {shop.shopName}
-                                              <Box
-                                                component="div"
-                                                sx={{
-                                                  height: 20,
-                                                  width: 20,
-                                                  position: "relative",
-                                                  display: "inline-block",
-                                                  ml: 1,
-                                                }}
-                                              >
-                                                <Image
-                                                  draggable={false}
-                                                  quality={100}
-                                                  height={100}
-                                                  width={100}
-                                                  className="object-cover"
-                                                  src={"/images/logos/tick-icon.png"}
-                                                  alt="tick icon"
-                                                />
-                                              </Box>
-                                            </Typography>
-                                          </div>
-                                          <div style={{ width: '200px' }}>
-                                            <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                              <IconMail className="flex-shrink-0 w-4 h-4 mr-1" /> {shop.email}
-                                            </Box>
-                                          </div>
-                                          <div style={{ width: '150px' }}>
-                                            <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                              <IconPhone className="flex-shrink-0 w-4 h-4 mr-1" /> {shop.phone}
-                                            </Box>
-                                          </div>
-                                        </Stack>
-                                      }
-                                    />
-                                  </ListItem>
-                                </Collapse>
-                              </div>
-                            ))}
-                          </List>
-                          <TablePagination
-                            component="div"
-                            count={shopsData?.data?.data.length || 0}
-                            page={page}
-                            onPageChange={(e, newPage) => {
-                              setPage(newPage);
-                            }}
-                            rowsPerPage={rowsPerPage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            rowsPerPageOptions={[5, 10, 25]}
-                            labelRowsPerPage="Số hàng mỗi trang:"
-                            labelDisplayedRows={({ from, to, count }) =>
-                              `${from}–${to} của ${count}`
-                            }
-                            sx={{
-                              borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-                              '& .MuiTablePagination-toolbar': {
-                                paddingLeft: 2,
-                                paddingRight: 2,
-                              }
-                            }}
-                          />
-                        </>
+              <Box className="w-full flex justify-between gap-2">
+                <FormControl fullWidth>
+                  <Autocomplete
+                    options={shopsData?.data.data || []}
+                    getOptionLabel={(option) => option.shopName}
+                    value={selectedCustomer}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        handleCustomerSelect(newValue);
+                        setSelectedShopId(newValue.id);
                       }
+                    }}
+                    onInputChange={(event, newInputValue) => {
+                      setSearchShop(newInputValue);
+                    }}
+                    loading={isLoadingShops}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Tìm kiếm shop"
+                        variant="outlined"
+                        size="small"
+                        value={selectedCustomer ?
+                          `${selectedCustomer.shopName} - ${selectedCustomer.email} - ${selectedCustomer.phone}`
+                          : ''
+                        }
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <>
+                              <InputAdornment position="start">
+                                <IconSearch className="w-4 h-4" />
+                              </InputAdornment>
+                              {params.InputProps.startAdornment}
+                            </>
+                          ),
+                          endAdornment: (
+                            <>
+                              {isLoadingShops ? <CircularProgress color="inherit" size={20} /> : null}
+                              {params.InputProps.endAdornment}
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => (
+                      <MenuItem {...props}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: 500,
+                              fontSize: 12,
+                              ...getCustomerColor(option),
+                            }}
+                          >
+                            {option.shopName?.substring(0, 2).toUpperCase()}
+                          </Box>
+                          <Box>
+                            <Typography>{option.shopName}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option.email}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option.phone}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </MenuItem>
+                    )}
+                  />
+                </FormControl>
+              </Box>
 
-                    </>
-                  )}
-                </Box>
-              </Paper>
+
               <Popover
                 sx={{
                   pointerEvents: "none",
@@ -1034,37 +985,97 @@ const AdminPosPage = () => {
                 </Typography>
               </Box>
               <Box className="flex items-center gap-2 mb-3">
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel htmlFor="outlined-adornment-product">Tìm khách ảo (Tên, email, sdt)</InputLabel>
-                  <OutlinedInput
-                    size="small"
-                    id="outlined-adornment-product"
-                    value={searchUser}
-                    onChange={handleSearchUser}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <IconSearch className="w-4 h-4" />
-                      </InputAdornment>
-                    }
-                    label="Tìm khách ảo (Tên, email, sdt)"
+                <FormControl fullWidth>
+                  <Autocomplete
+                    options={validUsers?.data.data || []}
+                    getOptionLabel={(option) => option.fullName}
+                    value={selectedUser}
+                    onChange={(event, newValue) => {
+                      if (newValue) handleSelectUser(newValue);
+                    }}
+                    onInputChange={(event, newInputValue) => {
+                      setSearchUser(newInputValue);
+                    }}
+                    loading={isLoadingValidUsers}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Tìm kiếm người dùng"
+                        variant="outlined"
+                        size="small"
+                        value={selectedUser ?
+                          `${selectedUser.fullName} - ${selectedUser.address || 'Chưa có địa chỉ'} - ${selectedUser.email} - ${selectedUser.phone || 'Chưa có số điện thoại'}`
+                          : ''
+                        }
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <>
+                              <InputAdornment position="start">
+                                <IconSearch className="w-4 h-4" />
+                              </InputAdornment>
+                              {params.InputProps.startAdornment}
+                            </>
+                          ),
+                          endAdornment: (
+                            <>
+                              {isLoadingValidUsers ? <CircularProgress color="inherit" size={20} /> : null}
+                              {params.InputProps.endAdornment}
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => (
+                      <MenuItem {...props}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: 500,
+                              fontSize: 12,
+                              ...getCustomerColor(option),
+                            }}
+                          >
+                            {option.username?.substring(0, 2).toUpperCase()}
+                          </Box>
+                          <Box>
+                            <Typography>{option.fullName}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option.email}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option?.address || "Chưa có địa chỉ"}
+                            </Typography>
+                          </Box>
+                          {!option.address && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenAddressDialog(option);
+                              }}
+                              sx={{
+                                ml: 1,
+                                color: "#5D87FF",
+                                "&:hover": {
+                                  backgroundColor: "#ECF2FF",
+                                },
+                              }}
+                            >
+                              <IconMapPinPin className="w-4 h-4" />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </MenuItem>
+                    )}
                   />
                 </FormControl>
-                <IconButton
-                  sx={{
-                    height: "36px",
-                    width: "36px",
-                    backgroundColor: "#5D87FF",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#4570EA",
-                    },
-                  }}
-                  size="small"
-                  className="flex-shrink-0 !rounded-[4px]"
-                  onClick={handleUserPinClick}
-                >
-                  {showAddressList ? <IconEyeOff className="w-5 h-5" /> : <IconUserPin className="w-5 h-5" />}
-                </IconButton>
                 <IconButton
                   sx={{
                     height: "36px",
@@ -1082,188 +1093,7 @@ const AdminPosPage = () => {
                   <IconMapPinPin className="w-5 h-5" />
                 </IconButton>
               </Box>
-                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, borderRadius: "4px" }}>
-                  <List>
-                    {validUsers && (
-                      validUsers.data.data.map((user, index) => (
-                        <ListItem
-                          onClick={() => handleSelectUser(user)}
-                          key={user.id}
-                          sx={{
-                            cursor: "pointer",
-                            backgroundColor: index % 2 !== 0 ? "#f5f5f5" : "inherit",
-                            "&:hover": { backgroundColor: "#e0e0e0" },
-                            borderBottom: "1px solid #e0e0e0",
-                            padding: "8px 16px",
-                            "&:last-child": {
-                              borderBottom: "none",
-                            },
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 500,
-                              fontSize: 16,
-                              mr: 2,
-                              ...getCustomerColor(user),
-                            }}
-                          >
-                            {user.username?.substring(0, 2).toUpperCase()}
-                          </Box>
-                          <ListItemText
-                            primary={
-                              <Typography
-                                fontWeight={500}
-                                sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "14px" }}
-                              >
-                                {user.fullName}
-                              </Typography>
-                            }
-                            secondary={
-                              <>
-                                <Typography
-                                  sx={{ display: "flex", alignItems: "center" }}
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <IconMail className="w-3 h-3 mr-1" /> {user.email}
-                                </Typography>
-                                <Typography
-                                  sx={{ display: "flex", alignItems: "center", mt: 0.5 }}
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <IconMapPin className="w-3 h-3 mr-1" />
-                                  <span className="italic">{user?.address || "Chưa có địa chỉ"}</span>
-                                </Typography>
-                              </>
-                            }
-                            sx={{ my: 0 }}
-                          />
-                          {!user.address && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenAddressDialog(user);
-                              }}
-                              sx={{
-                                ml: 1,
-                                color: "#5D87FF",
-                                "&:hover": {
-                                  backgroundColor: "#ECF2FF",
-                                },
-                              }}
-                            >
-                              <IconMapPinPin className="w-4 h-4" />
-                            </IconButton>
-                          )}
-                        </ListItem>
-                      ))
-                    )}
-                  </List>
-                </Box>
             </Box>
-            {showAddressList && (
-              <Box className="md:w-[400px]">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "30px",
-                      height: "30px",
-                      backgroundColor: "#ECF2FF",
-                      borderRadius: "4px",
-                      color: "#5D87FF",
-                    }}
-                  >
-                    <IconMapPin className="w-4 h-4" />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#5D87FF" }}>
-                    Danh sách địa chỉ hiện có
-                  </Typography>
-                </Box>
-                <Box sx={{ maxHeight: "60%", overflow: "auto", mb: 2, borderRadius: "4px" }}>
-                  <List>
-                    {allShopUsers && (
-                      allShopUsers.data.data
-                        .filter((user: any) => user.address)
-                        .map((user: any, index: number) => (
-                          <ListItem
-                            onClick={() => handleSelectUser(user)}
-                            key={user.id}
-                            sx={{
-                              cursor: "pointer",
-                              backgroundColor: index % 2 !== 0 ? "#f5f5f5" : "inherit",
-                              "&:hover": { backgroundColor: "#e0e0e0" },
-                              borderBottom: "1px solid #e0e0e0",
-                              padding: "8px 16px",
-                              "&:last-child": {
-                                borderBottom: "none",
-                              },
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: "50%",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontWeight: 500,
-                                fontSize: 16,
-                                mr: 2,
-                                ...getCustomerColor(user),
-                              }}
-                            >
-                              {user.username?.substring(0, 2).toUpperCase()}
-                            </Box>
-                            <ListItemText
-                              primary={
-                                <Typography
-                                  fontWeight={500}
-                                  sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "14px" }}
-                                >
-                                  {user.fullName}
-                                </Typography>
-                              }
-                              secondary={
-                                <>
-                                  <Typography
-                                    sx={{ display: "flex", alignItems: "center" }}
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    <IconMail className="w-3 h-3 mr-1" /> {user.email}
-                                  </Typography>
-                                  <Typography
-                                    sx={{ display: "flex", alignItems: "center", mt: 0.5 }}
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    <IconMapPin className="w-3 h-3 mr-1" />
-                                    <span className="italic">{user?.address || "Chưa có địa chỉ"}</span>
-                                  </Typography>
-                                </>
-                              }
-                              sx={{ my: 0 }}
-                            />
-                          </ListItem>
-                        ))
-                    )}
-                  </List>
-                </Box>
-              </Box>
-            )}
             {totalSelectedProducts > 0 && (
               <Box className="my-3 text-center">
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "#3F6AD8" }}>
@@ -1344,7 +1174,7 @@ const AdminPosPage = () => {
                                 </IconButton>
                               </Box>
                             </Box>
-                            <Box sx={{display: "flex", mt: 2, width: "100%", justifyContent: "space-between"}}>
+                            <Box sx={{ display: "flex", mt: 2, width: "100%", justifyContent: "space-between" }}>
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
                                 <span className="text-xs !text-green-500">${Number(item.salePrice)}</span>
@@ -1356,7 +1186,7 @@ const AdminPosPage = () => {
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
                                 <span className="text-xs !text-red-500 font-bold">
-                                ${Number(item.profit)}
+                                  ${Number(item.profit)}
                                 </span>
                               </Box>
                             </Box>
@@ -1373,7 +1203,7 @@ const AdminPosPage = () => {
                           $
                           {selectedProducts
                             .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
-                            }
+                          }
                         </span>
                       </Box>
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -1478,23 +1308,37 @@ const AdminPosPage = () => {
             <Box sx={{ mt: 2 }}>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ width: '100%' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Chọn người dùng</InputLabel>
-                    <Select
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      label="Chọn người dùng"
-                      size="small"
-                    >
-                      {allShopUsers?.data?.data.map((user) => (
-                        <MenuItem key={user.id} value={user.id}>
-                         <span>{user.fullName}</span><span className="ml-1 text-gray-500 !font-xs">({user.email})</span>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Tên người nhận hàng"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    margin="normal"
+                  />
                 </Box>
-
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    margin="normal"
+                    type="email"
+                  />
+                </Box>
+                <Box sx={{ width: 'calc(50% - 8px)' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Số điện thoại"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    margin="normal"
+                    type="tel"
+                  />
+                </Box>
                 <Box sx={{ width: 'calc(33.33% - 16px)' }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Quốc gia</InputLabel>
@@ -1507,17 +1351,11 @@ const AdminPosPage = () => {
                     </Select>
                   </FormControl>
                 </Box>
-
                 <Box sx={{ width: 'calc(33.33% - 16px)' }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    <Select
-                      value={selectedState}
-                      onChange={handleStateChange}
-                      label="Tỉnh/Thành phố"
-                      disabled={!selectedCountry}
-                    >
-                      {states?.data?.data.map((state: any) => (
+                    <InputLabel>Bang/Tỉnh</InputLabel>
+                    <Select value={selectedState} onChange={handleStateChange} label="Bang/Tỉnh">
+                      {states?.data?.data.map((state) => (
                         <MenuItem key={state.id} value={state.id}>
                           {state.name}
                         </MenuItem>
@@ -1525,17 +1363,11 @@ const AdminPosPage = () => {
                     </Select>
                   </FormControl>
                 </Box>
-
                 <Box sx={{ width: 'calc(33.33% - 16px)' }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel>Thành phố/Quận</InputLabel>
-                    <Select
-                      value={selectedCity}
-                      onChange={handleCityChange}
-                      label="Thành phố/Quận"
-                      disabled={!selectedState}
-                    >
-                      {cities?.data?.data.map((city: any) => (
+                    <InputLabel>Thành phố</InputLabel>
+                    <Select value={selectedCity} onChange={handleCityChange} label="Thành phố">
+                      {cities?.data?.data.map((city) => (
                         <MenuItem key={city.id} value={city.id}>
                           {city.name}
                         </MenuItem>
@@ -1543,43 +1375,15 @@ const AdminPosPage = () => {
                     </Select>
                   </FormControl>
                 </Box>
-
-                <Box sx={{ width: 'calc(50% - 8px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      value={selectedDistrict}
-                      onChange={handleDistrictChange}
-                      label="Quận/Huyện"
-                      disabled={!selectedCity}
-                    >
-                      {districts?.data?.data.map((district: any) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Mã bưu điện"
+                    value={selectedPostalCode}
+                    onChange={(e) => setSelectedPostalCode(e.target.value)}
+                  />
                 </Box>
-
-                <Box sx={{ width: 'calc(50% - 8px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Mã bưu điện</InputLabel>
-                    <Select
-                      value={selectedPostalCode}
-                      onChange={handlePostalCodeChange}
-                      label="Mã bưu điện"
-                      disabled={!selectedDistrict}
-                    >
-                      {postalCodes?.data?.data.map((postalCode: any) => (
-                        <MenuItem key={postalCode.id} value={postalCode.id}>
-                          {postalCode.code}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
                 <Box sx={{ width: '100%' }}>
                   <TextField
                     fullWidth
@@ -1598,145 +1402,17 @@ const AdminPosPage = () => {
           <Button
             className="!normal-case"
             variant="outlined"
-            onClick={handleCloseDialog}>Huỷ bỏ</Button>
-          <Button className="!normal-case" onClick={handleSaveAddress} variant="contained">
-            Lưu địa chỉ
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={openUpdateDialog}
-        onClose={() => setOpenUpdateDialog(false)}
-        maxWidth="md"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            width: "60vw",
-            maxWidth: "none",
-          },
-        }}
-      >
-        <DialogTitle fontSize={18}>Cập nhật địa chỉ</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={selectedInvalidUser ? selectedInvalidUser.fullName : ''}
-                    disabled
-                    margin="normal"
-                  />
-                </Box>
-
-                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Quốc gia</InputLabel>
-                    <Select value={selectedCountry} onChange={handleCountryChange} label="Quốc gia">
-                      {countries?.data?.data.map((country) => (
-                        <MenuItem key={country.id} value={country.id}>
-                          {country.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    <Select
-                      value={selectedState}
-                      onChange={handleStateChange}
-                      label="Tỉnh/Thành phố"
-                      disabled={!selectedCountry}
-                    >
-                      {states?.data?.data.map((state: any) => (
-                        <MenuItem key={state.id} value={state.id}>
-                          {state.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box sx={{ width: 'calc(33.33% - 16px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Thành phố/Quận</InputLabel>
-                    <Select
-                      value={selectedCity}
-                      onChange={handleCityChange}
-                      label="Thành phố/Quận"
-                      disabled={!selectedState}
-                    >
-                      {cities?.data?.data.map((city: any) => (
-                        <MenuItem key={city.id} value={city.id}>
-                          {city.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box sx={{ width: 'calc(50% - 8px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      value={selectedDistrict}
-                      onChange={handleDistrictChange}
-                      label="Quận/Huyện"
-                      disabled={!selectedCity}
-                    >
-                      {districts?.data?.data.map((district: any) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box sx={{ width: 'calc(50% - 8px)' }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Mã bưu điện</InputLabel>
-                    <Select
-                      value={selectedPostalCode}
-                      onChange={handlePostalCodeChange}
-                      label="Mã bưu điện"
-                      disabled={!selectedDistrict}
-                    >
-                      {postalCodes?.data?.data.map((postalCode: any) => (
-                        <MenuItem key={postalCode.id} value={postalCode.id}>
-                          {postalCode.code}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Địa chỉ chi tiết"
-                    value={address}
-                    onChange={handleAddressChange}
-                    margin="normal"
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions className="mx-4 mb-4">
-          <Button className="!normal-case" variant="outlined" onClick={() => setOpenUpdateDialog(false)}>
+            onClick={handleCloseDialog}
+          >
             Huỷ bỏ
           </Button>
-          <Button className="!normal-case" onClick={handleSaveAddress} variant="contained">
-            Cập nhật
+          <Button
+            className="!normal-case"
+            onClick={handleSaveAddressAndCreateUser}
+            variant="contained"
+            disabled={!newUserName}
+          >
+            Lưu địa chỉ và tạo người dùng
           </Button>
         </DialogActions>
       </Dialog>
