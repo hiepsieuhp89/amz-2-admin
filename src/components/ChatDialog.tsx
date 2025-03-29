@@ -10,7 +10,7 @@ import {
   InputAdornment,
   TextField,
 } from "@mui/material";
-import { useGetMessages, useSendMessage } from "@/hooks/admin-chat";
+import { useGetMessages, useSendMessage, useMarkAsRead, useDeleteMessage } from "@/hooks/admin-chat";
 import { useState } from "react";
 import { IconSearch } from "@tabler/icons-react";
 
@@ -38,6 +38,8 @@ export default function ChatDialog({
     selectedShopId || ""
   );
   const sendMessageMutation = useSendMessage();
+  const markAsReadMutation = useMarkAsRead();
+  const deleteMessageMutation = useDeleteMessage();
 
   // Filter users based on search term
   const filteredUsers = allUsers.filter((user) => {
@@ -76,6 +78,24 @@ export default function ChatDialog({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSendMessage();
+    }
+  };
+
+  const handleMarkAsRead = async (messageId: string) => {
+    try {
+      await markAsReadMutation.mutateAsync(messageId);
+      // Optionally refresh messages
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessageMutation.mutateAsync(messageId);
+      // Optionally refresh messages
+    } catch (error) {
+      console.error("Failed to delete message:", error);
     }
   };
 
@@ -189,9 +209,15 @@ export default function ChatDialog({
                         p={1.5}
                         borderRadius={2}
                       >
-                        <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
-                          {senderInfo}
-                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                            {senderInfo}
+                          </Typography>
+                          <Box>
+                            <button onClick={() => handleMarkAsRead(msg.id)}>Đánh dấu đã đọc</button>
+                            <button onClick={() => handleDeleteMessage(msg.id)}>Xóa</button>
+                          </Box>
+                        </Box>
                         <Typography>{msg.message}</Typography>
                         <Typography variant="caption" color="textSecondary" display="block" mt={0.5}>
                           {new Date(msg.createdAt).toLocaleTimeString()}
