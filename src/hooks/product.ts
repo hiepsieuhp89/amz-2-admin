@@ -74,6 +74,7 @@ export const useUpdateProduct = (): UseMutationResult<
             salePrice?: number | string;
             price?: number | string;
             stock?: number;
+            isHot?: boolean;
         }
     }
 > => {

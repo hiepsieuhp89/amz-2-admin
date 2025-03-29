@@ -2,27 +2,27 @@
 import DataTable from "@/components/DataTable"
 import {
   Box,
+  Button,
   Chip,
-  IconButton,
-  InputAdornment,
-  TableCell,
-  TableRow,
-  TextField,
-  Typography,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button,
-  CircularProgress
+  IconButton,
+  InputAdornment,
+  TableCell,
+  TableRow,
+  TextField,
+  Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconSearch, IconTrash } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
-import type React from "react"
 import { useState } from "react"
 
+import ChatDialog from "@/components/ChatDialog"
 import { useDeleteUser, useGetAllUsers } from "@/hooks/user"
 
 function UsersPage() {
@@ -32,6 +32,9 @@ function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<string | null>(null)
+  const [chatDialogOpen, setChatDialogOpen] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [selectedShop, setSelectedShop] = useState<any>(null)
   const { data: userData, isLoading, error } = useGetAllUsers({
     page,
     take: rowsPerPage,
@@ -47,6 +50,10 @@ function UsersPage() {
     hasNextPage: false
   }
   const deleteUserMutation = useDeleteUser()
+  const { data: allUsers } = useGetAllUsers({
+    take: 999999,
+    role: "user"
+  })
 
   const handleCreateNew = () => {
     router.push("/admin/users/create-new")
@@ -73,6 +80,13 @@ function UsersPage() {
       message.error("Không thể xóa người dùng. Vui lòng thử lại.")
       console.error(error)
     }
+  }
+
+  const handleOpenChat = (userId: string) => {
+    const shop = filteredUsers.find(u => u.id === userId);
+    setSelectedShop(shop);
+    setSelectedUserId(userId);
+    setChatDialogOpen(true);
   }
 
   const columns = [
@@ -142,13 +156,17 @@ function UsersPage() {
       </TableCell>
       <TableCell>
         <Box display="flex" alignItems="center" gap={1}>
-          {user.referralCode}
+          {user.invitationCode || user.referralCode || "Không có"}
           <IconButton
             size="small"
             onClick={() => {
-              navigator.clipboard.writeText(user.referralCode || "");
-              message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
+              const code = user.invitationCode || user.referralCode;
+              if (code) {
+                navigator.clipboard.writeText(code);
+                message.success(`Đã sao chép mã: ${code}`);
+              }
             }}
+            disabled={!user.invitationCode && !user.referralCode}
           >
             <IconCopy size={16} className="text-blue-500"/>
           </IconButton>
@@ -160,16 +178,16 @@ function UsersPage() {
         <Chip
           label={
             user.role === "admin" ? "Admin" :
-              user.role === "seller" ? "Người bán" :
+              user.role === "shop" ? "Người bán" :
                 "Người dùng"
           }
           color={
             user.role === "admin" ? "primary" :
-              user.role === "seller" ? "warning" :
+              user.role === "shop" ? "warning" :
                 "success"
           }
           size="small"
-          variant="outlined"
+          variant="filled"
         />
       </TableCell>
       <TableCell>
@@ -177,7 +195,7 @@ function UsersPage() {
           label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
           color={user.isActive ? "success" : "error"}
           size="small"
-          variant="outlined"
+          variant="filled"
         />
       </TableCell>
       <TableCell>{user.balance?.toLocaleString()} VND</TableCell>
@@ -206,6 +224,15 @@ function UsersPage() {
           <IconButton onClick={() => handleView(user.id)} size="medium" className="!bg-blue-100">
             <IconEye size={18} className="text-blue-400" />
           </IconButton>
+          {user.role === "shop" && (
+            <IconButton 
+              onClick={() => handleOpenChat(user.id)} 
+              size="medium" 
+              className="!bg-green-100"
+            >
+              <IconMessage size={18} className="text-green-400" />
+            </IconButton>
+          )}
           <IconButton onClick={() => openDeleteDialog(user.id)} size="medium" className="!bg-red-100">
             <IconTrash size={18} className="text-red-400" />
           </IconButton>
@@ -225,9 +252,11 @@ function UsersPage() {
     )
   }
 
+  console.log("filteredUsers", filteredUsers)
+
   return (
     <>
-      <Box sx={{ overflowX: 'auto', width: '100%' }}>
+      <Box sx={{ width: '100%' }}>
         <DataTable
           columns={columns}
           data={filteredUsers}
@@ -303,6 +332,14 @@ function UsersPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ChatDialog
+        open={chatDialogOpen}
+        onClose={() => setChatDialogOpen(false)}
+        userId={selectedUserId}
+        allUsers={allUsers?.data?.data || []}
+        shop={selectedShop}
+      />
     </>
   )
 }

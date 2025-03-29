@@ -16,6 +16,7 @@ export interface ICreateProduct {
     salePrice: number | string;
     price: number | string;
     stock: number;
+    isHot?: boolean;
 }
 
 export interface IUpdateProduct {
@@ -48,4 +49,5 @@ export interface IUpdateProduct {
   metaKeywords?: string[];
   sellerId?: string;
   imageUrl?: string;
+  isHot?: boolean;
 }

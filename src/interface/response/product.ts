@@ -16,6 +16,7 @@ export interface IProduct {
     salePrice: string
     price: string
     stock: number
+    isHot: boolean
     category: ICategory
     createdAt: string
     updatedAt: string

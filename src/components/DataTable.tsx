@@ -52,7 +52,7 @@ export default function DataTable({
   searchComponent,
 }: DataTableProps) {
   return (
-    <div className="w-[100vw] p-6 space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         {searchComponent}
         {createNewButton && (

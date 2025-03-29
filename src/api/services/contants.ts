@@ -112,3 +112,10 @@ export const ConfigPostalCodeEndPoint = {
   BASE: "/admin/postal-codes",
   GET_BY_ID: (id: string) => `/admin/postal-codes/${id}`
 }
+
+export const ConfigAdminChatEndPoint = {
+  SEND_MESSAGE: (userId: string, shopId: string) => `/admin/chat/user/${userId}/shop/${shopId}`,
+  GET_MESSAGES: (userId: string, shopId: string) => `/admin/chat/user/${userId}/shop/${shopId}`,
+  MARK_AS_READ: (messageId: string) => `/admin/chat/${messageId}/read`,
+  DELETE_MESSAGE: (messageId: string) => `/admin/chat/${messageId}`,
+}

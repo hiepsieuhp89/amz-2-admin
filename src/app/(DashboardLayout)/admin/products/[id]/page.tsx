@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -14,6 +15,8 @@ import {
   DialogContentText,
   DialogActions,
   TextField,
+  FormControlLabel,
+  Switch,
 } from "@mui/material"
 import {
   IconArrowLeft,
@@ -43,7 +46,8 @@ function ProductDetailPage() {
     categoryId: '',
     salePrice: '',
     price: '',
-    stock: 0
+    stock: 0,
+    isHot: false
   })
 
   const { data: productData, isLoading, error } = useGetProductById(id)
@@ -61,7 +65,8 @@ function ProductDetailPage() {
         categoryId: product.category?.id || "",
         salePrice: product.salePrice?.toString() || "",
         price: product.price?.toString() || "",
-        stock: product.stock || 0
+        stock: product.stock || 0,
+        isHot: product.isHot || false
       })
       setImagePreview(product.imageUrl || null)
     }
@@ -125,6 +130,7 @@ function ProductDetailPage() {
         stock: typeof formData.stock === 'string' ? parseInt(formData.stock, 10) : formData.stock,
         categoryId: formData.categoryId || undefined,
         imageUrl: formData.imageUrl,
+        isHot: formData.isHot,
       }
 
       // Upload new image if available
@@ -291,6 +297,24 @@ function ProductDetailPage() {
                   variant="outlined"
                   className="rounded"
                   disabled={!isEditing}
+                />
+              </Box>
+            </Box>
+
+            <Box className="flex gap-6">
+              <Box className="flex-1">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.isHot}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        isHot: e.target.checked
+                      }))}
+                      disabled={!isEditing}
+                    />
+                  }
+                  label="Sản phẩm nổi bật"
                 />
               </Box>
             </Box>

@@ -20,7 +20,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { IconArrowLeft, IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconTrash, IconMessage } from "@tabler/icons-react";
 import { message } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -570,6 +570,17 @@ function UserDetailPage() {
         <Box className="flex justify-end gap-2 mt-4 mb-4">
           {!isEditing ? (
             <>
+              <Button
+                variant="contained"
+                startIcon={<IconMessage size={18} />}
+                onClick={() => {
+                  // Open chat with this user
+                  router.push(`/admin/users?chat=${id}`)
+                }}
+                className="!bg-blue-500 !text-white"
+              >
+                Chat
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<IconTrash size={18} />}

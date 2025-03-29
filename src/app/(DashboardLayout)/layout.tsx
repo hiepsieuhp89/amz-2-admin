@@ -39,7 +39,7 @@ function RootLayout({
         isMobileSidebarOpen={isMobileSidebarOpen}
         onSidebarClose={() => setMobileSidebarOpen(false)}
       />
-      <PageWrapper className='page-wrapper'>
+      <PageWrapper className='page-wrapper overflow-hidden'>
         <Header toggleMobileSidebar={() => setMobileSidebarOpen(true)} />
 
         <div className='container_box mt-[90px] '>

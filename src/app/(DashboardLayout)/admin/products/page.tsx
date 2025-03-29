@@ -15,7 +15,8 @@ import {
   Button,
   CircularProgress,
   ButtonGroup,
-  Paper
+  Paper,
+  Switch
 } from "@mui/material"
 import {
   IconEye,
@@ -35,7 +36,7 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom"
 import Download from "yet-another-react-lightbox/plugins/download"
 
 import DataTable from "@/components/DataTable"
-import { useDeleteProduct, useGetAllProducts } from "@/hooks/product"
+import { useDeleteProduct, useGetAllProducts, useUpdateProduct } from "@/hooks/product"
 
 function ProductsPage() {
   const router = useRouter()
@@ -54,6 +55,7 @@ function ProductsPage() {
     search: searchTerm
   })
   const deleteProductMutation = useDeleteProduct()
+  const updateProductMutation = useUpdateProduct()
 
   const handleCreateNew = () => {
     router.push("/admin/products/create-new")
@@ -96,6 +98,19 @@ function ProductsPage() {
     setLightboxOpen(true)
   }
 
+  const handleToggleHot = async (id: string, isHot: boolean) => {
+    try {
+      await updateProductMutation.mutateAsync({
+        id,
+        payload: { isHot }
+      })
+      message.success(`Sản phẩm đã được ${isHot ? 'đánh dấu' : 'bỏ đánh dấu'} nổi bật!`)
+    } catch (error) {
+      message.error("Không thể cập nhật trạng thái nổi bật. Vui lòng thử lại.")
+      console.error(error)
+    }
+  }
+
   const filteredProducts = productData?.data?.data || []
   const pagination = productData?.data?.meta || {
     page: 1,
@@ -112,6 +127,7 @@ function ProductsPage() {
     { key: 'salePrice', label: 'Giá khuyến mãi' },
     { key: 'imageUrl', label: 'Hình ảnh' },
     { key: 'stock', label: 'Số lượng' },
+    { key: 'isHot', label: 'Nổi bật' },
     { key: 'category', label: 'Danh mục' },
     { key: 'actions', label: 'Thao tác' },
   ];
@@ -164,6 +180,13 @@ function ProductsPage() {
         )}
       </TableCell>
       <TableCell>{product.stock}</TableCell>
+      <TableCell>
+        <Switch
+          checked={product.isHot}
+          onChange={() => handleToggleHot(product.id, !product.isHot)}
+          color="primary"
+        />
+      </TableCell>
       <TableCell>{product.category?.name || '-'}</TableCell>
       <TableCell>
         <Box className="flex items-center gap-2">
