@@ -7,6 +7,8 @@ import { ReactQueryProvider } from "../providers/ReactQueryProvider";
 import WrapMessage from "@/component/WrapMessage";
 import { useEffect, useCallback } from "react";
 import { UserProvider } from "@/context/useUserContext";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
 
 function RootLayout({
   children,
@@ -34,7 +36,21 @@ function RootLayout({
           <ThemeProvider theme={baselightTheme}>
             <UserProvider>
               <CssBaseline />
-              <WrapMessage>{children}</WrapMessage>
+              <WrapMessage>
+                {children}
+                <ToastContainer
+                  position="bottom-right"
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="light"
+                />
+              </WrapMessage>
             </UserProvider>
           </ThemeProvider>
         </body>

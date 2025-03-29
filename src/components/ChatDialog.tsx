@@ -11,8 +11,9 @@ import {
   TextField,
 } from "@mui/material";
 import { useGetMessages, useSendMessage, useMarkAsRead, useDeleteMessage } from "@/hooks/admin-chat";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IconSearch } from "@tabler/icons-react";
+import { toast } from "react-toastify";
 
 interface ChatDialogProps {
   open: boolean;
@@ -32,14 +33,40 @@ export default function ChatDialog({
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const previousMessagesCount = useRef(0);
 
-  const { data: messages, isLoading } = useGetMessages(
+  const { data: messages, isLoading, refetch } = useGetMessages(
     selectedUserId || "",
     selectedShopId || ""
   );
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
   const deleteMessageMutation = useDeleteMessage();
+
+  // Thêm interval để fetch tin nhắn mới
+  useEffect(() => {
+    if (!open || !selectedUserId || !selectedShopId) return;
+
+    const interval = setInterval(() => {
+      refetch();
+    }, 20000); // 20 giây
+
+    return () => clearInterval(interval);
+  }, [open, selectedUserId, selectedShopId]);
+
+  // Kiểm tra tin nhắn mới và hiển thị thông báo
+  useEffect(() => {
+    if (!messages?.data || isLoading) return;
+
+    const currentMessagesCount = messages.data.length;
+    if (previousMessagesCount.current > 0 && 
+        currentMessagesCount > previousMessagesCount.current) {
+      const newMessagesCount = currentMessagesCount - previousMessagesCount.current;
+      toast.info(`Bạn có ${newMessagesCount} tin nhắn mới`);
+    }
+
+    previousMessagesCount.current = currentMessagesCount;
+  }, [messages, isLoading]);
 
   // Filter users based on search term
   const filteredUsers = allUsers.filter((user) => {
