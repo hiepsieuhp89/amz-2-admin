@@ -53,6 +53,12 @@ const Menuitems = [
   },
   {
     id: generateUniqueId(),
+    title: "Quản lý cửa hàng",
+    icon: IconBuildingWarehouse,
+    href: "/admin/shops",
+  },
+  {
+    id: generateUniqueId(),
     title: "Các sản phẩm",
     icon: IconArchive,
     href: "javascript:void(0)",

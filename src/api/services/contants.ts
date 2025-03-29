@@ -79,6 +79,7 @@ export const ConfigFakeOrderEndPoint = {
   BASE: "/admin/fake-orders",
   VALID_USERS: "/admin/fake-orders/valid-users",
   DELIVER: (id: string) => `/admin/fake-orders/${id}/deliver`,
+  SHOP_ORDERS: "/admin/fake-orders/shop-orders",
 };
 
 export const ConfigShopProductEndPoint = {

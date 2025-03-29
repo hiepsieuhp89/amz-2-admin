@@ -2,10 +2,13 @@ import {
   createFakeOrder,
   deliverFakeOrder,
   getValidUsers,
+  getShopOrders,
 } from "@/api/services/fake-order.service"
 import type {
   ICreateFakeOrderPayload,
   IValidUserParams,
+  IShopOrderParams,
+  IShopOrderResponse,
 } from "@/api/services/fake-order.service"
 import { IValidUserListResponse } from "@/interface/response/fake-order"
 import {
@@ -16,6 +19,7 @@ import {
 } from "@tanstack/react-query"
 
 const VALID_USERS_KEY = "validUsers"
+const SHOP_ORDERS_KEY = "shopOrders"
 
 // Get valid users
 export const useGetValidUsers = (
@@ -43,5 +47,16 @@ export const useCreateFakeOrder = (): UseMutationResult<
 export const useDeliverFakeOrder = (): UseMutationResult<any, Error, string> => {
   return useMutation({
     mutationFn: (id: string) => deliverFakeOrder(id),
+  })
+}
+
+// Get shop orders
+export const useGetShopOrders = (
+  params: IShopOrderParams
+): UseQueryResult<IShopOrderResponse> => {
+  return useQuery({
+    queryKey: [SHOP_ORDERS_KEY, params],
+    queryFn: () => getShopOrders(params),
+    enabled: !!params.shopId,
   })
 } 
