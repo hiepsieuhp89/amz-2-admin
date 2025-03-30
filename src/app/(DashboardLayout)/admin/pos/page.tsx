@@ -1080,11 +1080,8 @@ const AdminPosPage = () => {
                   sx={{
                     height: "36px",
                     width: "36px",
-                    backgroundColor: "#5D87FF",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#4570EA",
-                    },
+                    backgroundColor: "#4570EA !important",
+                    color: "#fff !important",
                   }}
                   size="small"
                   className="flex-shrink-0 !rounded-[4px]"
