@@ -21,13 +21,13 @@ import {
     TextField,
     Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import ChatDialog from "@/components/ChatDialog"
-import { useGetShopOrders } from "@/hooks/fake-order"
+import { useGetShopOrders, useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
 import { useDeleteUser, useGetAllUsers } from "@/hooks/user"
 
 function ShopsPage() {
@@ -48,8 +48,8 @@ function ShopsPage() {
         take: 10,
         search: "",
         shopId: "",
-        delayStatus: "",
-        status: ""
+        delayStatus: "NORMAL",
+        status: "PENDING"
     })
     const { data: userData, isLoading, error } = useGetAllUsers({
         page,
@@ -72,6 +72,10 @@ function ShopsPage() {
         role: "user"
     })
     const { data: ordersData, isLoading: isOrdersLoading } = useGetShopOrders(orderParams)
+    const [isEditingOrder, setIsEditingOrder] = useState(false)
+    const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<any>(null)
+    const updateOrderMutation = useUpdateFakeOrder()
+    const deleteOrderMutation = useDeleteFakeOrder()
 
     const handleCreateNew = () => {
         router.push("/admin/users/create-new")
@@ -114,7 +118,45 @@ function ShopsPage() {
     }
 
     const handleOrderParamChange = (key: string, value: string | number) => {
-        setOrderParams(prev => ({ ...prev, [key]: value, page: 1 }))
+        setOrderParams(prev => {
+            const newParams = { ...prev, [key]: value };
+            if (key === 'page' || key === 'take') {
+                newParams.page = 1; // Reset về trang đầu tiên khi thay đổi số lượng item mỗi trang
+            }
+            return newParams;
+        });
+    }
+
+    const handleEditOrder = (order: any) => {
+        setSelectedOrderForEdit(order)
+        setIsEditingOrder(true)
+    }
+
+    const handleDeleteOrder = async (orderId: string) => {
+        try {
+            await deleteOrderMutation.mutateAsync(orderId)
+            message.success("Đơn hàng đã được xóa thành công!")
+            setOrderParams(prev => ({ ...prev }))
+        } catch (error) {
+            message.error("Không thể xóa đơn hàng. Vui lòng thử lại.")
+        }
+    }
+
+    const translateStatus = (status: string) => {
+        switch (status) {
+            case 'PENDING':
+                return 'Chờ xử lý';
+            case 'CONFIRMED':
+                return 'Đã xác nhận';
+            case 'SHIPPING':
+                return 'Đang giao hàng';
+            case 'DELIVERED':
+                return 'Đã giao hàng';
+            case 'CANCELLED':
+                return 'Đã hủy';
+            default:
+                return status;
+        }
     }
 
     const renderOrderFilters = () => (
@@ -130,20 +172,6 @@ function ShopsPage() {
             </TextField>
 
             <TextField
-                label="Số trang"
-                type="number"
-                value={orderParams.page}
-                onChange={(e) => handleOrderParamChange('page', parseInt(e.target.value))}
-            />
-
-            <TextField
-                label="Số lượng mỗi trang"
-                type="number"
-                value={orderParams.take}
-                onChange={(e) => handleOrderParamChange('take', parseInt(e.target.value))}
-            />
-
-            <TextField
                 label="Tìm kiếm"
                 value={orderParams.search}
                 onChange={(e) => handleOrderParamChange('search', e.target.value)}
@@ -155,7 +183,6 @@ function ShopsPage() {
                 value={orderParams.delayStatus}
                 onChange={(e) => handleOrderParamChange('delayStatus', e.target.value)}
             >
-                <MenuItem value="">--</MenuItem>
                 <MenuItem value="NORMAL">NORMAL</MenuItem>
                 <MenuItem value="DELAY_24H">DELAY_24H</MenuItem>
                 <MenuItem value="DELAY_48H">DELAY_48H</MenuItem>
@@ -168,7 +195,6 @@ function ShopsPage() {
                 value={orderParams.status}
                 onChange={(e) => handleOrderParamChange('status', e.target.value)}
             >
-                <MenuItem value="">--</MenuItem>
                 <MenuItem value="PENDING">PENDING</MenuItem>
                 <MenuItem value="CONFIRMED">CONFIRMED</MenuItem>
                 <MenuItem value="SHIPPING">SHIPPING</MenuItem>
@@ -178,56 +204,85 @@ function ShopsPage() {
         </Box>
     )
 
-    const renderOrdersTable = () => (
-        <Box className="p-4">
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Trạng thái</TableCell>
-                        <TableCell>Ngày tạo</TableCell>
-                        <TableCell>Tổng tiền</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {ordersData?.data?.map((order: any) => (
-                        <TableRow key={order.id}>
-                            <TableCell>{order.id}</TableCell>
-                            <TableCell>
-                                <Chip label={order.status} color="primary" />
-                            </TableCell>
-                            <TableCell>
-                                {new Date(order.createdAt).toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                                {order.totalAmount?.toLocaleString()} VND
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </Box>
-    )
+    const renderOrdersTable = () => {
+        const orderColumns = [
+            { key: 'id', label: 'ID' },
+            { key: 'status', label: 'Trạng thái' },
+            { key: 'createdAt', label: 'Ngày tạo' },
+            { key: 'totalAmount', label: 'Tổng tiền' },
+            { key: 'actions', label: 'Thao tác' }
+        ];
+
+        const renderOrderRow = (order: any) => (
+            <TableRow key={order.id}>
+                <TableCell>{order.id}</TableCell>
+                <TableCell>
+                    <Chip
+                        label={translateStatus(order.status)}
+                        color="primary"
+                    />
+                </TableCell>
+                <TableCell>
+                    {new Date(order.createdAt).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                    {order.totalAmount?.toLocaleString()} VND
+                </TableCell>
+                <TableCell>
+                    <Box display="flex" gap={1}>
+                        <IconButton
+                            onClick={() => handleEditOrder(order)}
+                            size="small"
+                            className="!bg-blue-100"
+                        >
+                            <IconEdit size={16} className="text-blue-500" />
+                        </IconButton>
+                        <IconButton
+                            onClick={() => handleDeleteOrder(order.id)}
+                            size="small"
+                            className="!bg-red-100"
+                        >
+                            <IconTrash size={16} className="text-red-500" />
+                        </IconButton>
+                    </Box>
+                </TableCell>
+            </TableRow>
+        );
+
+        return (
+            <DataTable
+                columns={orderColumns}
+                data={ordersData?.data?.data || []}
+                isLoading={isOrdersLoading}
+                pagination={{
+                    page: orderParams.page,
+                    take: orderParams.take,
+                    itemCount: ordersData?.data?.meta?.itemCount || 0,
+                    pageCount: ordersData?.data?.meta?.pageCount || 1,
+                    hasPreviousPage: ordersData?.data?.meta?.hasPreviousPage || false,
+                    hasNextPage: ordersData?.data?.meta?.hasNextPage || false
+                }}
+                onPageChange={(newPage) => {
+                    setOrderParams(prev => ({ ...prev, page: newPage }));
+                }}
+                onRowsPerPageChange={(newRowsPerPage) => {
+                    setOrderParams(prev => ({ ...prev, take: newRowsPerPage, page: 1 }));
+                }}
+                renderRow={renderOrderRow}
+                emptyMessage="Không có đơn hàng nào"
+            />
+        );
+    }
 
     const columns = [
         { key: 'stt', label: 'STT' },
-        { key: 'email', label: 'Email' },
-        { key: 'username', label: 'Tên đăng nhập' },
-        { key: 'fullName', label: 'Họ tên' },
-        { key: 'phone', label: 'Số điện thoại' },
-        { key: 'invitationCode', label: 'Mã mời' },
         { key: 'referralCode', label: 'Mã giới thiệu' },
         { key: 'shopName', label: 'Tên shop' },
         { key: 'shopAddress', label: 'Địa chỉ shop' },
-        { key: 'role', label: 'Vai trò' },
         { key: 'isActive', label: 'Trạng thái' },
         { key: 'balance', label: 'Số dư' },
         { key: 'fedexBalance', label: 'Số dư Fedex' },
         { key: 'address', label: 'Địa chỉ' },
-        { key: 'bankName', label: 'Ngân hàng' },
-        { key: 'bankAccountNumber', label: 'Số tài khoản' },
-        { key: 'bankAccountName', label: 'Tên tài khoản' },
-        { key: 'bankBranch', label: 'Chi nhánh' },
         { key: 'sellerPackageName', label: 'Gói Seller' },
         { key: 'sellerPackageExpiry', label: 'Hết hạn Seller' },
         { key: 'spreadPackageName', label: 'Gói Spread' },
@@ -245,53 +300,6 @@ function ShopsPage() {
             }}
         >
             <TableCell>{(page - 1) * rowsPerPage + filteredUsers.indexOf(user) + 1}</TableCell>
-            <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                    {user.email}
-                    <IconButton
-                        size="small"
-                        onClick={() => {
-                            navigator.clipboard.writeText(user.email || "");
-                            message.success(`Đã sao chép email: ${user.email}`);
-                        }}
-                    >
-                        <IconCopy size={16} className="text-blue-500" />
-                    </IconButton>
-                </Box>
-            </TableCell>
-            <TableCell>{user.username}</TableCell>
-            <TableCell>{user.fullName}</TableCell>
-            <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                    {user.phone}
-                    <IconButton
-                        size="small"
-                        onClick={() => {
-                            navigator.clipboard.writeText(user.phone || "");
-                            message.success(`Đã sao chép số điện thoại: ${user.phone}`);
-                        }}
-                    >
-                        <IconCopy size={16} className="text-blue-500" />
-                    </IconButton>
-                </Box>
-            </TableCell>
-            <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                    {user.invitationCode || "Không có"}
-                    <IconButton
-                        size="small"
-                        onClick={() => {
-                            if (user.invitationCode) {
-                                navigator.clipboard.writeText(user.invitationCode);
-                                message.success(`Đã sao chép mã mời: ${user.invitationCode}`);
-                            }
-                        }}
-                        disabled={!user.invitationCode}
-                    >
-                        <IconCopy size={16} className="text-blue-500" />
-                    </IconButton>
-                </Box>
-            </TableCell>
             <TableCell>
                 <Box display="flex" alignItems="center" gap={1}>
                     {user.referralCode || "Không có"}
@@ -313,22 +321,6 @@ function ShopsPage() {
             <TableCell>{user.shopAddress}</TableCell>
             <TableCell>
                 <Chip
-                    label={
-                        user.role === "admin" ? "Admin" :
-                            user.role === "shop" ? "Người bán" :
-                                "Người dùng"
-                    }
-                    color={
-                        user.role === "admin" ? "primary" :
-                            user.role === "shop" ? "warning" :
-                                "success"
-                    }
-                    size="small"
-                    variant="filled"
-                />
-            </TableCell>
-            <TableCell>
-                <Chip
                     label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
                     color={user.isActive ? "success" : "error"}
                     size="small"
@@ -338,10 +330,6 @@ function ShopsPage() {
             <TableCell>{user.balance?.toLocaleString()} VND</TableCell>
             <TableCell>{user.fedexBalance?.toLocaleString()} VND</TableCell>
             <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
-            <TableCell>{user.bankName}</TableCell>
-            <TableCell>{user.bankAccountNumber}</TableCell>
-            <TableCell>{user.bankAccountName}</TableCell>
-            <TableCell>{user.bankBranch}</TableCell>
             <TableCell>{user.sellerPackage?.name || ''}</TableCell>
             <TableCell>
                 {user.sellerPackageExpiry ?
@@ -415,10 +403,6 @@ function ShopsPage() {
                     }}
                     renderRow={renderRow}
                     emptyMessage="Không tìm thấy người dùng nào"
-                    // createNewButton={{
-                    //     label: "Tạo người dùng mới",
-                    //     onClick: handleCreateNew
-                    // }}
                     searchComponent={
                         <div className="flex items-center gap-4">
                             <TextField

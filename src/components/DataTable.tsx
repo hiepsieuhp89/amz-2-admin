@@ -27,6 +27,9 @@ interface DataTableProps {
     page: number;
     take: number;
     itemCount: number;
+    pageCount?: number;
+    hasPreviousPage?: boolean;
+    hasNextPage?: boolean;
   };
   onPageChange: (newPage: number) => void;
   onRowsPerPageChange: (newRowsPerPage: number) => void;
@@ -135,7 +138,7 @@ export default function DataTable({
               rowsPerPageOptions={[]}
               component="div"
               count={pagination.itemCount}
-              rowsPerPage={0}
+              rowsPerPage={pagination.take}
               page={pagination.page - 1}
               onPageChange={(_, newPage) => onPageChange(newPage + 1)}
               onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
@@ -143,6 +146,12 @@ export default function DataTable({
                 '& .MuiTablePagination-toolbar': {
                   padding: '0 16px'
                 }
+              }}
+              nextIconButtonProps={{
+                disabled: pagination.hasNextPage === undefined ? false : !pagination.hasNextPage
+              }}
+              backIconButtonProps={{
+                disabled: pagination.hasPreviousPage === undefined ? false : !pagination.hasPreviousPage
               }}
             />
           </Paper>

@@ -3,12 +3,15 @@ import {
   deliverFakeOrder,
   getValidUsers,
   getShopOrders,
+  updateFakeOrder,
+  deleteFakeOrder,
 } from "@/api/services/fake-order.service"
 import type {
   ICreateFakeOrderPayload,
   IValidUserParams,
   IShopOrderParams,
   IShopOrderResponse,
+  IUpdateFakeOrderPayload,
 } from "@/api/services/fake-order.service"
 import { IValidUserListResponse } from "@/interface/response/fake-order"
 import {
@@ -59,4 +62,18 @@ export const useGetShopOrders = (
     queryFn: () => getShopOrders(params),
     enabled: !!params.shopId,
   })
+}
+
+// Update fake order
+export const useUpdateFakeOrder = (): UseMutationResult<any, Error, { orderId: string; payload: IUpdateFakeOrderPayload }> => {
+  return useMutation({
+    mutationFn: ({ orderId, payload }) => updateFakeOrder(orderId, payload),
+  });
+}
+
+// Delete fake order
+export const useDeleteFakeOrder = (): UseMutationResult<any, Error, string> => {
+  return useMutation({
+    mutationFn: (orderId: string) => deleteFakeOrder(orderId),
+  });
 } 

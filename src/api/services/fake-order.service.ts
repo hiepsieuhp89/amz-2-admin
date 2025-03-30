@@ -1,4 +1,4 @@
-import { sendGet, sendPost } from "../apiClient"
+import { sendGet, sendPost, sendPatch, sendDelete } from "../apiClient"
 import { ConfigFakeOrderEndPoint } from "./contants"
 
 export interface IValidUserParams {
@@ -122,6 +122,20 @@ export interface IShopOrderUser {
     // ... other user fields ...
 }
 
+export interface IUpdateFakeOrderPayload {
+  email?: string;
+  phone?: string;
+  address?: string;
+  status?: string;
+  delayStatus?: string;
+  paymentStatus?: string;
+  orderTime?: string;
+  confirmedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+  paidAt?: string;
+}
+
 // Get valid users for fake order
 export const getValidUsers = async (params: IValidUserParams) => {
   const res = await sendGet(ConfigFakeOrderEndPoint.VALID_USERS, params)
@@ -144,4 +158,14 @@ export const deliverFakeOrder = async (id: string) => {
 export const getShopOrders = async (params: IShopOrderParams): Promise<IShopOrderResponse> => {
     const res = await sendGet(ConfigFakeOrderEndPoint.SHOP_ORDERS, params);
     return res;
+}
+
+export const updateFakeOrder = async (orderId: string, payload: IUpdateFakeOrderPayload) => {
+  const res = await sendPatch(ConfigFakeOrderEndPoint.BASE + `/${orderId}`, payload);
+  return res;
+}
+
+export const deleteFakeOrder = async (orderId: string) => {
+  const res = await sendDelete(ConfigFakeOrderEndPoint.BASE + `/${orderId}`);
+  return res;
 } 
