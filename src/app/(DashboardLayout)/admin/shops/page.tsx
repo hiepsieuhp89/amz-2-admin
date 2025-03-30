@@ -76,6 +76,19 @@ function ShopsPage() {
     const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<any>(null)
     const updateOrderMutation = useUpdateFakeOrder()
     const deleteOrderMutation = useDeleteFakeOrder()
+    const [editOrderForm, setEditOrderForm] = useState({
+        email: '',
+        phone: '',
+        address: '',
+        status: 'PENDING',
+        delayStatus: 'NORMAL',
+        paymentStatus: 'PENDING',
+        orderTime: '',
+        confirmedAt: '',
+        deliveredAt: '',
+        cancelledAt: '',
+        paidAt: ''
+    });
 
     const handleCreateNew = () => {
         router.push("/admin/users/create-new")
@@ -128,8 +141,44 @@ function ShopsPage() {
     }
 
     const handleEditOrder = (order: any) => {
-        setSelectedOrderForEdit(order)
-        setIsEditingOrder(true)
+        setSelectedOrderForEdit(order);
+        setEditOrderForm({
+            email: order.email || order.user?.email || '',
+            phone: order.phone || order.user?.phone || '',
+            address: order.address || order.user?.address || '',
+            status: order.status || 'PENDING',
+            delayStatus: order.delayStatus || 'NORMAL',
+            paymentStatus: order.paymentStatus || 'PENDING',
+            orderTime: order.orderTime ? formatDateTimeLocal(order.orderTime) : formatDateTimeLocal(order.createdAt),
+            confirmedAt: order.confirmedAt ? formatDateTimeLocal(order.confirmedAt) : '',
+            deliveredAt: order.deliveredAt ? formatDateTimeLocal(order.deliveredAt) : '',
+            cancelledAt: order.cancelledAt ? formatDateTimeLocal(order.cancelledAt) : '',
+            paidAt: order.paidAt ? formatDateTimeLocal(order.paidAt) : ''
+        });
+        setIsEditingOrder(true);
+    }
+
+    const formatDateTimeLocal = (dateString: string) => {
+        const date = new Date(dateString);
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        return localDate.toISOString().slice(0, 16);
+    }
+
+    const handleEditOrderSubmit = async () => {
+        if (!selectedOrderForEdit) return;
+
+        try {
+            await updateOrderMutation.mutateAsync({
+                orderId: selectedOrderForEdit.id,
+                payload: editOrderForm
+            });
+            message.success("Đơn hàng đã được cập nhật thành công!");
+            setIsEditingOrder(false);
+            setSelectedOrderForEdit(null);
+        } catch (error) {
+            message.error("Không thể cập nhật đơn hàng. Vui lòng thử lại.");
+        }
     }
 
     const handleDeleteOrder = async (orderId: string) => {
@@ -490,6 +539,180 @@ function ShopsPage() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOrdersDialogOpen(false)}>Đóng</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={isEditingOrder}
+                onClose={() => setIsEditingOrder(false)}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    className: "!rounded-lg shadow-xl"
+                }}
+            >
+                <DialogTitle className="!text-xl !font-semibold !pb-4">
+                    Sửa đơn hàng #{selectedOrderForEdit?.id}
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mt: 2 }} className="space-y-4">
+                        {/* Thông tin cơ bản */}
+                        <Box className="grid grid-cols-2 gap-4">
+                            <TextField
+                                fullWidth
+                                label="Email"
+                                value={editOrderForm.email}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, email: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                            />
+                            <TextField
+                                fullWidth
+                                label="Số điện thoại"
+                                value={editOrderForm.phone}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, phone: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                            />
+                        </Box>
+
+                        <TextField
+                            fullWidth
+                            label="Địa chỉ"
+                            value={editOrderForm.address}
+                            onChange={(e) => setEditOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                            variant="outlined"
+                            size="small"
+                            multiline
+                            rows={2}
+                        />
+
+                        {/* Trạng thái đơn hàng */}
+                        <Box className="grid grid-cols-2 gap-4">
+                            <TextField
+                                select
+                                fullWidth
+                                label="Trạng thái đơn hàng"
+                                value={editOrderForm.status}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, status: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                            >
+                                <MenuItem value="PENDING" className="!text-orange-500">Chờ xử lý</MenuItem>
+                                <MenuItem value="CONFIRMED" className="!text-blue-500">Đã xác nhận</MenuItem>
+                                <MenuItem value="SHIPPING" className="!text-purple-500">Đang giao hàng</MenuItem>
+                                <MenuItem value="DELIVERED" className="!text-green-500">Đã giao hàng</MenuItem>
+                                <MenuItem value="CANCELLED" className="!text-red-500">Đã hủy</MenuItem>
+                            </TextField>
+
+                            <TextField
+                                select
+                                fullWidth
+                                label="Trạng thái delay"
+                                value={editOrderForm.delayStatus}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, delayStatus: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                            >
+                                <MenuItem value="NORMAL">Bình thường</MenuItem>
+                                <MenuItem value="DELAY_24H">Delay 24h</MenuItem>
+                                <MenuItem value="DELAY_48H">Delay 48h</MenuItem>
+                                <MenuItem value="DELAY_72H">Delay 72h</MenuItem>
+                            </TextField>
+                        </Box>
+
+                        {/* Thời gian */}
+                        <Box className="grid grid-cols-2 gap-4">
+                            <TextField
+                                fullWidth
+                                label="Thời gian đặt hàng"
+                                type="datetime-local"
+                                value={editOrderForm.orderTime}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, orderTime: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Thời gian xác nhận"
+                                type="datetime-local"
+                                value={editOrderForm.confirmedAt}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, confirmedAt: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        </Box>
+
+                        <Box className="grid grid-cols-2 gap-4">
+                            <TextField
+                                fullWidth
+                                label="Thời gian giao hàng"
+                                type="datetime-local"
+                                value={editOrderForm.deliveredAt}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, deliveredAt: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Thời gian hủy"
+                                type="datetime-local"
+                                value={editOrderForm.cancelledAt}
+                                onChange={(e) => setEditOrderForm(prev => ({ ...prev, cancelledAt: e.target.value }))}
+                                variant="outlined"
+                                size="small"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        </Box>
+
+                        {/* Trạng thái thanh toán */}
+                        <TextField
+                            select
+                            fullWidth
+                            label="Trạng thái thanh toán"
+                            value={editOrderForm.paymentStatus}
+                            onChange={(e) => setEditOrderForm(prev => ({ ...prev, paymentStatus: e.target.value }))}
+                            variant="outlined"
+                            size="small"
+                        >
+                            <MenuItem value="PENDING" className="!text-orange-500">Chờ thanh toán</MenuItem>
+                            <MenuItem value="PAID" className="!text-green-500">Đã thanh toán</MenuItem>
+                            <MenuItem value="FAILED" className="!text-red-500">Thanh toán thất bại</MenuItem>
+                        </TextField>
+                    </Box>
+                </DialogContent>
+                <DialogActions className="!p-4 !pt-2">
+                    <Button
+                        variant="outlined"
+                        onClick={() => setIsEditingOrder(false)}
+                        className="!normal-case"
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleEditOrderSubmit}
+                        disabled={updateOrderMutation.isPending}
+                        className="!normal-case !bg-blue-500 hover:!bg-blue-600"
+                    >
+                        {updateOrderMutation.isPending ? (
+                            <Box className="flex items-center gap-2">
+                                <CircularProgress size={16} className="!text-white" />
+                                Đang cập nhật...
+                            </Box>
+                        ) : 'Cập nhật đơn hàng'}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>
