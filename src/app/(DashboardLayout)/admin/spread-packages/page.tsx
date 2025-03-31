@@ -33,13 +33,11 @@ import { useDeleteSpreadPackage, useGetAllSpreadPackages } from "@/hooks/spread-
 
 function SpreadPackagesPage() {
   const router = useRouter()
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
 
-  const { data, isLoading, error } = useGetAllSpreadPackages({ page, limit })
+  const { data, isLoading, error } = useGetAllSpreadPackages()
   const deletePackageMutation = useDeleteSpreadPackage()
   const handleCreateNew = () => {
     router.push("/admin/spread-packages/create-new")
@@ -70,15 +68,6 @@ function SpreadPackagesPage() {
       message.error("Không thể xóa gói quảng bá. Vui lòng thử lại.")
       console.error(error)
     }
-  }
-
-  const handlePageChange = (_: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLimit(parseInt(event.target.value, 10))
-    setPage(0)
   }
 
   const filteredPackages = data?.data.filter((pkg) => pkg.name.toLowerCase().includes(searchTerm.toLowerCase())) || []
@@ -191,16 +180,6 @@ function SpreadPackagesPage() {
         columns={columns}
         data={filteredPackages}
         isLoading={isLoading}
-        pagination={{
-          page,
-          take: limit,
-          itemCount: data?.data.length || 0,
-        }}
-        onPageChange={(newPage) => setPage(newPage)}
-        onRowsPerPageChange={(newRowsPerPage) => {
-          setLimit(newRowsPerPage)
-          setPage(0)
-        }}
         renderRow={renderRow}
         emptyMessage="Không tìm thấy gói quảng bá nào"
         createNewButton={{

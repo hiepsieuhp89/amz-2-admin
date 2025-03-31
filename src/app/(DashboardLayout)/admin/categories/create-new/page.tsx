@@ -1,24 +1,49 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import {
-  Typography,
-  Button,
   Box,
-  Paper,
-  TextField,
+  Button,
   CircularProgress,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { message } from "antd"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { useCreateCategory, useGetAllCategories } from "@/hooks/category"
-import { ICategory } from "@/interface/request/category"
+
+// Add NestedMenuItem and buildNestedCategories from products page
+const NestedMenuItem = ({ category, level = 0 }: { category: any, level?: number }) => {
+  const paddingLeft = level * 20;
+  const isParent = category?.children?.length > 0;
+
+  return (
+    <>
+      <MenuItem 
+        value={category.id} 
+        style={{ 
+          paddingLeft: `${paddingLeft}px`,
+          paddingRight: isParent ? '24px' : '16px',
+          fontWeight: isParent ? '600' : '400',
+          backgroundColor: isParent ? '#f5f5f5' : 'transparent'
+        }}
+        disabled={isParent}
+      >
+        {category.name}
+      </MenuItem>
+      {category?.children?.map((child: any) => (
+        <NestedMenuItem key={child.id} category={child} level={level + 1} />
+      ))}
+    </>
+  );
+};
 
 export default function CreateCategoryPage() {
   const router = useRouter()
@@ -32,7 +57,16 @@ export default function CreateCategoryPage() {
   })
 
   const createCategoryMutation = useCreateCategory()
-  const { data: categoriesData } = useGetAllCategories()
+  const { data: categoriesData } = useGetAllCategories({
+    page: 1,
+    take: 999999,
+    order: "ASC"
+  })
+
+  // Filter to get only parent categories (categories with no parent)
+  const parentCategories = (categoriesData?.data?.data || []).filter(
+    (category: any) => !category.parentId
+  );
 
   const validateForm = () => {
     let isValid = true
@@ -51,6 +85,7 @@ export default function CreateCategoryPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+    console.log('e', e)
     const { name, value } = e.target as HTMLInputElement
     
     if (name) {
@@ -81,8 +116,6 @@ export default function CreateCategoryPage() {
       console.error(error)
     }
   }
-
-  const availableParentCategories = categoriesData?.data?.data || []
 
   return (
     <div className="p-6">
@@ -134,8 +167,11 @@ export default function CreateCategoryPage() {
                   onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="">Không có</MenuItem>
-                  {availableParentCategories.map((category: ICategory) => (
-                    <MenuItem key={category.id} value={category.id}>
+                  {parentCategories.map((category) => (
+                    <MenuItem 
+                      key={category.id} 
+                      value={category.id}
+                    >
                       {category.name}
                     </MenuItem>
                   ))}

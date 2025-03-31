@@ -23,7 +23,7 @@ interface DataTableProps {
   }[];
   data: any[];
   isLoading: boolean;
-  pagination: {
+  pagination?: {
     page: number;
     take: number;
     itemCount: number;
@@ -31,8 +31,8 @@ interface DataTableProps {
     hasPreviousPage?: boolean;
     hasNextPage?: boolean;
   };
-  onPageChange: (newPage: number) => void;
-  onRowsPerPageChange: (newRowsPerPage: number) => void;
+  onPageChange?: (newPage: number) => void;
+  onRowsPerPageChange?: (newRowsPerPage: number) => void;
   renderRow: (row: any, index: number) => ReactNode;
   emptyMessage: string;
   createNewButton?: {
@@ -133,28 +133,30 @@ export default function DataTable({
               </TableContainer>
             </Paper>
           </Box>
-          <Paper sx={{ mt: 2, border: '1px solid #E0E0E0' }}>
-            <TablePagination
-              rowsPerPageOptions={[]}
-              component="div"
-              count={pagination.itemCount}
-              rowsPerPage={pagination.take}
-              page={pagination.page - 1}
-              onPageChange={(_, newPage) => onPageChange(newPage + 1)}
-              onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
-              sx={{
-                '& .MuiTablePagination-toolbar': {
-                  padding: '0 16px'
-                }
-              }}
-              nextIconButtonProps={{
-                disabled: pagination.hasNextPage === undefined ? false : !pagination.hasNextPage
-              }}
-              backIconButtonProps={{
-                disabled: pagination.hasPreviousPage === undefined ? false : !pagination.hasPreviousPage
-              }}
-            />
-          </Paper>
+          {pagination && (
+            <Paper sx={{ mt: 2, border: '1px solid #E0E0E0' }}>
+              <TablePagination
+                rowsPerPageOptions={[]}
+                component="div"
+                count={pagination.itemCount}
+                rowsPerPage={pagination.take}
+                page={pagination.page - 1}
+                onPageChange={(_, newPage) => onPageChange?.(newPage + 1)}
+                onRowsPerPageChange={(e) => onRowsPerPageChange?.(parseInt(e.target.value, 10))}
+                sx={{
+                  '& .MuiTablePagination-toolbar': {
+                    padding: '0 16px'
+                  }
+                }}
+                nextIconButtonProps={{
+                  disabled: pagination.hasNextPage === undefined ? false : !pagination.hasNextPage
+                }}
+                backIconButtonProps={{
+                  disabled: pagination.hasPreviousPage === undefined ? false : !pagination.hasPreviousPage
+                }}
+              />
+            </Paper>
+          )}
         </Box>
       )}
     </div>

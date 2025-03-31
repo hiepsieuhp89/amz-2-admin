@@ -391,7 +391,7 @@ const AdminPosPage = () => {
         balance: 0,
         fedexBalance: 0,
         isActive: true,
-        isVerified: true,
+        // isVerified: true,
         invitationCode: selectedCustomer?.invitationCode || undefined,
         referralCode: selectedCustomer?.referralCode || undefined,
         bankName: selectedCustomer?.bankName || undefined,
@@ -1408,6 +1408,7 @@ const AdminPosPage = () => {
             onClick={handleSaveAddressAndCreateUser}
             variant="contained"
             disabled={!newUserName}
+            sx={{ backgroundColor: "#5D87FF", "&:hover": { backgroundColor: "#4570EA" } }}
           >
             Lưu địa chỉ và tạo người dùng
           </Button>

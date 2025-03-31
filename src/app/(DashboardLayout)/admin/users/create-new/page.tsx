@@ -62,10 +62,10 @@ export default function CreateUserPage() {
   const [spreadPackages, setSpreadPackages] = useState<ISpreadPackage[]>([])
 
   const { data: sellerPackageData } = useGetAllSellerPackages({
-    limit: 9999999,
+    take: 9999999,
   })
   const { data: spreadPackageData } = useGetAllSpreadPackages({
-    limit: 9999999,
+    take: 9999999,
   })
 
   useEffect(() => {
