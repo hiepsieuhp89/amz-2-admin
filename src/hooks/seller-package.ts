@@ -20,13 +20,10 @@ const SELLER_PACKAGES_KEY = "seller-packages"
 const SELLER_PACKAGE_KEY = "seller-package"
 
 // Get all seller packages
-export const useGetAllSellerPackages = (params?: {
-    page?: number
-    limit?: number
-}): UseQueryResult<ISellerPackageListResponse> => {
+export const useGetAllSellerPackages = (): UseQueryResult<ISellerPackageListResponse> => {
     return useQuery({
-        queryKey: [SELLER_PACKAGES_KEY, params],
-        queryFn: () => getAllSellerPackages(params),
+        queryKey: [SELLER_PACKAGES_KEY],
+        queryFn: () => getAllSellerPackages(),
     })
 }
 

@@ -1,18 +1,107 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { IconArrowLeft, IconUpload, IconX } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
 import { useCreateProduct } from '@/hooks/product';
 import { useUploadImage } from '@/hooks/image';
 import { ICreateProduct } from '@/interface/request/product';
+import { useGetAllCategories } from "@/hooks/category";
+
+const NestedMenuItem = ({ category, level = 0, onSelect }: { 
+  category: any, 
+  level?: number,
+  onSelect: (categoryId: string, categoryName: string) => void 
+}) => {
+  const paddingLeft = level * 20;
+  const isParent = category?.children?.length > 0;
+
+  return (
+    <>
+      <MenuItem 
+        value={category.id} 
+        style={{ 
+          paddingLeft: `${paddingLeft}px`,
+          paddingRight: '16px',
+          fontWeight: isParent ? '600' : '400',
+          backgroundColor: isParent ? '#f5f5f5' : 'transparent'
+        }}
+        onClick={() => {
+          if (!isParent) {
+            onSelect(category.id, category.name);
+          }
+        }}
+      >
+        {category.name}
+        {isParent && <span style={{ marginLeft: '8px', color: '#757575' }}>▼</span>}
+      </MenuItem>
+      {category?.children?.map((child: any) => (
+        <NestedMenuItem 
+          key={child.id} 
+          category={child} 
+          level={level + 1}
+          onSelect={onSelect}
+        />
+      ))}
+    </>
+  );
+};
+
+const buildNestedCategories = (categories: any[]) => {
+  const categoryMap = new Map();
+  const rootCategories: any[] = [];
+
+  // First pass: create map of all categories including parents
+  categories.forEach(category => {
+    // Add current category
+    categoryMap.set(category.id, { 
+      ...category, 
+      children: category.children || [] 
+    });
+
+    // Add parent category if it exists and not already in map
+    if (category.parent && !categoryMap.has(category.parent.id)) {
+      categoryMap.set(category.parent.id, {
+        ...category.parent,
+        children: []
+      });
+    }
+  });
+
+  // Second pass: build hierarchy
+  categories.forEach(category => {
+    if (category.parentId) {
+      const parent = categoryMap.get(category.parentId);
+      if (parent) {
+        // Only add if not already in children array
+        if (!parent.children.some((child: any) => child.id === category.id)) {
+          parent.children.push(categoryMap.get(category.id));
+        }
+      }
+    } else {
+      // Add to root categories if it's a root category
+      if (!rootCategories.some(rootCat => rootCat.id === category.id)) {
+        rootCategories.push(categoryMap.get(category.id));
+      }
+    }
+  });
+
+  // Add any remaining parent categories that weren't in the original list
+  categoryMap.forEach(category => {
+    if (!category.parentId && !rootCategories.some(rootCat => rootCat.id === category.id)) {
+      rootCategories.push(category);
+    }
+  });
+  return rootCategories;
+};
 
 export default function CreateProductPage() {
   const router = useRouter();
   const createProductMutation = useCreateProduct();
   const uploadImageMutation = useUploadImage();
+  const { data: categoriesData } = useGetAllCategories({take: 999999});
 
   const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
@@ -27,7 +116,14 @@ export default function CreateProductPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
+
+  const [selectOpen, setSelectOpen] = useState(false);
+
+  // Build nested categories structure
+  const nestedCategories = buildNestedCategories(categoriesData?.data?.data || []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | { target: { name: string; value: any } }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -183,6 +279,46 @@ export default function CreateProductPage() {
                 
                 <Box className="flex gap-6">
                   <Box className="flex-1">
+                    <FormControl fullWidth size="small">
+                      <InputLabel id="categoryId-label">Danh mục</InputLabel>
+                      <Select
+                        labelId="categoryId-label"
+                        name="categoryId"
+                        value={formData.categoryId}
+                        label="Danh mục"
+                        displayEmpty
+                        open={selectOpen}
+                        onOpen={() => setSelectOpen(true)}
+                        onClose={() => setSelectOpen(false)}
+                        renderValue={() => selectedCategoryName}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                        required
+                      >
+                        {nestedCategories.map((category) => (
+                          <NestedMenuItem 
+                            key={category.id} 
+                            category={category} 
+                            onSelect={(categoryId, categoryName) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                categoryId
+                              }));
+                              setSelectedCategoryName(categoryName);
+                              setSelectOpen(false); // Close the dropdown after selection
+                            }}
+                          />
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  
+                  <Box className="flex-1">
                     <TextField
                       size="small"
                       label="Số lượng"
@@ -191,19 +327,6 @@ export default function CreateProductPage() {
                       value={formData.stock}
                       onChange={handleChange}
                       required
-                      fullWidth
-                      variant="outlined"
-                      className="rounded"
-                    />
-                  </Box>
-                  
-                  <Box className="flex-1">
-                    <TextField
-                      size="small"
-                      label="ID Danh mục"
-                      name="categoryId"
-                      value={formData.categoryId}
-                      onChange={handleChange}
                       fullWidth
                       variant="outlined"
                       className="rounded"

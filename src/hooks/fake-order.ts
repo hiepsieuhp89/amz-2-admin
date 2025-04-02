@@ -1,21 +1,29 @@
-import {
-  createFakeOrder,
-  deliverFakeOrder,
-  getValidUsers,
-} from "@/api/services/fake-order.service"
 import type {
   ICreateFakeOrderPayload,
+  IShopOrderParams,
+  IShopOrderResponse,
+  IUpdateFakeOrderPayload,
   IValidUserParams,
-} from "@/api/services/fake-order.service"
-import { IValidUserListResponse } from "@/interface/response/fake-order"
+} from "@/api/services/fake-order.service";
+import {
+  createFakeOrder,
+  deleteFakeOrder,
+  deliverFakeOrder,
+  getShopOrders,
+  getValidUsers,
+  updateFakeOrder,
+} from "@/api/services/fake-order.service";
+import { IValidUserListResponse } from "@/interface/response/fake-order";
 import {
   useMutation,
   type UseMutationResult,
   useQuery,
+  useQueryClient,
   type UseQueryResult,
-} from "@tanstack/react-query"
+} from "@tanstack/react-query";
 
-const VALID_USERS_KEY = "validUsers"
+const VALID_USERS_KEY = "validUsers";
+const SHOP_ORDERS_KEY = "shopOrders";
 
 // Get valid users
 export const useGetValidUsers = (
@@ -25,8 +33,8 @@ export const useGetValidUsers = (
     queryKey: [VALID_USERS_KEY, params],
     queryFn: () => getValidUsers(params),
     enabled: !!params.search,
-  })
-}
+  });
+};
 
 // Create fake order
 export const useCreateFakeOrder = (): UseMutationResult<
@@ -36,12 +44,49 @@ export const useCreateFakeOrder = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: (payload: ICreateFakeOrderPayload) => createFakeOrder(payload),
-  })
-}
+  });
+};
 
 // Mark fake order as delivered
-export const useDeliverFakeOrder = (): UseMutationResult<any, Error, string> => {
+export const useDeliverFakeOrder = (): UseMutationResult<
+  any,
+  Error,
+  string
+> => {
   return useMutation({
     mutationFn: (id: string) => deliverFakeOrder(id),
-  })
-} 
+  });
+};
+
+// Get shop orders
+export const useGetShopOrders = (
+  params: IShopOrderParams
+): UseQueryResult<IShopOrderResponse> => {
+  return useQuery({
+    queryKey: [SHOP_ORDERS_KEY, params],
+    queryFn: () => getShopOrders(params),
+    enabled: !!params.shopId,
+  });
+};
+
+// Update fake order
+export const useUpdateFakeOrder = (): UseMutationResult<
+  any,
+  Error,
+  { orderId: string; payload: IUpdateFakeOrderPayload }
+> => {
+  return useMutation({
+    mutationFn: ({ orderId, payload }) => updateFakeOrder(orderId, payload),
+  });
+};
+
+// Delete fake order
+export const useDeleteFakeOrder = (): UseMutationResult<any, Error, string> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => deleteFakeOrder(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SHOP_ORDERS_KEY] });
+    },
+  });
+};
