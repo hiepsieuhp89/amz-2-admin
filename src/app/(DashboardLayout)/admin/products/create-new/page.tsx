@@ -9,8 +9,14 @@ import { useCreateProduct } from '@/hooks/product';
 import { useUploadImage } from '@/hooks/image';
 import { ICreateProduct } from '@/interface/request/product';
 import { useGetAllCategories } from "@/hooks/category";
-import ReactQuill from 'react-quill';
+import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css'; // Import styles for the editor
+
+// Sử dụng dynamic import để tải ReactQuill chỉ ở phía client
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <p>Loading editor...</p>, // Optional: Hiển thị loading state
+});
 
 const NestedMenuItem = ({ category, level = 0, onSelect }: { 
   category: any, 

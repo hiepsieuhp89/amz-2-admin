@@ -32,13 +32,19 @@ import {
 import { message } from "antd"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import ReactQuill from 'react-quill'
+import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
 
 import { useGetAllCategories } from "@/hooks/category"
 import { useUploadImage } from "@/hooks/image"
 import { useDeleteProduct, useGetProductById, useUpdateProduct } from "@/hooks/product"
 import { ICreateProduct } from "@/interface/request/product"
+
+// Sử dụng dynamic import để tải ReactQuill chỉ ở phía client
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <p>Loading editor...</p>, // Optional: Hiển thị loading state
+});
 
 const NestedMenuItem = ({ category, level = 0, onSelect }: { 
   category: any, 
