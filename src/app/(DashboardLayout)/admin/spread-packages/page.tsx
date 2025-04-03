@@ -166,7 +166,7 @@ function SpreadPackagesPage() {
             }}
           />
           <Button
-            variant="contained"
+            variant="outlined"
             startIcon={<IconPlus size={18} />}
             onClick={handleCreateNew}
             className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
@@ -228,7 +228,7 @@ function SpreadPackagesPage() {
             Hủy bỏ
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleDeleteConfirm}
             className="text-white transition-colors !bg-red-500"
             disabled={deletePackageMutation.isPending}

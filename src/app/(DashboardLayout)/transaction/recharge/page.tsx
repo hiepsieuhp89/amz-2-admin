@@ -335,7 +335,7 @@ export default function RechargePage() {
             fullWidth
           />
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             onClick={handleRecharge}
             disabled={isRecharging || !rechargeAmount || rechargeAmount <= 0}

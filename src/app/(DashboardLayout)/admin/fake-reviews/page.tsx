@@ -401,7 +401,7 @@ function FakeReviewsPage() {
         <DialogActions>
           <Button onClick={handleCloseReviewDialog}>Hủy</Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleSubmitReview}
             disabled={isCreatingReview}
           >

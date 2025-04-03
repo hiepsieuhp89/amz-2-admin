@@ -17,10 +17,18 @@ export const getAllUsers = async (params?: {
   take?: number
   search?: string
   status?: string
-  role?: "shop" | "admin" | "user",
+  role?: "shop" | "admin" | "user"
   hasShop?: boolean
 }): Promise<IUserListResponse> => {
-  const res = await sendGet(ConfigUserEndPoint.BASE, params)
+  const res = await sendGet(ConfigUserEndPoint.BASE, {
+    order: params?.order,
+    page: params?.page,
+    take: params?.take,
+    search: params?.search && params.search.length > 0 ? params.search : undefined,
+    status: params?.status && params.status.length > 0 ? params.status : undefined,
+    role: params?.role && params.role.length > 0 ? params.role : undefined,
+    hasShop: params?.hasShop !== undefined ? params.hasShop.toString() : undefined
+  })
   return res
 }
 

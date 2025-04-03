@@ -400,7 +400,7 @@ function SellerPackageDetailPage() {
             Hủy bỏ
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleDeleteConfirm}
             className="text-white transition-colors !bg-red-500"
             disabled={deletePackageMutation.isPending}

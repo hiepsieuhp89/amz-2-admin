@@ -172,7 +172,7 @@ const StaffPage: React.FC = () => {
             {staffList.length === 0 ? "Load Sample Data" : "Clear Data"}
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             href="https://amazonworld.cc/admin/staffs/create"
             startIcon={<IconPlus size={18} />}

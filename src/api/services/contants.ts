@@ -125,3 +125,10 @@ export const ConfigFakeReviewEndPoint = {
   BASE: '/admin/fake-reviews',
   GET_USER_ORDERS: (userId: string) => `/admin/fake-reviews/user-orders?userId=${userId}`
 }
+
+export const ConfigNotificationEndPoint = {
+  BASE: "/admin/notifications/system",
+  GET_BY_ID: (id: string) => `/admin/notifications/system/${id}`,
+  DELETE: (id: string) => `/admin/notifications/system/${id}`,
+  MARK_AS_READ: (id: string) => `/admin/notifications/system/${id}/read`,
+};

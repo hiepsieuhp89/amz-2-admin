@@ -126,7 +126,7 @@ const ShippingZonesPage: React.FC = () => {
             {zones.length === 0 ? "Load Sample Data" : "Clear Data"}
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             href="https://amazonworld.cc/admin/zones/create"
             startIcon={<IconPlus size={18} />}
