@@ -175,23 +175,8 @@ function UsersPage() {
     { key: 'username', label: 'Tên đăng nhập' },
     { key: 'fullName', label: 'Họ tên' },
     { key: 'phone', label: 'Số điện thoại' },
-    { key: 'invitationCode', label: 'Mã mời' },
-    { key: 'referralCode', label: 'Mã giới thiệu' },
-    { key: 'shopName', label: 'Tên shop' },
-    { key: 'shopAddress', label: 'Địa chỉ shop' },
     { key: 'role', label: 'Vai trò' },
     { key: 'isActive', label: 'Trạng thái' },
-    { key: 'balance', label: 'Số dư' },
-    { key: 'fedexBalance', label: 'Số dư Fedex' },
-    { key: 'address', label: 'Địa chỉ' },
-    { key: 'bankName', label: 'Ngân hàng' },
-    { key: 'bankAccountNumber', label: 'Số tài khoản' },
-    { key: 'bankAccountName', label: 'Tên tài khoản' },
-    { key: 'bankBranch', label: 'Chi nhánh' },
-    { key: 'sellerPackageName', label: 'Gói Seller' },
-    { key: 'sellerPackageExpiry', label: 'Hết hạn Seller' },
-    { key: 'spreadPackageName', label: 'Gói Spread' },
-    { key: 'spreadPackageExpiry', label: 'Hết hạn Spread' },
     { key: 'actions', label: 'Thao tác' },
   ];
 
@@ -236,42 +221,6 @@ function UsersPage() {
         </Box>
       </TableCell>
       <TableCell>
-        <Box display="flex" alignItems="center" gap={1}>
-          {user.invitationCode || "Không có"}
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (user.invitationCode) {
-                navigator.clipboard.writeText(user.invitationCode);
-                message.success(`Đã sao chép mã mời: ${user.invitationCode}`);
-              }
-            }}
-            disabled={!user.invitationCode}
-          >
-            <IconCopy size={16} className="text-blue-500"/>
-          </IconButton>
-        </Box>
-      </TableCell>
-      <TableCell>
-        <Box display="flex" alignItems="center" gap={1}>
-          {user.referralCode || "Không có"}
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (user.referralCode) {
-                navigator.clipboard.writeText(user.referralCode);
-                message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
-              }
-            }}
-            disabled={!user.referralCode}
-          >
-            <IconCopy size={16} className="text-blue-500"/>
-          </IconButton>
-        </Box>
-      </TableCell>
-      <TableCell>{user.shopName}</TableCell>
-      <TableCell>{user.shopAddress}</TableCell>
-      <TableCell>
         <Chip
           label={
             user.role === "admin" ? "Admin" :
@@ -294,27 +243,6 @@ function UsersPage() {
           size="small"
           variant="filled"
         />
-      </TableCell>
-      <TableCell>{user.balance?.toLocaleString()} VND</TableCell>
-      <TableCell>{user.fedexBalance?.toLocaleString()} VND</TableCell>
-      <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
-      <TableCell>{user.bankName}</TableCell>
-      <TableCell>{user.bankAccountNumber}</TableCell>
-      <TableCell>{user.bankAccountName}</TableCell>
-      <TableCell>{user.bankBranch}</TableCell>
-      <TableCell>{user.sellerPackage?.name || ''}</TableCell>
-      <TableCell>
-        {user.sellerPackageExpiry ? 
-          new Date(user.sellerPackageExpiry).toLocaleDateString() : 
-          ''
-        }
-      </TableCell>
-      <TableCell>{user.spreadPackage?.name || ''}</TableCell>
-      <TableCell>
-        {user.spreadPackageExpiry ? 
-          new Date(user.spreadPackageExpiry).toLocaleDateString() : 
-          ''
-        }
       </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">

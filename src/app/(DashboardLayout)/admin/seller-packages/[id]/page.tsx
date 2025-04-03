@@ -27,6 +27,7 @@ import {
 import { message } from "antd"
 
 import { useDeleteSellerPackage, useGetSellerPackageById, useUpdateSellerPackage } from "@/hooks/seller-package"
+import { useUploadImage } from "@/hooks/image"
 
 function SellerPackageDetailPage() {
   const router = useRouter()
@@ -35,6 +36,7 @@ function SellerPackageDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [imagePreview, setImagePreview] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
@@ -49,6 +51,7 @@ function SellerPackageDetailPage() {
   const { data: packageData, isLoading, error } = useGetSellerPackageById(id)
   const deletePackageMutation = useDeleteSellerPackage()
   const updatePackageMutation = useUpdateSellerPackage()
+  const uploadImageMutation = useUploadImage()
 
   useEffect(() => {
     if (packageData?.data) {
@@ -97,13 +100,10 @@ function SellerPackageDetailPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
         setImagePreview(reader.result as string)
-        setFormData({
-          ...formData,
-          image: reader.result as string,
-        })
       }
       reader.readAsDataURL(file)
     }
@@ -120,9 +120,28 @@ function SellerPackageDetailPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
+      let updatedFormData = { ...formData }
+      
+      if (imageFile) {
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        
+        const uploadResult = await uploadImageMutation.mutateAsync({
+          file: imageFile,
+          isPublic: true,
+          description: `Hình ảnh cho gói bán hàng: ${formData.name}`
+        })
+        
+        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+        
+        updatedFormData = {
+          ...updatedFormData,
+          image: uploadResult.data.url
+        }
+      }
+      
       await updatePackageMutation.mutateAsync({
         id,
-        payload: formData,
+        payload: updatedFormData,
       })
       message.success("Gói bán hàng đã được cập nhật!")
       setIsEditing(false)
