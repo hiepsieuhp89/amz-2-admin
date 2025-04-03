@@ -255,10 +255,10 @@ function ProductsPage() {
       <TableCell>{product.price}</TableCell>
       <TableCell>{product.salePrice || '-'}</TableCell>
       <TableCell>
-        {product.imageUrl ? (
+        {product.imageUrls && product.imageUrls.length > 0 ? (
           <Box
             component="img"
-            src={product.imageUrl}
+            src={product.imageUrls[0]}
             alt={product.name}
             sx={{
               width: 50,
@@ -270,7 +270,7 @@ function ProductsPage() {
                 opacity: 0.8
               }
             }}
-            onClick={() => handleImageClick(product.imageUrl)}
+            onClick={() => handleImageClick(product.imageUrls[0])}
           />
         ) : (
           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
@@ -468,10 +468,10 @@ function ProductsPage() {
                 <Box key={product.id} className="overflow-hidden transition-shadow border !rounded-[8px] shadow-sm hover:shadow-md">
                   <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
                     <Box sx={{ position: 'relative', mb: 2 }}>
-                      {product.imageUrl && (
+                      {product.imageUrls && product.imageUrls.length > 0 && (
                         <Box
                           component="img"
-                          src={product.imageUrl}
+                          src={product.imageUrls[0]}
                           alt={product.name}
                           sx={{
                             width: '100%',
@@ -480,7 +480,7 @@ function ProductsPage() {
                             borderRadius: '4px',
                             cursor: 'pointer'
                           }}
-                          onClick={() => handleImageClick(product.imageUrl)}
+                          onClick={() => handleImageClick(product.imageUrls[0])}
                         />
                       )}
                       <Box sx={{

@@ -12,7 +12,7 @@ export interface IProduct {
     id: string
     name: string
     description: string
-    imageUrl: string
+    imageUrls: string[]
     salePrice: string
     price: string
     stock: number

@@ -72,7 +72,7 @@ export const useUpdateProduct = (): UseMutationResult<
         payload: {
             name?: string;
             description?: string;
-            imageUrl?: string;
+            imageUrls?: string[];
             categoryId?: string;
             salePrice?: number | string;
             price?: number | string;

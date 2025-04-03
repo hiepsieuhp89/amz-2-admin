@@ -60,7 +60,7 @@ export const updateProduct = async (
   payload: {
     name?: string;
     description?: string;
-    imageUrl?: string;
+    imageUrls?: string[];
     categoryId?: string;
     salePrice?: number | string;
     price?: number | string;

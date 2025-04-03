@@ -1,35 +1,83 @@
-
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
 import {
-  Typography,
-  Button,
   Box,
-  Paper,
+  Button,
   CircularProgress,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  TextField,
+  DialogTitle,
+  FormControl,
   FormControlLabel,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
   Switch,
+  TextField,
+  Typography
 } from "@mui/material"
 import {
   IconArrowLeft,
   IconEdit,
+  IconPlus,
   IconTrash,
-  IconX,
   IconUpload,
+  IconX
 } from "@tabler/icons-react"
 import { message } from "antd"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 
-import { useDeleteProduct, useGetProductById, useUpdateProduct } from "@/hooks/product"
+import { useGetAllCategories } from "@/hooks/category"
 import { useUploadImage } from "@/hooks/image"
+import { useDeleteProduct, useGetProductById, useUpdateProduct } from "@/hooks/product"
 import { ICreateProduct } from "@/interface/request/product"
+
+const NestedMenuItem = ({ category, level = 0, onSelect }: { 
+  category: any, 
+  level?: number,
+  onSelect: (categoryId: string, categoryName: string) => void 
+}) => {
+  const paddingLeft = level * 20;
+  const isParent = category?.children?.length > 0;
+
+  return (
+    <>
+      <MenuItem 
+        value={category.id} 
+        style={{ 
+          paddingLeft: `${paddingLeft}px`,
+          paddingRight: '16px',
+          fontWeight: isParent ? '600' : '400',
+          backgroundColor: isParent ? '#f5f5f5' : 'transparent'
+        }}
+        onClick={() => {
+          if (!isParent) {
+            onSelect(category.id, category.name);
+          }
+        }}
+      >
+        {category.name}
+        {isParent && <span style={{ marginLeft: '8px', color: '#757575' }}>▼</span>}
+      </MenuItem>
+      {category?.children?.map((child: any) => (
+        <NestedMenuItem 
+          key={child.id} 
+          category={child} 
+          level={level + 1}
+          onSelect={onSelect}
+        />
+      ))}
+    </>
+  );
+};
 
 function ProductDetailPage() {
   const router = useRouter()
@@ -37,42 +85,108 @@ function ProductDetailPage() {
   const id = params.id as string
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
     description: '',
-    imageUrl: '',
+    imageUrls: [],
     categoryId: '',
     salePrice: '',
     price: '',
     stock: 0,
     isHot: false
   })
+  const [selectOpen, setSelectOpen] = useState(false)
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('')
 
   const { data: productData, isLoading, error } = useGetProductById(id)
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategories({ take: 999999 })
   const deleteProductMutation = useDeleteProduct()
   const updateProductMutation = useUpdateProduct()
   const uploadImageMutation = useUploadImage()
 
+  const buildNestedCategories = (categories: any[]) => {
+    const categoryMap = new Map();
+    const rootCategories: any[] = [];
+
+    // First pass: create map of all categories including parents
+    categories.forEach(category => {
+      // Add current category
+      categoryMap.set(category.id, { 
+        ...category, 
+        children: category.children || [] 
+      });
+
+      // Add parent category if it exists and not already in map
+      if (category.parent && !categoryMap.has(category.parent.id)) {
+        categoryMap.set(category.parent.id, {
+          ...category.parent,
+          children: []
+        });
+      }
+    });
+
+    // Second pass: build hierarchy
+    categories.forEach(category => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId);
+        if (parent) {
+          // Only add if not already in children array
+          if (!parent.children.some((child: any) => child.id === category.id)) {
+            parent.children.push(categoryMap.get(category.id));
+          }
+        }
+      } else {
+        // Add to root categories if it's a root category
+        if (!rootCategories.some(rootCat => rootCat.id === category.id)) {
+          rootCategories.push(categoryMap.get(category.id));
+        }
+      }
+    });
+
+    // Add any remaining parent categories that weren't in the original list
+    categoryMap.forEach(category => {
+      if (!category.parentId && !rootCategories.some(rootCat => rootCat.id === category.id)) {
+        rootCategories.push(category);
+      }
+    });
+    return rootCategories;
+  };
+
+  const nestedCategories = categoriesData?.data?.data ? buildNestedCategories(categoriesData.data.data) : [];
+
   useEffect(() => {
-    if (productData?.data) {
-      const product = productData.data
+    if (productData?.data && categoriesData?.data?.data) {
+      const product = productData.data;
+      const categories = categoriesData.data.data;
+      
+      // Find the category name if it exists
+      let categoryName = '';
+      if (product.category?.id) {
+        const foundCategory = categories.find(cat => cat.id === product.category.id);
+        if (foundCategory) {
+          categoryName = foundCategory.name;
+        }
+      }
+      
       setFormData({
         name: product.name,
         description: product.description || "",
-        imageUrl: product.imageUrl || "",
+        imageUrls: product.imageUrls || [],
         categoryId: product.category?.id || "",
         salePrice: product.salePrice?.toString() || "",
         price: product.price?.toString() || "",
         stock: product.stock || 0,
         isHot: product.isHot || false
-      })
-      setImagePreview(product.imageUrl || null)
+      });
+      setImagePreviews(product.imageUrls || []);
+      setSelectedCategoryName(categoryName);
     }
-  }, [productData])
+  }, [productData, categoriesData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | { target: { name: string; value: any } }) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -81,25 +195,31 @@ function ProductDetailPage() {
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setImageFile(file)
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files)
+      setImageFiles(prev => [...prev, ...files])
 
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setImagePreview(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+      files.forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          setImagePreviews(prev => [...prev, event.target?.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
     }
   }
 
-  const removeImage = () => {
-    setImagePreview(null)
-    setImageFile(null)
-    setFormData(prev => ({
-      ...prev,
-      imageUrl: ''
-    }))
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    setImageFiles(prev => prev.filter((_, i) => i !== index))
+    
+    // If we're removing an existing image (not a new file)
+    if (index < (formData.imageUrls?.length || 0) && !imageFiles[index]) {
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index)
+      }))
+    }
   }
 
   const handleDeleteConfirm = async () => {
@@ -121,38 +241,45 @@ function ProductDetailPage() {
     e.preventDefault()
 
     try {
-      // Prepare the payload
-      let payload: ICreateProduct = {
+      // Start with current imageUrls
+      let imageUrls = [...(formData.imageUrls || [])]
+      
+      // Upload new images if available
+      if (imageFiles.length > 0) {
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        
+        try {
+          // Upload each new image
+          for (const file of imageFiles) {
+            if (!file.name) continue // Skip if not a real file (might be a preview)
+            
+            const uploadResult = await uploadImageMutation.mutateAsync({
+              file: file,
+              isPublic: true,
+              description: `Hình ảnh cho sản phẩm: ${formData.name}`
+            })
+            
+            imageUrls.push(uploadResult.data.url)
+          }
+          
+          message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+        } catch (error) {
+          message.error({ content: "Lỗi khi tải hình ảnh!", key: "uploadImage" })
+          console.error("Image upload error:", error)
+          return // Stop if image upload fails
+        }
+      }
+      
+      // Prepare the payload with updated imageUrls
+      const payload = {
         name: formData.name,
         description: formData.description,
         price: formData.price ? parseFloat(formData.price.toString()) : 0,
         salePrice: formData.salePrice ? parseFloat(formData.salePrice.toString()) : 0,
         stock: typeof formData.stock === 'string' ? parseInt(formData.stock, 10) : formData.stock,
         categoryId: formData.categoryId || undefined,
-        imageUrl: formData.imageUrl,
+        imageUrls: imageUrls,
         isHot: formData.isHot,
-      }
-
-      // Upload new image if available
-      if (imageFile) {
-        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
-
-        try {
-          const uploadResult = await uploadImageMutation.mutateAsync({
-            file: imageFile,
-            isPublic: true,
-            description: `Hình ảnh cho sản phẩm: ${formData.name}`
-          })
-
-          message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
-
-          // Add the image URL to the payload
-          payload.imageUrl = uploadResult.data.url
-        } catch (error) {
-          message.error({ content: "Lỗi khi tải hình ảnh!", key: "uploadImage" })
-          console.error("Image upload error:", error)
-          return // Stop if image upload fails
-        }
       }
 
       // Update the product
@@ -164,6 +291,7 @@ function ProductDetailPage() {
 
       message.success({ content: "Sản phẩm đã được cập nhật thành công!", key: "updateProduct" })
       setIsEditing(false)
+      setImageFiles([]) // Reset the image files after successful upload
     } catch (error) {
       message.error({ content: "Không thể cập nhật sản phẩm. Vui lòng thử lại.", key: "updateProduct" })
       console.error("Product update error:", error)
@@ -287,17 +415,49 @@ function ProductDetailPage() {
                 />
               </Box>
               <Box className="flex-1">
-                <TextField
-                  size="small"
-                  label="ID Danh mục"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  className="rounded"
-                  disabled={!isEditing}
-                />
+                <FormControl fullWidth size="small">
+                  <InputLabel id="categoryId-label">Danh mục</InputLabel>
+                  <Select
+                    labelId="categoryId-label"
+                    name="categoryId"
+                    value={formData.categoryId}
+                    label="Danh mục"
+                    open={selectOpen}
+                    onOpen={() => setSelectOpen(true)}
+                    onClose={() => setSelectOpen(false)}
+                    onChange={(e) => {
+                      // This is only for direct selection, not used with nested menu items
+                      setFormData(prev => ({
+                        ...prev,
+                        categoryId: e.target.value as string
+                      }));
+                    }}
+                    renderValue={() => selectedCategoryName || 'Chọn danh mục'}
+                    disabled={!isEditing || isCategoriesLoading}
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 300,
+                        },
+                      },
+                    }}
+                  >
+                    {nestedCategories.map((category) => (
+                      <NestedMenuItem 
+                        key={category.id} 
+                        category={category} 
+                        onSelect={(categoryId, categoryName) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            categoryId
+                          }));
+                          setSelectedCategoryName(categoryName);
+                          setSelectOpen(false);
+                        }}
+                      />
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </Box>
 
@@ -320,19 +480,29 @@ function ProductDetailPage() {
             </Box>
 
             <Box>
-              <TextField
-                size="small"
-                label="Mô tả chi tiết"
-                name="description"
+              <Typography fontSize={14} variant="subtitle1" className="mb-2">
+                Mô tả chi tiết
+              </Typography>
+              <ReactQuill
                 value={formData.description}
-                onChange={handleChange}
-                required
-                fullWidth
-                multiline
-                rows={4}
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
+                onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                readOnly={!isEditing}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                  ]
+                }}
+                formats={[
+                  'header',
+                  'bold', 'italic', 'underline', 'strike',
+                  'list', 'bullet',
+                  'link', 'image'
+                ]}
+                className="rounded border border-gray-300"
               />
             </Box>
 
@@ -340,30 +510,65 @@ function ProductDetailPage() {
               <Typography fontSize={14} variant="subtitle1" className="mb-2">
                 Hình ảnh sản phẩm
               </Typography>
-              {imagePreview ? (
-                <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="Product preview"
-                    className="object-cover w-full h-full"
-                  />
+              
+              {imagePreviews.length > 0 ? (
+                <Grid container spacing={2}>
+                  {imagePreviews.map((preview, index) => (
+                    <Grid item key={index} xs={6} sm={4} md={3}>
+                      <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
+                        <img
+                          src={preview}
+                          alt={`Product preview ${index}`}
+                          className="object-cover w-full h-full"
+                        />
+                        {isEditing && (
+                          <IconButton
+                            onClick={() => removeImage(index)}
+                            className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                            size="small"
+                          >
+                            <IconX size={16} color="white" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </Grid>
+                  ))}
+                  
                   {isEditing && (
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
+                    <Grid item xs={6} sm={4} md={3}>
+                      <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-md border-gray-300 h-full min-h-[150px] cursor-pointer">
+                        <Box className="flex flex-col items-center justify-center p-4">
+                          <IconPlus size={24} className="mb-2 text-gray-400" />
+                          <Typography className="text-sm text-gray-400">
+                            Thêm ảnh
+                          </Typography>
+                          <input
+                            type="file"
+                            multiple
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                          />
+                        </Box>
+                      </label>
+                    </Grid>
                   )}
-                </div>
+                </Grid>
               ) : (
                 <label className={`flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                   <div className="flex flex-col items-center justify-center py-4">
                     <IconUpload size={24} className="mb-2 text-gray-400" />
                     <p className="text-sm text-gray-400">Upload hình ảnh</p>
                   </div>
-                  {isEditing && <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />}
+                  {isEditing && (
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*" 
+                      multiple 
+                      onChange={handleImageChange} 
+                    />
+                  )}
                 </label>
               )}
             </Box>

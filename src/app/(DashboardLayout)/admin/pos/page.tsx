@@ -159,14 +159,22 @@ const AdminPosPage = () => {
   }
 
   const checkImageUrl = (imageUrl: string): string => {
-    if (!imageUrl) return "https://picsum.photos/800/600"
-
-    if (imageUrl.includes("example.com")) {
-      return "https://picsum.photos/800/600"
+    if (!imageUrl) {
+      return 'https://placehold.co/400x400/png';
     }
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    return `http://localhost:3000${imageUrl}`;
+  };
 
-    return imageUrl
-  }
+  // Function to get the first image from an array or return placeholder
+  const getFirstImage = (imageUrls: string[] | undefined): string => {
+    if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+      return 'https://placehold.co/400x400/png';
+    }
+    return imageUrls[0];
+  };
 
   const handleQuantityChange = (productId: string, delta: number) => {
     setQuantities((prev) => ({
@@ -787,7 +795,7 @@ const AdminPosPage = () => {
                                       Trong kho: {product.stock}
                                     </Box>
                                     <Image
-                                      src={checkImageUrl(product.imageUrl || "")}
+                                      src={checkImageUrl(getFirstImage(product.imageUrls))}
                                       alt={product.name}
                                       className={`${styles.productImage}`}
                                       width={140}
@@ -888,8 +896,8 @@ const AdminPosPage = () => {
                                 {/* Thêm hình ảnh sản phẩm */}
                                 <Box sx={{ width: '100px', mr: 2 }}>
                                   <Image
-                                    src={checkImageUrl(product.imageUrl || "")}
-                                    alt={product.name}
+                                    src={checkImageUrl(getFirstImage((item as any).product.imageUrls))}
+                                    alt={(item as any).product.name}
                                     width={80}
                                     height={80}
                                     style={{ objectFit: 'cover', borderRadius: '4px' }}
@@ -903,8 +911,8 @@ const AdminPosPage = () => {
                                           fontWeight={500}
                                           sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
                                         >
-                                          {product.name.slice(0, 50)}
-                                          {product.name.length > 50 && "..."}
+                                          {(item as any).product.name.slice(0, 50)}
+                                          {(item as any).product.name.length > 50 && "..."}
                                         </Typography>
                                       </div>
                                       <div style={{ width: '150px' }}>
@@ -926,8 +934,8 @@ const AdminPosPage = () => {
                                   }
                                   secondary={
                                     <>
-                                      {product.description.slice(0, 100)}
-                                      {product.description.length > 100 && "..."}
+                                      {(item as any).product.description.slice(0, 100)}
+                                      {(item as any).product.description.length > 100 && "..."}
                                     </>
                                   }
                                 />
@@ -1120,7 +1128,7 @@ const AdminPosPage = () => {
                             <Box className="flex items-start w-full gap-2">
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
                                 <Image
-                                  src={checkImageUrl(product.imageUrl || "")}
+                                  src={checkImageUrl(getFirstImage(product.imageUrls))}
                                   alt={product.name}
                                   className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
                                   width={200}

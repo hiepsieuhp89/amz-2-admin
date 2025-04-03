@@ -1,14 +1,16 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { IconArrowLeft, IconUpload, IconX } from '@tabler/icons-react';
+import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem, IconButton } from '@mui/material';
+import { IconArrowLeft, IconUpload, IconX, IconPlus } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
 import { useCreateProduct } from '@/hooks/product';
 import { useUploadImage } from '@/hooks/image';
 import { ICreateProduct } from '@/interface/request/product';
 import { useGetAllCategories } from "@/hooks/category";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import styles for the editor
 
 const NestedMenuItem = ({ category, level = 0, onSelect }: { 
   category: any, 
@@ -106,15 +108,15 @@ export default function CreateProductPage() {
   const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
     description: '',
-    imageUrl: '',
+    imageUrls: [],
     categoryId: '',
     salePrice: '',
     price: '',
     stock: 0
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
 
@@ -132,25 +134,23 @@ export default function CreateProductPage() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      setImageFiles(prev => [...prev, ...files]);
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImagePreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setImagePreviews(prev => [...prev, event.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
-    setImageFile(null);
-    setFormData(prev => ({
-      ...prev,
-      imageUrl: ''
-    }));
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,23 +165,31 @@ export default function CreateProductPage() {
         salePrice: formData.salePrice ? parseFloat(formData.salePrice.toString()) : 0,
         stock: typeof formData.stock === 'string' ? parseInt(formData.stock, 10) : formData.stock,
         categoryId: formData.categoryId || undefined,
+        imageUrls: []
       };
       
-      // Upload image if available
-      if (imageFile) {
+      // Upload images if available
+      if (imageFiles.length > 0) {
         message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" });
         
         try {
-          const uploadResult = await uploadImageMutation.mutateAsync({
-            file: imageFile,
-            isPublic: true,
-            description: `Hình ảnh cho sản phẩm: ${formData.name}`
-          });
+          const uploadedUrls: string[] = [];
+          
+          // Upload each image
+          for (const file of imageFiles) {
+            const uploadResult = await uploadImageMutation.mutateAsync({
+              file: file,
+              isPublic: true,
+              description: `Hình ảnh cho sản phẩm: ${formData.name}`
+            });
+            
+            uploadedUrls.push(uploadResult.data.url);
+          }
           
           message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" });
           
-          // Add the image URL to the payload
-          payload.imageUrl = uploadResult.data.url;
+          // Add the image URLs to the payload
+          payload.imageUrls = uploadedUrls;
         } catch (error) {
           message.error({ content: "Lỗi khi tải hình ảnh!", key: "uploadImage" });
           console.error("Image upload error:", error);
@@ -334,19 +342,30 @@ export default function CreateProductPage() {
                   </Box>
                 </Box>
                 
+                
                 <Box>
-                  <TextField
-                    size="small"
-                    label="Mô tả chi tiết"
-                    name="description"
+                  <Typography fontSize={14} variant="subtitle1" className="mb-2">
+                    Mô tả chi tiết
+                  </Typography>
+                  <ReactQuill
                     value={formData.description}
-                    onChange={handleChange}
-                    required
-                    fullWidth
-                    multiline
-                    rows={4}
-                    variant="outlined"
-                    className="rounded"
+                    onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                      ]
+                    }}
+                    formats={[
+                      'header',
+                      'bold', 'italic', 'underline', 'strike',
+                      'list', 'bullet',
+                      'link', 'image'
+                    ]}
+                    className="rounded border border-gray-300"
                   />
                 </Box>
               </Box>
@@ -358,28 +377,54 @@ export default function CreateProductPage() {
                 <Typography fontSize={14} variant="subtitle1" className="!mb-4">
                   Hình ảnh sản phẩm
                 </Typography>
-                {imagePreview ? (
-                  <div className="relative flex-1 max-w-lg overflow-hidden border border-gray-600 rounded">
-                    <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Product preview"
-                      className="object-cover w-full h-full"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
-                  </div>
+                
+                {imagePreviews.length > 0 ? (
+                  <Box>
+                    <Grid container spacing={2}>
+                      {imagePreviews.map((preview, index) => (
+                        <Grid item key={index} xs={6} sm={6}>
+                          <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
+                            <img
+                              src={preview}
+                              alt={`Product preview ${index}`}
+                              className="object-cover w-full h-full"
+                            />
+                            <IconButton
+                              onClick={() => removeImage(index)}
+                              className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                              size="small"
+                            >
+                              <IconX size={16} color="white" />
+                            </IconButton>
+                          </Box>
+                        </Grid>
+                      ))}
+                      <Grid item xs={6} sm={6}>
+                        <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-md border-gray-300 aspect-square cursor-pointer">
+                          <Box className="flex flex-col items-center justify-center p-4">
+                            <IconPlus size={24} className="mb-2 text-gray-400" />
+                            <Typography className="text-sm text-gray-400">
+                              Thêm ảnh
+                            </Typography>
+                            <input
+                              type="file"
+                              multiple
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </Box>
+                        </label>
+                      </Grid>
+                    </Grid>
+                  </Box>
                 ) : (
                   <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
                     <div className="flex flex-col items-center justify-center py-4">
                       <IconUpload size={24} className="mb-2 text-gray-400" />
                       <p className="text-sm text-gray-400">Upload hình ảnh</p>
                     </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                    <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageChange} />
                   </label>
                 )}
               </Box>
