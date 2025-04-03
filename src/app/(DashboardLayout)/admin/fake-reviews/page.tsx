@@ -29,7 +29,7 @@ import { message } from "antd"
 import { useRouter } from "next/navigation"
 import React, { useState } from "react"
 import { useGetAllUsers } from "@/hooks/user"
-import { useGetUserOrders, useCreateFakeReview } from "@/hooks/fake-review"
+import { useGetUserOrders, useCreateFakeReview, useDeleteFakeReview } from "@/hooks/fake-review"
 import { CircularProgress } from "@mui/material"
 import { useUploadImage } from "@/hooks/image"
 
@@ -57,6 +57,7 @@ function FakeReviewsPage() {
   const { data: orders, isLoading: isOrdersLoading, refetch } = useGetUserOrders(selectedUserId || '', orderStatus)
   const { mutate: createReview, isPending: isCreatingReview } = useCreateFakeReview()
   const { mutate: uploadImage, isPending: isUploading } = useUploadImage()
+  const { mutate: deleteReview, isPending: isDeletingReview } = useDeleteFakeReview()
 
   console.log("orders", orders)
   const filteredUsers = userData?.data?.data || []
@@ -145,6 +146,18 @@ function FakeReviewsPage() {
     )
   }
 
+  const handleDeleteReview = (orderId: string) => {
+    deleteReview(orderId, {
+      onSuccess: () => {
+        message.success("Xóa review thành công!")
+        refetch()
+      },
+      onError: () => {
+        message.error("Có lỗi xảy ra khi xóa review")
+      }
+    })
+  }
+
   const renderOrdersDialogContent = () => {
     if (!selectedUserId) return null
 
@@ -215,6 +228,16 @@ function FakeReviewsPage() {
                         >
                           {order.hasReview ? 'Đã đánh giá' : 'Tạo review'}
                         </Button>
+                        {order.hasReview && (
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDeleteReview(order.id)}
+                            disabled={isDeletingReview}
+                          >
+                            {isDeletingReview ? 'Đang xóa...' : 'Xóa review'}
+                          </Button>
+                        )}
                         <IconButton
                           size="small"
                           onClick={() => toggleExpandOrder(order.id)}
