@@ -121,7 +121,7 @@ const ProductReviewsPage = () => {
             All Rating & Reviews
           </Typography>
           <Button
-            variant="contained"
+            variant="outlined"
             startIcon={<IconPlus size={18} />}
             href="https://amazonworld.cc/admin/custom-review/create"
             sx={{

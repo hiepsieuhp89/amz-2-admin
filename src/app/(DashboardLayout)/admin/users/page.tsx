@@ -10,20 +10,25 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
   IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Menu,
+  Select,
   TableCell,
   TableRow,
   TextField,
   Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import ChatDialog from "@/components/ChatDialog"
-import { useDeleteUser, useGetAllUsers } from "@/hooks/user"
+import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
 
 function UsersPage() {
   const router = useRouter()
@@ -35,10 +40,21 @@ function UsersPage() {
   const [chatDialogOpen, setChatDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [selectedShop, setSelectedShop] = useState<any>(null)
+  const [filters, setFilters] = useState({
+    order: 'DESC',
+    status: '',
+    role: '',
+    hasShop: '',
+  } as any);
+  const updateUserMutation = useUpdateUser();
   const { data: userData, isLoading, error } = useGetAllUsers({
     page,
     take: rowsPerPage,
-    order: "DESC",
+    search: searchTerm,
+    order: filters.order as 'ASC' | 'DESC' | undefined,
+    status: filters.status || undefined,
+    role: filters.role as 'shop' | 'admin' | 'user' | undefined,
+    hasShop: filters.hasShop ? filters.hasShop === 'true' : undefined
   })
   const filteredUsers = userData?.data?.data || []
   const pagination = userData?.data?.meta || {
@@ -54,6 +70,11 @@ function UsersPage() {
     take: 999999,
     role: "user"
   })
+  const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
+  const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
+  const [amount, setAmount] = useState('');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuUserId, setMenuUserId] = useState<string | null>(null);
 
   const handleCreateNew = () => {
     router.push("/admin/users/create-new")
@@ -76,9 +97,9 @@ function UsersPage() {
       message.success("Người dùng đã được xóa thành công!")
       setDeleteDialogOpen(false)
       setUserToDelete(null)
-    } catch (error) {
+    } catch (err) {
       message.error("Không thể xóa người dùng. Vui lòng thử lại.")
-      console.error(error)
+      console.error(err)
     }
   }
 
@@ -89,29 +110,73 @@ function UsersPage() {
     setChatDialogOpen(true);
   }
 
+  const handleBalanceDialogOpen = (userId: string, type: 'deposit' | 'withdraw') => {
+    setSelectedUserId(userId);
+    setBalanceActionType(type);
+    setBalanceDialogOpen(true);
+  };
+
+  const handleBalanceDialogClose = () => {
+    setBalanceDialogOpen(false);
+    setAmount('');
+    setSelectedUserId(null);
+  };
+
+  const handleBalanceUpdate = async () => {
+    if (!selectedUserId || !amount || isNaN(Number(amount))) {
+      message.error('Số tiền không hợp lệ');
+      return;
+    }
+
+    try {
+      // Fetch current user data
+      const currentUser = filteredUsers.find(user => user.id === selectedUserId);
+      if (!currentUser) {
+        message.error('Không tìm thấy thông tin người dùng');
+        return;
+      }
+
+      // Calculate new balance
+      const currentBalance = Number(currentUser.balance);
+      const amountNumber = Number(amount);
+      const newBalance = balanceActionType === 'deposit' 
+        ? currentBalance + amountNumber 
+        : currentBalance - amountNumber;
+
+      // Update balance
+      await updateUserMutation.mutateAsync({
+        id: selectedUserId,
+        payload: {
+          balance: newBalance.toString()
+        }
+      });
+
+      message.success(`${balanceActionType === 'deposit' ? 'Nạp' : 'Rút'} tiền thành công!`);
+      handleBalanceDialogClose();
+    } catch (error) {
+      message.error(`Không thể ${balanceActionType === 'deposit' ? 'nạp' : 'rút'} tiền. Vui lòng thử lại.`);
+      console.error(error);
+    }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, userId: string) => {
+    setAnchorEl(event.currentTarget);
+    setMenuUserId(userId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuUserId(null);
+  };
+
   const columns = [
     { key: 'stt', label: 'STT' },
     { key: 'email', label: 'Email' },
     { key: 'username', label: 'Tên đăng nhập' },
     { key: 'fullName', label: 'Họ tên' },
     { key: 'phone', label: 'Số điện thoại' },
-    { key: 'invitationCode', label: 'Mã mời' },
-    { key: 'referralCode', label: 'Mã giới thiệu' },
-    { key: 'shopName', label: 'Tên shop' },
-    { key: 'shopAddress', label: 'Địa chỉ shop' },
     { key: 'role', label: 'Vai trò' },
     { key: 'isActive', label: 'Trạng thái' },
-    { key: 'balance', label: 'Số dư' },
-    { key: 'fedexBalance', label: 'Số dư Fedex' },
-    { key: 'address', label: 'Địa chỉ' },
-    { key: 'bankName', label: 'Ngân hàng' },
-    { key: 'bankAccountNumber', label: 'Số tài khoản' },
-    { key: 'bankAccountName', label: 'Tên tài khoản' },
-    { key: 'bankBranch', label: 'Chi nhánh' },
-    { key: 'sellerPackageName', label: 'Gói Seller' },
-    { key: 'sellerPackageExpiry', label: 'Hết hạn Seller' },
-    { key: 'spreadPackageName', label: 'Gói Spread' },
-    { key: 'spreadPackageExpiry', label: 'Hết hạn Spread' },
     { key: 'actions', label: 'Thao tác' },
   ];
 
@@ -156,42 +221,6 @@ function UsersPage() {
         </Box>
       </TableCell>
       <TableCell>
-        <Box display="flex" alignItems="center" gap={1}>
-          {user.invitationCode || "Không có"}
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (user.invitationCode) {
-                navigator.clipboard.writeText(user.invitationCode);
-                message.success(`Đã sao chép mã mời: ${user.invitationCode}`);
-              }
-            }}
-            disabled={!user.invitationCode}
-          >
-            <IconCopy size={16} className="text-blue-500"/>
-          </IconButton>
-        </Box>
-      </TableCell>
-      <TableCell>
-        <Box display="flex" alignItems="center" gap={1}>
-          {user.referralCode || "Không có"}
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (user.referralCode) {
-                navigator.clipboard.writeText(user.referralCode);
-                message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
-              }
-            }}
-            disabled={!user.referralCode}
-          >
-            <IconCopy size={16} className="text-blue-500"/>
-          </IconButton>
-        </Box>
-      </TableCell>
-      <TableCell>{user.shopName}</TableCell>
-      <TableCell>{user.shopAddress}</TableCell>
-      <TableCell>
         <Chip
           label={
             user.role === "admin" ? "Admin" :
@@ -215,44 +244,71 @@ function UsersPage() {
           variant="filled"
         />
       </TableCell>
-      <TableCell>{user.balance?.toLocaleString()} USD</TableCell>
-      <TableCell>{user.fedexBalance?.toLocaleString()} USD</TableCell>
-      <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
-      <TableCell>{user.bankName}</TableCell>
-      <TableCell>{user.bankAccountNumber}</TableCell>
-      <TableCell>{user.bankAccountName}</TableCell>
-      <TableCell>{user.bankBranch}</TableCell>
-      <TableCell>{user.sellerPackage?.name || ''}</TableCell>
-      <TableCell>
-        {user.sellerPackageExpiry ? 
-          new Date(user.sellerPackageExpiry).toLocaleDateString() : 
-          ''
-        }
-      </TableCell>
-      <TableCell>{user.spreadPackage?.name || ''}</TableCell>
-      <TableCell>
-        {user.spreadPackageExpiry ? 
-          new Date(user.spreadPackageExpiry).toLocaleDateString() : 
-          ''
-        }
-      </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
-          <IconButton onClick={() => handleView(user.id)} size="medium" className="!bg-blue-100">
-            <IconEye size={18} className="text-blue-400" />
+          <IconButton 
+            onClick={(e) => handleMenuOpen(e, user.id)}
+            size="medium"
+          >
+            <IconDotsVertical size={18} />
           </IconButton>
-          {user.role === "shop" && (
-            <IconButton 
-              onClick={() => handleOpenChat(user.id)} 
-              size="medium" 
-              className="!bg-green-100"
-            >
-              <IconMessage size={18} className="text-green-400" />
-            </IconButton>
-          )}
-          <IconButton onClick={() => openDeleteDialog(user.id)} size="medium" className="!bg-red-100">
-            <IconTrash size={18} className="text-red-400" />
-          </IconButton>
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl) && menuUserId === user.id}
+            onClose={handleMenuClose}
+            PaperProps={{
+              className: "!rounded-[6px] shadow-xl",
+            }}
+          >
+            <MenuItem onClick={() => {
+              handleBalanceDialogOpen(user.id, 'deposit');
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconWallet size={16} className="text-green-400" />
+                <span>Nạp tiền</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => {
+              handleBalanceDialogOpen(user.id, 'withdraw');
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconWallet size={16} className="text-orange-400" />
+                <span>Rút tiền</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => {
+              handleView(user.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconEye size={16} className="text-blue-400" />
+                <span>Xem chi tiết</span>
+              </Box>
+            </MenuItem>
+            {user.role === "shop" && (
+              <MenuItem onClick={() => {
+                handleOpenChat(user.id);
+                handleMenuClose();
+              }}>
+                <Box className="flex items-center gap-2">
+                  <IconMessage size={16} className="text-green-400" />
+                  <span>Nhắn tin</span>
+                </Box>
+              </MenuItem>
+            )}
+            <MenuItem onClick={() => {
+              openDeleteDialog(user.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconTrash size={16} className="text-red-400" />
+                <span>Xóa</span>
+              </Box>
+            </MenuItem>
+          </Menu>
         </Box>
       </TableCell>
     </TableRow>
@@ -274,13 +330,80 @@ function UsersPage() {
   return (
     <>
       <Box sx={{ width: '100%' }}>
+        <Box sx={{ p: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+          <TextField
+            size="small"
+            placeholder="Tìm kiếm người dùng..."
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconSearch size={20} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Sắp xếp</InputLabel>
+            <Select
+              value={filters.order}
+              label="Sắp xếp"
+              onChange={(e) => setFilters((prev: any) => ({ ...prev, order: e.target.value }))}
+            >
+              <MenuItem value="DESC">Mới nhất</MenuItem>
+              <MenuItem value="ASC">Cũ nhất</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={filters.status}
+              label="Trạng thái"
+              onChange={(e) => setFilters((prev: any) => ({ ...prev, status: e.target.value }))}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="pending">Đang chờ duyệt</MenuItem>
+              <MenuItem value="completed">Đã duyệt</MenuItem>
+              <MenuItem value="rejected">Đã từ chối</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Vai trò</InputLabel>
+            <Select
+              value={filters.role}
+              label="Vai trò"
+              onChange={(e) => setFilters((prev: any) => ({ ...prev, role: e.target.value }))}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="user">Người dùng</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="shop">Người bán</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Có shop</InputLabel>
+            <Select
+              value={filters.hasShop}
+              label="Có shop"
+              onChange={(e) => setFilters((prev: any) => ({ ...prev, hasShop: e.target.value }))}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="true">Có</MenuItem>
+              <MenuItem value="false">Không</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         <DataTable
           columns={columns}
           data={filteredUsers}
           isLoading={isLoading}
           pagination={pagination}
           onPageChange={setPage}
-          onRowsPerPageChange={(newRowsPerPage) => {
+          onRowsPerPageChange={(newRowsPerPage: number) => {
             setRowsPerPage(newRowsPerPage);
             setPage(1);
           }}
@@ -290,26 +413,6 @@ function UsersPage() {
             label: "Tạo người dùng mới",
             onClick: handleCreateNew
           }}
-          searchComponent={
-            <div className="flex items-center gap-4">
-              <TextField
-                size="small"
-                placeholder="Tìm kiếm người dùng..."
-                variant="outlined"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 rounded shadow-sm"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <IconSearch size={20} className="text-main-golden-orange" />
-                    </InputAdornment>
-                  ),
-                  className: "text-white rounded-lg hover:shadow-md transition-shadow",
-                }}
-              />
-            </div>
-          }
         />
       </Box>
 
@@ -336,7 +439,7 @@ function UsersPage() {
             Hủy bỏ
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleDeleteConfirm}
             className="text-white transition-colors !bg-red-500"
             disabled={deleteUserMutation.isPending}
@@ -357,6 +460,55 @@ function UsersPage() {
         allUsers={allUsers?.data?.data || []}
         shop={selectedShop}
       />
+
+      <Dialog
+        open={balanceDialogOpen}
+        onClose={handleBalanceDialogClose}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle fontSize={18}>
+          {balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            size="small"
+            type="number"
+            label="Số tiền"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            sx={{ mt: 2 }}
+            InputProps={{
+              endAdornment: <InputAdornment position="end">USD</InputAdornment>,
+            }}
+          />
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button
+            variant="outlined"
+            onClick={handleBalanceDialogClose}
+          >
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleBalanceUpdate}
+            className="text-white transition-colors !bg-main-golden-orange"
+            disabled={updateUserMutation.isPending}
+          >
+            {updateUserMutation.isPending ? (
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xử lý...
+              </div>
+            ) : (
+              balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

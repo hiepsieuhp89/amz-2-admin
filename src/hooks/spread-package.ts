@@ -20,13 +20,10 @@ import {
   const SPREAD_PACKAGE_KEY = "spread-package"
   
   // Get all spread packages
-  export const useGetAllSpreadPackages = (params?: {
-    page?: number
-    limit?: number
-  }): UseQueryResult<ISpreadPackageListResponse> => {
+  export const useGetAllSpreadPackages = (): UseQueryResult<ISpreadPackageListResponse> => {
     return useQuery({
-      queryKey: [SPREAD_PACKAGES_KEY, params],
-      queryFn: () => getAllSpreadPackages(params),
+      queryKey: [SPREAD_PACKAGES_KEY],
+      queryFn: () => getAllSpreadPackages(),
     })
   }
   

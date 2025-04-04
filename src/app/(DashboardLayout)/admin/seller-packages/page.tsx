@@ -25,15 +25,13 @@ import { useDeleteSellerPackage, useGetAllSellerPackages } from "@/hooks/seller-
 
 function SellerPackagesPage() {
   const router = useRouter()
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImage, setLightboxImage] = useState("")
 
-  const { data, isLoading, error } = useGetAllSellerPackages({ page, limit })
+  const { data, isLoading, error } = useGetAllSellerPackages()
   const deletePackageMutation = useDeleteSellerPackage()
   const handleCreateNew = () => {
     router.push("/admin/seller-packages/create-new")
@@ -64,15 +62,6 @@ function SellerPackagesPage() {
       message.error("Failed to delete seller package. Please try again.")
       console.error(error)
     }
-  }
-
-  const handlePageChange = (_: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLimit(parseInt(event.target.value, 10))
-    setPage(0)
   }
 
   const openLightbox = (imageUrl: string) => {
@@ -163,16 +152,6 @@ function SellerPackagesPage() {
       columns={columns}
       data={filteredPackages}
       isLoading={isLoading}
-      pagination={{
-        page,
-        take: limit,
-        itemCount: data?.data.length || 0,
-      }}
-      onPageChange={(newPage) => setPage(newPage)}
-      onRowsPerPageChange={(newRowsPerPage) => {
-        setLimit(newRowsPerPage)
-        setPage(0)
-      }}
       renderRow={renderRow}
       emptyMessage="Không tìm thấy gói bán hàng nào"
       createNewButton={{

@@ -1,41 +1,45 @@
 "use client"
 import {
   Box,
-  IconButton,
-  InputAdornment,
-  TableCell,
-  TableRow,
-  TextField,
-  Typography,
+  Button,
+  ButtonGroup,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button,
-  CircularProgress,
-  ButtonGroup,
-  Paper,
-  Switch
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TableCell,
+  TableRow,
+  TextField,
+  Typography
 } from "@mui/material"
 import {
   IconEye,
-  IconSearch,
-  IconTrash,
   IconList,
+  IconPlus,
+  IconSearch,
   IconTable,
-  IconPlus
+  IconTrash
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useState } from "react"
 import { Lightbox } from "yet-another-react-lightbox"
-import "yet-another-react-lightbox/styles.css"
-import Zoom from "yet-another-react-lightbox/plugins/zoom"
 import Download from "yet-another-react-lightbox/plugins/download"
+import Zoom from "yet-another-react-lightbox/plugins/zoom"
+import "yet-another-react-lightbox/styles.css"
 
 import DataTable from "@/components/DataTable"
+import { useGetAllCategories } from "@/hooks/category"
 import { useDeleteProduct, useGetAllProducts, useUpdateProduct } from "@/hooks/product"
 
 function ProductsPage() {
@@ -48,11 +52,22 @@ function ProductsPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [currentImage, setCurrentImage] = useState("")
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [filters, setFilters] = useState({
+    order: 'DESC',
+    isNew: '',
+    isHot: '',
+    // isFeature: '',
+    categoryId: '',
+  });
+  const [selectedCategoryName, setSelectedCategoryName] = useState('');
+  const [selectOpen, setSelectOpen] = useState(false);
 
+  const { data: categoriesData } = useGetAllCategories({ take: 999999 });
   const { data: productData, isLoading, error } = useGetAllProducts({
     page,
     take: rowsPerPage,
-    search: searchTerm
+    search: searchTerm,
+    ...filters
   })
   const deleteProductMutation = useDeleteProduct()
   const updateProductMutation = useUpdateProduct()
@@ -111,6 +126,88 @@ function ProductsPage() {
     }
   }
 
+  const buildNestedCategories = (categories: any[]) => {
+    const categoryMap = new Map();
+    const rootCategories: any[] = [];
+
+    categories.forEach(category => {
+      categoryMap.set(category.id, {
+        ...category,
+        children: category.children || []
+      });
+
+      if (category.parent && !categoryMap.has(category.parent.id)) {
+        categoryMap.set(category.parent.id, {
+          ...category.parent,
+          children: []
+        });
+      }
+    });
+
+    categories.forEach(category => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId);
+        if (parent) {
+          if (!parent.children.some((child: any) => child.id === category.id)) {
+            parent.children.push(categoryMap.get(category.id));
+          }
+        }
+      } else {
+        if (!rootCategories.some(rootCat => rootCat.id === category.id)) {
+          rootCategories.push(categoryMap.get(category.id));
+        }
+      }
+    });
+
+    categoryMap.forEach(category => {
+      if (!category.parentId && !rootCategories.some(rootCat => rootCat.id === category.id)) {
+        rootCategories.push(category);
+      }
+    });
+    return rootCategories;
+  };
+
+  const nestedCategories = buildNestedCategories(categoriesData?.data?.data || []);
+
+  const NestedMenuItem = ({ category, level = 0, onSelect }: {
+    category: any,
+    level?: number,
+    onSelect: (categoryId: string, categoryName: string) => void
+  }) => {
+    const paddingLeft = level * 20;
+    const isParent = category?.children?.length > 0;
+
+    return (
+      <>
+        <MenuItem
+          value={category.id}
+          style={{
+            paddingLeft: `${paddingLeft}px`,
+            paddingRight: '16px',
+            fontWeight: isParent ? '600' : '400',
+            backgroundColor: isParent ? '#f5f5f5' : 'transparent'
+          }}
+          onClick={() => {
+            if (!isParent) {
+              onSelect(category.id, category.name);
+            }
+          }}
+        >
+          {category.name}
+          {isParent && <span style={{ marginLeft: '8px', color: '#757575' }}>▼</span>}
+        </MenuItem>
+        {category?.children?.map((child: any) => (
+          <NestedMenuItem
+            key={child.id}
+            category={child}
+            level={level + 1}
+            onSelect={onSelect}
+          />
+        ))}
+      </>
+    );
+  };
+
   const filteredProducts = productData?.data?.data || []
   const pagination = productData?.data?.meta || {
     page: 1,
@@ -142,9 +239,9 @@ function ProductsPage() {
       }}
     >
       <TableCell sx={{ maxWidth: '200px', wordWrap: 'break-word' }}>
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -158,22 +255,22 @@ function ProductsPage() {
       <TableCell>{product.price}</TableCell>
       <TableCell>{product.salePrice || '-'}</TableCell>
       <TableCell>
-        {product.imageUrl ? (
+        {product.imageUrls && product.imageUrls.length > 0 ? (
           <Box
             component="img"
-            src={product.imageUrl}
+            src={product.imageUrls[0]}
             alt={product.name}
-            sx={{ 
-              width: 50, 
-              height: 50, 
-              objectFit: 'cover', 
+            sx={{
+              width: 50,
+              height: 50,
+              objectFit: 'cover',
               borderRadius: '4px',
               cursor: 'pointer',
               '&:hover': {
                 opacity: 0.8
               }
             }}
-            onClick={() => handleImageClick(product.imageUrl)}
+            onClick={() => handleImageClick(product.imageUrls[0])}
           />
         ) : (
           <Box sx={{ color: 'text.secondary' }}>N/A</Box>
@@ -222,53 +319,127 @@ function ProductsPage() {
   return (
     <>
       <Box>
-        <Box sx={{ 
+        <Box sx={{
           padding: 3,
           paddingBottom: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ flex: 1, mr: 2 }}>
-            <TextField
-              size="small"
-              placeholder="Tìm kiếm sản phẩm..."
-              variant="outlined"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconSearch size={20} className="text-main-golden-orange" />
-                  </InputAdornment>
-                ),
-                className: "text-white rounded-lg hover:shadow-md transition-shadow",
-              }}
-            />
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
+        }}>
+          <Box sx={{
+            padding: 3,
+            paddingBottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <Box sx={{ flex: 1, mr: 2 }}>
+              <TextField
+                size="small"
+                placeholder="Tìm kiếm sản phẩm..."
+                variant="outlined"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                fullWidth
+              />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Button
+                variant="outlined"
+                endIcon={<IconPlus size={18} />}
+                onClick={handleCreateNew}
+              >
+                Tạo sản phẩm mới
+              </Button>
+              <ButtonGroup variant="outlined" aria-label="outlined button group">
+                <Button
+                  className={viewMode === 'grid' ? '!bg-gray-200' : ''}
+                  variant={viewMode === 'table' ? 'outlined' : 'outlined'}
+                  onClick={() => setViewMode('table')}
+                  startIcon={<IconList />}
+                >
+                  Bảng
+                </Button>
+                <Button
+                  className={viewMode === 'table' ? '!bg-gray-200' : ''}
+                  variant={viewMode === 'grid' ? 'outlined' : 'outlined'}
+                  onClick={() => setViewMode('grid')}
+                  startIcon={<IconTable />}
+                >
+                  Lưới
+                </Button>
+              </ButtonGroup>
+            </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              endIcon={<IconPlus size={18} />}
-              variant="contained"
-              onClick={handleCreateNew}
-              className="text-white transition-colors !normal-case"
-            >
-              Tạo sản phẩm mới
-            </Button>
-            <ButtonGroup variant="outlined" aria-label="outlined button group">
-              <Button
-                variant={viewMode === 'table' ? 'contained' : 'outlined'}
-                onClick={() => setViewMode('table')}
-                startIcon={<IconList />}
+
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Sắp xếp</InputLabel>
+              <Select
+                value={filters.order}
+                label="Sắp xếp"
+                onChange={(e) => setFilters(prev => ({ ...prev, order: e.target.value }))}
               >
-                Bảng
-              </Button>
-              <Button
-                variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-                onClick={() => setViewMode('grid')}
-                startIcon={<IconTable />}
+                <MenuItem value="DESC">Mới nhất</MenuItem>
+                <MenuItem value="ASC">Cũ nhất</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Sản phẩm mới</InputLabel>
+              <Select
+                value={filters.isNew}
+                label="Sản phẩm mới"
+                onChange={(e) => setFilters(prev => ({ ...prev, isNew: e.target.value }))}
               >
-                Lưới
-              </Button>
-            </ButtonGroup>
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="true">Có</MenuItem>
+                <MenuItem value="false">Không</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Nổi bật</InputLabel>
+              <Select
+                value={filters.isHot}
+                label="Nổi bật"
+                onChange={(e) => setFilters(prev => ({ ...prev, isHot: e.target.value }))}
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="true">Có</MenuItem>
+                <MenuItem value="false">Không</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Danh mục</InputLabel>
+              <Select
+                value={filters.categoryId}
+                label="Danh mục"
+                open={selectOpen}
+                onOpen={() => setSelectOpen(true)}
+                onClose={() => setSelectOpen(false)}
+                renderValue={() => selectedCategoryName || 'Tất cả'}
+              >
+                <MenuItem value="" onClick={() => {
+                  setFilters(prev => ({ ...prev, categoryId: '' }));
+                  setSelectedCategoryName('');
+                  setSelectOpen(false);
+                }}>
+                  Tất cả
+                </MenuItem>
+                {nestedCategories.map((category) => (
+                  <NestedMenuItem
+                    key={category.id}
+                    category={category}
+                    onSelect={(categoryId, categoryName) => {
+                      setFilters(prev => ({ ...prev, categoryId }));
+                      setSelectedCategoryName(categoryName);
+                      setSelectOpen(false);
+                    }}
+                  />
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
 
@@ -293,14 +464,14 @@ function ProductsPage() {
                 <Typography variant="h6">Không tìm thấy sản phẩm nào</Typography>
               </Box>
             ) : (
-              filteredProducts.map((product) => (
+              filteredProducts.map((product: any) => (
                 <Box key={product.id} className="overflow-hidden transition-shadow border !rounded-[8px] shadow-sm hover:shadow-md">
                   <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
                     <Box sx={{ position: 'relative', mb: 2 }}>
-                      {product.imageUrl && (
+                      {product.imageUrls && product.imageUrls.length > 0 && (
                         <Box
                           component="img"
-                          src={product.imageUrl}
+                          src={product.imageUrls[0]}
                           alt={product.name}
                           sx={{
                             width: '100%',
@@ -309,7 +480,7 @@ function ProductsPage() {
                             borderRadius: '4px',
                             cursor: 'pointer'
                           }}
-                          onClick={() => handleImageClick(product.imageUrl)}
+                          onClick={() => handleImageClick(product.imageUrls[0])}
                         />
                       )}
                       <Box sx={{
@@ -390,7 +561,7 @@ function ProductsPage() {
             Hủy bỏ
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleDeleteConfirm}
             className="text-white transition-colors !bg-red-500"
             disabled={deleteProductMutation.isPending}

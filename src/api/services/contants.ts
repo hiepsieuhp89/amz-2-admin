@@ -79,6 +79,7 @@ export const ConfigFakeOrderEndPoint = {
   BASE: "/admin/fake-orders",
   VALID_USERS: "/admin/fake-orders/valid-users",
   DELIVER: (id: string) => `/admin/fake-orders/${id}/deliver`,
+  SHOP_ORDERS: "/admin/fake-orders/shop-orders",
 };
 
 export const ConfigShopProductEndPoint = {
@@ -119,3 +120,15 @@ export const ConfigAdminChatEndPoint = {
   MARK_AS_READ: (messageId: string) => `/admin/chat/${messageId}/read`,
   DELETE_MESSAGE: (messageId: string) => `/admin/chat/${messageId}`,
 }
+
+export const ConfigFakeReviewEndPoint = {
+  BASE: '/admin/fake-reviews',
+  GET_USER_ORDERS: (userId: string) => `/admin/fake-reviews/user-orders?userId=${userId}`
+}
+
+export const ConfigNotificationEndPoint = {
+  BASE: "/admin/notifications/system",
+  GET_BY_ID: (id: string) => `/admin/notifications/system/${id}`,
+  DELETE: (id: string) => `/admin/notifications/system/${id}`,
+  MARK_AS_READ: (id: string) => `/admin/notifications/system/${id}/read`,
+};

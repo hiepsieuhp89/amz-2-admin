@@ -11,7 +11,7 @@ export interface IProductVariant {
 export interface ICreateProduct {
     name: string;
     description: string;
-    imageUrl?: string;
+    imageUrls?: string[];
     categoryId?: string;
     salePrice: number | string;
     price: number | string;
@@ -48,6 +48,6 @@ export interface IUpdateProduct {
   metaDescription?: string;
   metaKeywords?: string[];
   sellerId?: string;
-  imageUrl?: string;
+  imageUrls?: string[];
   isHot?: boolean;
 }

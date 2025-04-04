@@ -53,6 +53,12 @@ const Menuitems = [
   },
   {
     id: generateUniqueId(),
+    title: "Quản lý cửa hàng",
+    icon: IconBuildingWarehouse,
+    href: "/admin/shops",
+  },
+  {
+    id: generateUniqueId(),
     title: "Các sản phẩm",
     icon: IconArchive,
     href: "javascript:void(0)",
@@ -67,12 +73,13 @@ const Menuitems = [
         title: "Tất cả sản phẩm",
         href: "/admin/products",
       },
-      {
-        id: generateUniqueId(),
-        title: "Đánh giá sản phẩm",
-        href: "/admin/products/reviews",
-      },
     ],
+  },
+  {
+    id: generateUniqueId(),
+    title: "Quản lý đánh giá",
+    icon: IconLayoutGridAdd,
+    href: "/admin/fake-reviews",
   },
   {
     id: generateUniqueId(),

@@ -24,9 +24,12 @@ export const useGetAllProducts = (params?: {
     page?: number
     take?: number
     search?: string
-    status?: string
-    order?: "ASC" | "DESC"
-}): UseQueryResult<IProductListResponse> => {
+    order?: string
+    isNew?: string
+    isHot?: string
+    isFeature?: string
+    categoryId?: string
+}): UseQueryResult<any> => {
     return useQuery({
         queryKey: [PRODUCTS_KEY, params],
         queryFn: () => getAllProducts(params),
@@ -69,7 +72,7 @@ export const useUpdateProduct = (): UseMutationResult<
         payload: {
             name?: string;
             description?: string;
-            imageUrl?: string;
+            imageUrls?: string[];
             categoryId?: string;
             salePrice?: number | string;
             price?: number | string;

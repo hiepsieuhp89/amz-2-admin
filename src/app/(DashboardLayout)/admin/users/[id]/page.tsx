@@ -82,12 +82,8 @@ function UserDetailPage() {
   const { data: userData, isLoading, error } = useGetUserById(id);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
-  const { data: sellerPackageData } = useGetAllSellerPackages({
-    limit: 9999999,
-  });
-  const { data: spreadPackageData } = useGetAllSpreadPackages({
-    limit: 9999999,
-  });
+  const { data: sellerPackageData } = useGetAllSellerPackages();
+  const { data: spreadPackageData } = useGetAllSpreadPackages();
 
   useEffect(() => {
     if (userData?.data) {
@@ -624,7 +620,7 @@ function UserDetailPage() {
             Hủy bỏ
           </Button>
           <Button
-            variant="contained"
+            variant="outlined"
             onClick={handleDeleteConfirm}
             className="text-white transition-colors !bg-red-500"
             disabled={deleteUserMutation.isPending}
