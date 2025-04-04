@@ -27,7 +27,7 @@ import { useGetTransactionHistory } from "@/hooks/transaction"
 import { TransactionStatus, TransactionType } from "@/interface/request/transaction"
 
 function formatMoney(money: string): string {
-  return parseFloat(money).toLocaleString("vi-VN") + " VND"
+  return parseFloat(money).toLocaleString("vi-VN") + " USD"
 }
 
 function formatDate(dateString: string): string {

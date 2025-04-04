@@ -215,8 +215,8 @@ function UsersPage() {
           variant="filled"
         />
       </TableCell>
-      <TableCell>{user.balance?.toLocaleString()} VND</TableCell>
-      <TableCell>{user.fedexBalance?.toLocaleString()} VND</TableCell>
+      <TableCell>{user.balance?.toLocaleString()} USD</TableCell>
+      <TableCell>{user.fedexBalance?.toLocaleString()} USD</TableCell>
       <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
       <TableCell>{user.bankName}</TableCell>
       <TableCell>{user.bankAccountNumber}</TableCell>
