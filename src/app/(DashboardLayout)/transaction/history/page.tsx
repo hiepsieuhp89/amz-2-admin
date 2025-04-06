@@ -27,11 +27,11 @@ import { useGetTransactionHistory } from "@/hooks/transaction"
 import { TransactionStatus, TransactionType } from "@/interface/request/transaction"
 
 function formatMoney(money: string): string {
-  return parseFloat(money).toLocaleString("vi-VN") + " USD"
+  return parseFloat(money).toLocaleString("en-US") + " USD"
 }
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("vi-VN", {
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -76,25 +76,25 @@ function getStatusChipProps(status: string) {
 
 function TransactionHistoryPage() {
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(8)
+  const [limit, setLimit] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | "">("")
   const [typeFilter, setTypeFilter] = useState<TransactionType | "">("")
 
   const { data: transactionsData, isLoading, error } = useGetTransactionHistory({
     page,
-    limit,
+    take: limit,
     status: statusFilter || undefined,
     type: typeFilter || undefined,
   })
 
-  const transactions = (transactionsData?.data?.data as any)?.data || []
+  const transactions = (transactionsData?.data?.data as any) || []
   const filteredTransactions = searchTerm
     ? transactions.filter(
-        (transaction: any) =>
-          transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      (transaction: any) =>
+        transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : transactions
 
   const handlePageChange = (_: unknown, newPage: number) => {
@@ -144,14 +144,6 @@ function TransactionHistoryPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
           />
         </div>
       </div>
@@ -269,17 +261,17 @@ function TransactionHistoryPage() {
                 </TableBody>
               </Table>
             </TableContainer>
-            {/* <TablePagination
+            <TablePagination
               rowsPerPageOptions={[5, 8, 10, 25]}
               component="div"
-              count={data?.data?.total || 0}
+              count={transactionsData?.data?.meta?.itemCount || 0}
               rowsPerPage={limit}
               page={page - 1}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleChangeRowsPerPage}
               labelRowsPerPage="Dòng mỗi trang:"
               labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
-            /> */}
+            />
           </Paper>
         </>
       )}
