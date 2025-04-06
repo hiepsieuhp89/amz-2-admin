@@ -59,6 +59,8 @@ import Image from "next/image"
 import type React from "react"
 import { useState } from "react"
 import styles from "./storehouse.module.scss"
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -119,6 +121,7 @@ const AdminPosPage = () => {
   const [newUserName, setNewUserName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [orderDateTime, setOrderDateTime] = useState<Date | null>(new Date())
 
   const { data: countries } = useGetCountries({ take: 9999999999 })
   const { data: states } = useGetStates({ countryId: selectedCountry, take: 9999999999 })
@@ -173,7 +176,7 @@ const AdminPosPage = () => {
     if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
       return 'https://placehold.co/400x400/png';
     }
-    return imageUrls[0];
+    return checkImageUrl(imageUrls[0]);
   };
 
   const handleQuantityChange = (productId: string, delta: number) => {
@@ -263,6 +266,7 @@ const AdminPosPage = () => {
       email: selectedUser.email,
       address: selectedUser.address || "New York, USA",
       userId: selectedUser.id,
+      orderTime: orderDateTime ? orderDateTime.toISOString() : new Date().toISOString(),
     }
 
     createFakeOrder(payload, {
@@ -795,7 +799,7 @@ const AdminPosPage = () => {
                                       Trong kho: {product.stock}
                                     </Box>
                                     <Image
-                                      src={checkImageUrl(getFirstImage(product.imageUrls))}
+                                      src={getFirstImage(product.imageUrls)}
                                       alt={product.name}
                                       className={`${styles.productImage}`}
                                       width={140}
@@ -896,7 +900,7 @@ const AdminPosPage = () => {
                                 {/* Thêm hình ảnh sản phẩm */}
                                 <Box sx={{ width: '100px', mr: 2 }}>
                                   <Image
-                                    src={checkImageUrl(getFirstImage((item as any).product.imageUrls))}
+                                    src={getFirstImage((item as any).product.imageUrls)}
                                     alt={(item as any).product.name}
                                     width={80}
                                     height={80}
@@ -1128,7 +1132,7 @@ const AdminPosPage = () => {
                             <Box className="flex items-start w-full gap-2">
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
                                 <Image
-                                  src={checkImageUrl(getFirstImage(product.imageUrls))}
+                                  src={getFirstImage(product.imageUrls)}
                                   alt={product.name}
                                   className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
                                   width={200}
@@ -1468,6 +1472,18 @@ const AdminPosPage = () => {
                   <IconMapPin className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
                   <span className="mr-1 font-bold">Địa chỉ:</span>
                   <span>{selectedUser?.address}</span>
+                </Typography>
+                <Typography sx={{ display: "flex", alignItems: "center" }}>
+                  <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
+                  <span className="mr-1 font-bold">Thời gian đặt hàng:</span>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DateTimePicker
+                      value={orderDateTime}
+                      onChange={(newValue) => setOrderDateTime(newValue)}
+                      slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                      sx={{ ml: 1 }}
+                    />
+                  </LocalizationProvider>
                 </Typography>
               </Box>
             </Paper>
