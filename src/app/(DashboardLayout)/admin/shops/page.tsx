@@ -57,6 +57,7 @@ function ShopsPage() {
         role: 'shop',
         take: rowsPerPage,
         order: "DESC",
+        search: searchTerm
     })
 
     console.log(userData)
@@ -415,17 +416,13 @@ function ShopsPage() {
 
     const columns = [
         { key: 'stt', label: 'STT' },
-        { key: 'referralCode', label: 'Mã giới thiệu' },
-        { key: 'shopName', label: 'Tên shop' },
-        { key: 'shopAddress', label: 'Địa chỉ shop' },
+        { key: 'shopName', label: 'Tên cửa hàng' },
+        { key: 'username', label: 'Tên tài khoản' },
+        { key: 'email', label: 'Mail' },
         { key: 'isActive', label: 'Trạng thái' },
-        { key: 'balance', label: 'Số dư' },
+        { key: 'balance', label: 'Số dư cửa hàng' },
         { key: 'fedexBalance', label: 'Số dư Fedex' },
         { key: 'address', label: 'Địa chỉ' },
-        { key: 'sellerPackageName', label: 'Gói Seller' },
-        { key: 'sellerPackageExpiry', label: 'Hết hạn Seller' },
-        { key: 'spreadPackageName', label: 'Gói Spread' },
-        { key: 'spreadPackageExpiry', label: 'Hết hạn Spread' },
         { key: 'actions', label: 'Thao tác' },
     ];
 
@@ -439,25 +436,22 @@ function ShopsPage() {
             }}
         >
             <TableCell>{(page - 1) * rowsPerPage + filteredUsers.indexOf(user) + 1}</TableCell>
+            <TableCell>{user.shopName}</TableCell>
+            <TableCell>{user.username || "Không có"}</TableCell>
             <TableCell>
                 <Box display="flex" alignItems="center" gap={1}>
-                    {user.referralCode || "Không có"}
+                    {user.email || "Không có"}
                     <IconButton
                         size="small"
-                        onClick={(e) => {
-                            if (user.referralCode) {
-                                navigator.clipboard.writeText(user.referralCode);
-                                message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
-                            }
+                        onClick={() => {
+                            navigator.clipboard.writeText(user.email || "");
+                            message.success(`Đã sao chép email: ${user.email}`);
                         }}
-                        disabled={!user.referralCode}
                     >
-                        <IconCopy size={16} className="text-blue-500" />
+                        <IconCopy size={16} className="text-blue-500"/>
                     </IconButton>
                 </Box>
             </TableCell>
-            <TableCell>{user.shopName}</TableCell>
-            <TableCell>{user.shopAddress}</TableCell>
             <TableCell>
                 <Chip
                     label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
@@ -469,20 +463,6 @@ function ShopsPage() {
             <TableCell>{user.balance?.toLocaleString()} USD</TableCell>
             <TableCell>{user.fedexBalance?.toLocaleString()} USD</TableCell>
             <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
-            <TableCell>{user.sellerPackage?.name || ''}</TableCell>
-            <TableCell>
-                {user.sellerPackageExpiry ?
-                    new Date(user.sellerPackageExpiry).toLocaleDateString() :
-                    ''
-                }
-            </TableCell>
-            <TableCell>{user.spreadPackage?.name || ''}</TableCell>
-            <TableCell>
-                {user.spreadPackageExpiry ?
-                    new Date(user.spreadPackageExpiry).toLocaleDateString() :
-                    ''
-                }
-            </TableCell>
             <TableCell>
                 <Box className="flex items-center justify-center gap-4">
                     <IconButton 
