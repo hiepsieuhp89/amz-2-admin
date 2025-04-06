@@ -174,7 +174,7 @@ function UsersPage() {
       const user = filteredUsers.find(u => u.id === userId);
       if (!user) return;
       
-      const newStatus = user.shopStatus === "FROZEN" ? "ACTIVE" : "FROZEN";
+      const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
       
       await updateUserMutation.mutateAsync({
         id: userId,
@@ -183,7 +183,7 @@ function UsersPage() {
         }
       });
       
-      message.success(newStatus === "FROZEN" 
+      message.success(newStatus === "SUSPENDED" 
         ? "Đã đóng băng shop thành công!" 
         : "Đã bỏ đóng băng shop thành công!");
       
@@ -312,8 +312,8 @@ function UsersPage() {
                 handleToggleFreeze(user.id);
               }}>
                 <Box className="flex items-center gap-2">
-                  <IconWallet size={16} className={user.shopStatus === "FROZEN" ? "text-green-400" : "text-red-400"} />
-                  <span>{user.shopStatus === "FROZEN" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
+                  <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
+                  <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
                 </Box>
               </MenuItem>
             )}
