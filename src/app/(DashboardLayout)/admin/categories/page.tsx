@@ -37,10 +37,10 @@ export default function CategoriesPage() {
   const { data: categoriesData, isLoading, error } = useGetAllCategories({
     page,
     take: rowsPerPage,
-    order: "DESC"
+    order: "DESC",
+    search: searchTerm
   })
 
-  console.log(categoriesData)
   const deleteCategory = useDeleteCategory()
 
   const filteredCategories = categoriesData?.data?.data || []
