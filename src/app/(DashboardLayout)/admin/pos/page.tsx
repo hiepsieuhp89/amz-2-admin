@@ -94,7 +94,7 @@ const AdminPosPage = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
   const [customerColors] = useState(new Map())
-  const { mutate: createFakeOrder } = useCreateFakeOrder()
+  const { mutate: createFakeOrder, isPending: isCreatingOrder } = useCreateFakeOrder()
   const [showShops, setShowShops] = useState(false)
   const [showProducts, setShowProducts] = useState(false)
   const [searchUser, setSearchUser] = useState("")
@@ -1285,7 +1285,7 @@ const AdminPosPage = () => {
 
               <Button
                 size="small"
-                variant="contained"
+                variant="outlined"
                 fullWidth
                 onClick={handleCreateFakeOrder}
                 disabled={selectedProducts.length === 0 || !selectedUser}
@@ -1479,7 +1479,7 @@ const AdminPosPage = () => {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
                       value={orderDateTime}
-                      onChange={(newValue) => setOrderDateTime(newValue)}
+                      onChange={(newValue: any) => setOrderDateTime(newValue)}
                       slotProps={{ textField: { size: 'small', fullWidth: true } }}
                       sx={{ ml: 1 }}
                     />
@@ -1570,16 +1570,32 @@ const AdminPosPage = () => {
             variant="outlined"
             onClick={() => setConfirmOpen(false)}
             sx={{ color: "#5D87FF", borderColor: "#5D87FF" }}
+            disabled={isCreatingOrder}
           >
             Hủy bỏ
           </Button>
           <Button
             className="!normal-case"
             onClick={handleConfirmOrder}
-            variant="contained"
-            sx={{ backgroundColor: "#5D87FF", "&:hover": { backgroundColor: "#4570EA" } }}
+            variant="outlined"
+            disabled={isCreatingOrder}
+            sx={{
+              backgroundColor: "#5D87FF",
+              "&:hover": { backgroundColor: "#4570EA" },
+              ...(isCreatingOrder && {
+                backgroundColor: "#a0aec0",
+                "&:hover": { backgroundColor: "#a0aec0" }
+              })
+            }}
           >
-            Xác nhận đặt hàng
+            {isCreatingOrder ? (
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
+                Đang xử lý...
+              </Box>
+            ) : (
+              "Xác nhận đặt hàng"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
