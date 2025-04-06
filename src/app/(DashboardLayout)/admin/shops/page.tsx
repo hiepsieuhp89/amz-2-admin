@@ -19,16 +19,17 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Typography
+    Typography,
+    Menu
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import ChatDialog from "@/components/ChatDialog"
 import { useGetShopOrders, useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
-import { useDeleteUser, useGetAllUsers } from "@/hooks/user"
+import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
 
 function ShopsPage() {
     const router = useRouter()
@@ -89,6 +90,12 @@ function ShopsPage() {
         cancelledAt: '',
         paidAt: ''
     });
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [menuUserId, setMenuUserId] = useState<string | null>(null);
+    const updateUserMutation = useUpdateUser();
+    const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
+    const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
+    const [amount, setAmount] = useState('');
 
     const handleCreateNew = () => {
         router.push("/admin/users/create-new")
@@ -125,9 +132,9 @@ function ShopsPage() {
     }
 
     const handleViewOrders = (shopId: string) => {
-        setSelectedShopId(shopId)
-        setOrderParams(prev => ({ ...prev, shopId }))
-        setOrdersDialogOpen(true)
+        setSelectedShopId(shopId);
+        setOrderParams(prev => ({ ...prev, shopId }));
+        setOrdersDialogOpen(true);
     }
 
     const handleOrderParamChange = (key: string, value: string | number) => {
@@ -207,6 +214,87 @@ function ShopsPage() {
                 return status;
         }
     }
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, userId: string) => {
+        setAnchorEl(event.currentTarget);
+        setMenuUserId(userId);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setMenuUserId(null);
+    };
+
+    const handleToggleFreeze = async (userId: string) => {
+        try {
+            const user = filteredUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+            
+            await updateUserMutation.mutateAsync({
+                id: userId,
+                payload: {
+                    shopStatus: newStatus
+                }
+            });
+            
+            message.success(newStatus === "SUSPENDED" 
+                ? "Đã đóng băng shop thành công!" 
+                : "Đã bỏ đóng băng shop thành công!");
+            
+            handleMenuClose();
+        } catch (error) {
+            message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
+            console.error(error);
+        }
+    };
+
+    const handleBalanceDialogOpen = (userId: string, type: 'deposit' | 'withdraw') => {
+        setSelectedUserId(userId);
+        setBalanceActionType(type);
+        setBalanceDialogOpen(true);
+    };
+
+    const handleBalanceDialogClose = () => {
+        setBalanceDialogOpen(false);
+        setAmount('');
+        setSelectedUserId(null);
+    };
+
+    const handleBalanceUpdate = async () => {
+        if (!selectedUserId || !amount || isNaN(Number(amount))) {
+            message.error('Số tiền không hợp lệ');
+            return;
+        }
+
+        try {
+            const currentUser = filteredUsers.find(user => user.id === selectedUserId);
+            if (!currentUser) {
+                message.error('Không tìm thấy thông tin người dùng');
+                return;
+            }
+
+            const currentBalance = Number(currentUser.balance);
+            const amountNumber = Number(amount);
+            const newBalance = balanceActionType === 'deposit' 
+                ? currentBalance + amountNumber 
+                : currentBalance - amountNumber;
+
+            await updateUserMutation.mutateAsync({
+                id: selectedUserId,
+                payload: {
+                    balance: newBalance.toString()
+                }
+            });
+
+            message.success(`${balanceActionType === 'deposit' ? 'Nạp' : 'Rút'} tiền thành công!`);
+            handleBalanceDialogClose();
+        } catch (error) {
+            message.error(`Không thể ${balanceActionType === 'deposit' ? 'nạp' : 'rút'} tiền. Vui lòng thử lại.`);
+            console.error(error);
+        }
+    };
 
     const renderOrderFilters = () => (
         <Box className="grid grid-cols-2 gap-4 p-4">
@@ -354,7 +442,7 @@ function ShopsPage() {
                     {user.referralCode || "Không có"}
                     <IconButton
                         size="small"
-                        onClick={() => {
+                        onClick={(e) => {
                             if (user.referralCode) {
                                 navigator.clipboard.writeText(user.referralCode);
                                 message.success(`Đã sao chép mã giới thiệu: ${user.referralCode}`);
@@ -395,30 +483,90 @@ function ShopsPage() {
             </TableCell>
             <TableCell>
                 <Box className="flex items-center justify-center gap-4">
-                    <IconButton onClick={() => handleView(user.id)} size="medium" className="!bg-blue-100">
-                        <IconEye size={18} className="text-blue-400" />
+                    <IconButton 
+                        onClick={(e) => handleMenuOpen(e, user.id)}
+                        size="medium"
+                    >
+                        <IconDotsVertical size={18} />
                     </IconButton>
-                    {user.role === "shop" && (
-                        <>
-                            <IconButton
-                                onClick={() => handleOpenChat(user.id)}
-                                size="medium"
-                                className="!bg-green-100"
-                            >
-                                <IconMessage size={18} className="text-green-400" />
-                            </IconButton>
-                            <IconButton
-                                onClick={() => handleViewOrders(user.id)}
-                                size="medium"
-                                className="!bg-purple-100"
-                            >
-                                <IconList size={18} className="text-purple-400" />
-                            </IconButton>
-                        </>
-                    )}
-                    <IconButton onClick={() => openDeleteDialog(user.id)} size="medium" className="!bg-red-100">
-                        <IconTrash size={18} className="text-red-400" />
-                    </IconButton>
+                    
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl) && menuUserId === user.id}
+                        onClose={handleMenuClose}
+                        PaperProps={{
+                            className: "!rounded-[6px] shadow-xl",
+                        }}
+                    >
+                        <MenuItem onClick={() => {
+                            handleView(user.id);
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconEye size={16} className="text-blue-400" />
+                                <span>Xem chi tiết</span>
+                            </Box>
+                        </MenuItem>
+                        {user.role === "shop" && (
+                            <MenuItem onClick={() => {
+                                handleOpenChat(user.id);
+                                handleMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconMessage size={16} className="text-green-400" />
+                                    <span>Nhắn tin</span>
+                                </Box>
+                            </MenuItem>
+                        )}
+                        {user.role === "shop" && (
+                            <MenuItem onClick={() => {
+                                handleViewOrders(user.id);
+                                handleMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconList size={16} className="text-purple-400" />
+                                    <span>Xem đơn hàng</span>
+                                </Box>
+                            </MenuItem>
+                        )}
+                        {user.role === "shop" && (
+                            <MenuItem onClick={() => {
+                                handleToggleFreeze(user.id);
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
+                                    <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
+                                </Box>
+                            </MenuItem>
+                        )}
+                        <MenuItem onClick={() => {
+                            handleBalanceDialogOpen(user.id, 'deposit');
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconWallet size={16} className="text-green-400" />
+                                <span>Nạp tiền</span>
+                            </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            handleBalanceDialogOpen(user.id, 'withdraw');
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconWallet size={16} className="text-orange-400" />
+                                <span>Rút tiền</span>
+                            </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            openDeleteDialog(user.id);
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconTrash size={16} className="text-red-400" />
+                                <span>Xóa</span>
+                            </Box>
+                        </MenuItem>
+                    </Menu>
                 </Box>
             </TableCell>
         </TableRow>
@@ -712,6 +860,55 @@ function ShopsPage() {
                                 Đang cập nhật...
                             </Box>
                         ) : 'Cập nhật đơn hàng'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={balanceDialogOpen}
+                onClose={handleBalanceDialogClose}
+                PaperProps={{
+                    className: "!rounded-[6px] shadow-xl",
+                }}
+            >
+                <DialogTitle fontSize={18}>
+                    {balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'}
+                </DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        label="Số tiền"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        sx={{ mt: 2 }}
+                        InputProps={{
+                            endAdornment: <InputAdornment position="end">USD</InputAdornment>,
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions className="!p-4 !pb-6">
+                    <Button
+                        variant="outlined"
+                        onClick={handleBalanceDialogClose}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={handleBalanceUpdate}
+                        className="text-white transition-colors !bg-main-golden-orange"
+                        disabled={updateUserMutation.isPending}
+                    >
+                        {updateUserMutation.isPending ? (
+                            <div className="flex items-center gap-2 text-white">
+                                <CircularProgress size={16} className="text-white" />
+                                Đang xử lý...
+                            </div>
+                        ) : (
+                            balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
+                        )}
                     </Button>
                 </DialogActions>
             </Dialog>

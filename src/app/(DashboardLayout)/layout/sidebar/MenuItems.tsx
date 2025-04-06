@@ -55,7 +55,7 @@ const Menuitems = [
     id: generateUniqueId(),
     title: "Quản lý cửa hàng",
     icon: IconBuildingWarehouse,
-    href: "/admin/user-shops",
+    href: "/admin/shops",
   },
   {
     id: generateUniqueId(),
@@ -186,24 +186,24 @@ const Menuitems = [
       },
     ],
   },
-  {
-    id: generateUniqueId(),
-    title: "Nhân viên",
-    icon: IconUsers,
-    href: "javascript:void(0)",
-    children: [
-      {
-        id: generateUniqueId(),
-        title: "Tất cả nhân viên",
-        href: "/admin/staffs",
-      },
-      {
-        id: generateUniqueId(),
-        title: "Quyền của nhân viên",
-        href: "/admin/staffs/permissions",
-      },
-    ],
-  },
+  // {
+  //   id: generateUniqueId(),
+  //   title: "Nhân viên",
+  //   icon: IconUsers,
+  //   href: "javascript:void(0)",
+  //   children: [
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Tất cả nhân viên",
+  //       href: "/admin/staffs",
+  //     },
+  //     {
+  //       id: generateUniqueId(),
+  //       title: "Quyền của nhân viên",
+  //       href: "/admin/staffs/permissions",
+  //     },
+  //   ],
+  // },
 ]
 
 export default Menuitems

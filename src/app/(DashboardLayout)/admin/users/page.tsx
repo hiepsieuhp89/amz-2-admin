@@ -225,7 +225,7 @@ function UsersPage() {
           label={
             user.role === "admin" ? "Admin" :
               user.role === "shop" ? "Người bán" :
-                "Người dùng"
+                "Khách ảo"
           }
           color={
             user.role === "admin" ? "primary" :
