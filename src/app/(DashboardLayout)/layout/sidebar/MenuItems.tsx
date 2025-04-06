@@ -55,7 +55,7 @@ const Menuitems = [
     id: generateUniqueId(),
     title: "Quản lý cửa hàng",
     icon: IconBuildingWarehouse,
-    href: "/admin/shops",
+    href: "/admin/user-shops",
   },
   {
     id: generateUniqueId(),

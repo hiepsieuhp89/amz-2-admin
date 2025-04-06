@@ -29,6 +29,7 @@ export interface IUser {
   reputationPoints: number;
   shopName: string | null;
   shopAddress: string | null;
+  shopStatus: string | null;
   sellerPackageExpiry: string | null;
   spreadPackageExpiry: string | null;
   sellerPackageId: string | null;

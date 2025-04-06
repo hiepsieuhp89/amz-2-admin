@@ -53,6 +53,7 @@ export interface IUpdateUser {
     email?: string
     username?: string
     password?: string
+    shopStatus?: string
     fullName?: string
     phone?: string
     role?: string
