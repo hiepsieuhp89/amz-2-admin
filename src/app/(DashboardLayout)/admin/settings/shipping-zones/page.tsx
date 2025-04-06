@@ -79,9 +79,6 @@ const ShippingZonesPage: React.FC = () => {
   const handleStatusChange = (id: number, checked: boolean) => {
     // Update the status of the zone
     setZones((prevZones) => prevZones.map((zone) => (zone.id === id ? { ...zone, status: checked } : zone)))
-
-    // In a real app, this would make an API call to update the status
-    console.log(`Zone ${id} status updated to ${checked}`)
   }
 
   const filteredZones = zones.filter((zone) => zone.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -357,10 +354,6 @@ const ShippingZonesPage: React.FC = () => {
                               borderRadius: "50%",
                               width: 32,
                               height: 32,
-                            }}
-                            onClick={() => {
-                              // In a real app, this would show a confirmation dialog
-                              console.log(`Delete zone ${zone.id}`)
                             }}
                           >
                             <IconTrash size={16} />

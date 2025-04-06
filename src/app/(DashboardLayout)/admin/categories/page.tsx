@@ -39,6 +39,8 @@ export default function CategoriesPage() {
     take: rowsPerPage,
     order: "DESC"
   })
+
+  console.log(categoriesData)
   const deleteCategory = useDeleteCategory()
 
   const filteredCategories = categoriesData?.data?.data || []

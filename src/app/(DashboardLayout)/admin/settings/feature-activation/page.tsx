@@ -78,9 +78,6 @@ const FeatureActivationPage = () => {
       ...prevSettings,
       [key]: value,
     }))
-
-    // In a real app, this would make an API call to update the setting
-    console.log(`Setting ${key} updated to ${value}`)
   }
 
   // Custom styled Switch component

@@ -325,8 +325,6 @@ function UsersPage() {
     )
   }
 
-  console.log("filteredUsers", filteredUsers)
-
   return (
     <>
       <Box sx={{ width: '100%' }}>

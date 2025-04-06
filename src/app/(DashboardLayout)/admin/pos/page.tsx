@@ -90,7 +90,6 @@ const AdminPosPage = () => {
     take: rowsPerPage,
   })
 
-  console.log(productsData)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
   const [customerColors] = useState(new Map())
@@ -101,7 +100,6 @@ const AdminPosPage = () => {
   const { data: validUsers, isLoading: isLoadingValidUsers } = useGetValidUsers({
     search: searchUser || undefined,
   })
-  console.log("validUsers", validUsers)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [hoveredCustomer, setHoveredCustomer] = useState<any>(null)
   const [openDialog, setOpenDialog] = useState(false)
@@ -482,7 +480,7 @@ const AdminPosPage = () => {
               </Box>
 
 
-              <Box className="w-full flex justify-between gap-2">
+              <Box className="flex justify-between w-full gap-2">
                 <FormControl fullWidth>
                   <Autocomplete
                     options={shopsData?.data.data || []}

@@ -100,8 +100,6 @@ const ShippingStatesPage: React.FC = () => {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would trigger a search API call
-    console.log("Searching for:", searchTerm, "in country:", selectedCountry)
   }
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -111,9 +109,6 @@ const ShippingStatesPage: React.FC = () => {
   const handleStatusChange = (id: number, checked: boolean) => {
     // Update the status of the state
     setStates((prevStates) => prevStates.map((state) => (state.id === id ? { ...state, status: checked } : state)))
-
-    // In a real app, this would make an API call to update the status
-    console.log(`State ${id} status updated to ${checked}`)
   }
 
   const handleNewStateNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,9 +131,6 @@ const ShippingStatesPage: React.FC = () => {
       setNameError("Name is required")
       return
     }
-
-    // In a real app, this would make an API call to add the state
-    console.log("Adding new state:", newStateName, "in country:", newStateCountry)
 
     // Reset form
     setNewStateName("")

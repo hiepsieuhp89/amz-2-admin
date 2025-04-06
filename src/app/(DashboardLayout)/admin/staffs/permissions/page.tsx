@@ -356,10 +356,6 @@ const StaffsPermissions = () => {
                               width: 32,
                               height: 32,
                             }}
-                            onClick={() => {
-                              // In a real app, this would show a confirmation dialog
-                              console.log(`Delete role ${role.id}`)
-                            }}
                           >
                             <IconTrash size={16} />
                           </IconButton>

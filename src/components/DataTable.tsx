@@ -63,7 +63,7 @@ export default function DataTable({
             variant="outlined"
             startIcon={<IconPlus size={18} />}
             onClick={createNewButton.onClick}
-            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
+            className="!text-white !normal-case !bg-main-golden-orange hover:!bg-main-golden-orange/80 !border-main-golden-orange transition-all shadow-md"
           >
             {createNewButton.label}
           </Button>

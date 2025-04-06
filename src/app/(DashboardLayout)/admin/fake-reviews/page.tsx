@@ -59,7 +59,6 @@ function FakeReviewsPage() {
   const { mutate: uploadImage, isPending: isUploading } = useUploadImage()
   const { mutate: deleteReview, isPending: isDeletingReview } = useDeleteFakeReview()
 
-  console.log("orders", orders)
   const filteredUsers = userData?.data?.data || []
   const pagination = userData?.data?.meta || {
     page: 1,

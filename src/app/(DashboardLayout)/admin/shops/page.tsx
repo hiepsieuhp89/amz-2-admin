@@ -58,6 +58,8 @@ function ShopsPage() {
         take: rowsPerPage,
         order: "DESC",
     })
+
+    console.log(userData)
     const filteredUsers = userData?.data?.data || []
     const pagination = userData?.data?.meta || {
         page: 1,
@@ -583,8 +585,6 @@ function ShopsPage() {
         )
     }
 
-    console.log("filteredUsers", filteredUsers)
-
     return (
         <>
             <Box sx={{ width: '100%' }}>
@@ -604,7 +604,7 @@ function ShopsPage() {
                         <div className="flex items-center gap-4">
                             <TextField
                                 size="small"
-                                placeholder="Tìm kiếm người dùng..."
+                                placeholder="Tìm kiếm cửa hàng..."
                                 variant="outlined"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
