@@ -60,7 +60,6 @@ function ShopsPage() {
         search: searchTerm
     })
 
-    console.log(userData)
     const filteredUsers = userData?.data?.data || []
     const pagination = userData?.data?.meta || {
         page: 1,
@@ -635,7 +634,7 @@ function ShopsPage() {
                             <div className="flex items-center gap-2 text-white">
                                 <CircularProgress size={16} className="text-white" />
                                 Đang xóa...
-                            </div> : "Xóa"}
+                            </div> : <span className="!text-white">Xóa</span>}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -631,7 +631,7 @@ function UserDetailPage() {
                 Đang xóa...
               </div>
             ) : (
-              "Xóa"
+              <span className="!text-white">Xóa</span>
             )}
           </Button>
         </DialogActions>

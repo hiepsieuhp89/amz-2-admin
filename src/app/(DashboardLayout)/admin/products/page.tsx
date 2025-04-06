@@ -93,8 +93,12 @@ function ProductsPage() {
       message.success("Sản phẩm đã được xóa thành công!")
       setDeleteDialogOpen(false)
       setProductToDelete(null)
-    } catch (error) {
-      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        message.error("Sản phẩm này đã tồn tại trong cửa hàng hoặc đơn hàng")
+      } else {
+        message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
+      }
       console.error(error)
     }
   }
@@ -567,10 +571,10 @@ function ProductsPage() {
             disabled={deleteProductMutation.isPending}
           >
             {deleteProductMutation.isPending ?
-              <div className="flex items-center gap-2 text-white">
-                <CircularProgress size={16} className="text-white" />
+              <div className="flex items-center gap-2 !text-white">
+                <CircularProgress size={16} className="!text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div> : <span className="!text-white">Xóa</span>}
           </Button>
         </DialogActions>
       </Dialog>

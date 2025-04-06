@@ -70,7 +70,7 @@ export const ConfigUserEndPoint = {
 
 export const ConfigTransactionEndPoint = {
   BASE: "/transaction",
-  HISTORY: "/transaction/history",
+  HISTORY: "/transaction/admin/history",
   RECHARGE: "/transaction/recharge",
   WITHDRAW: "/transaction/withdraw",
 };

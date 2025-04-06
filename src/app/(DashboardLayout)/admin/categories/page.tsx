@@ -197,10 +197,10 @@ export default function CategoriesPage() {
             disabled={deleteCategory.isPending}
           >
             {deleteCategory.isPending ?
-              <div className="flex items-center gap-2 text-white">
-                <CircularProgress size={16} className="text-white" />
+              <div className="flex items-center gap-2 !text-white">
+                <CircularProgress size={16} className="!text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div> : <span className="!text-white">Xóa</span>}
           </Button>
         </DialogActions>
       </Dialog>

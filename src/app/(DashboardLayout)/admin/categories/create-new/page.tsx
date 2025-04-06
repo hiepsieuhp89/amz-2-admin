@@ -172,8 +172,12 @@ export default function CreateCategoryPage() {
       })
       message.success("Danh mục đã được tạo thành công!")
       router.push("/admin/categories")
-    } catch (error) {
-      message.error("Không thể tạo danh mục. Vui lòng thử lại.")
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        message.error("Tên danh mục này đã tồn tại")
+      } else {
+        message.error("Không thể tạo danh mục. Vui lòng thử lại.")
+      }
       console.error(error)
     }
   }
@@ -221,6 +225,7 @@ export default function CreateCategoryPage() {
               <FormControl fullWidth size="small">
                 <InputLabel id="parentId-label">Danh mục cha</InputLabel>
                 <Select
+                  required
                   labelId="parentId-label"
                   name="parentId"
                   value={formData.parentId}

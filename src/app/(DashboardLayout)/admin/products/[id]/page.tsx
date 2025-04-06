@@ -112,7 +112,6 @@ function ProductDetailPage() {
   const deleteProductMutation = useDeleteProduct()
   const updateProductMutation = useUpdateProduct()
   const uploadImageMutation = useUploadImage()
-  console.log(productData)
   const buildNestedCategories = (categories: any[]) => {
     const categoryMap = new Map();
     const rootCategories: any[] = [];
@@ -483,7 +482,7 @@ function ProductDetailPage() {
             </Box>
 
             <Box>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
+              <Typography fontSize={14} variant="subtitle1" className="!mb-4">
                 Mô tả chi tiết
               </Typography>
               <ReactQuill
@@ -512,7 +511,7 @@ function ProductDetailPage() {
             </Box>
 
             <Box>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
+              <Typography fontSize={14} variant="subtitle1" className="mb-4">
                 Hình ảnh sản phẩm
               </Typography>
               
@@ -651,16 +650,16 @@ function ProductDetailPage() {
           <Button
             variant="outlined"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors !bg-red-500 !normal-case"
+            className="!text-white transition-colors !bg-red-500 !normal-case"
             disabled={deleteProductMutation.isPending}
           >
             {deleteProductMutation.isPending ? (
-              <div className="flex items-center gap-2 text-white">
-                <CircularProgress size={16} className="text-white" />
+              <div className="flex items-center gap-2 !text-white">
+                <CircularProgress size={16} className="!text-white" />
                 Đang xóa...
               </div>
             ) : (
-              "Xóa"
+              <span className="!text-white">Xóa</span>
             )}
           </Button>
         </DialogActions>
