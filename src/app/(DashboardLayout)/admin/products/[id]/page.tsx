@@ -112,14 +112,12 @@ function ProductDetailPage() {
   const deleteProductMutation = useDeleteProduct()
   const updateProductMutation = useUpdateProduct()
   const uploadImageMutation = useUploadImage()
-
+  console.log(productData)
   const buildNestedCategories = (categories: any[]) => {
     const categoryMap = new Map();
     const rootCategories: any[] = [];
 
-    // First pass: create map of all categories including parents
     categories.forEach(category => {
-      // Add current category
       categoryMap.set(category.id, { 
         ...category, 
         children: category.children || [] 
@@ -432,7 +430,6 @@ function ProductDetailPage() {
                     onOpen={() => setSelectOpen(true)}
                     onClose={() => setSelectOpen(false)}
                     onChange={(e) => {
-                      // This is only for direct selection, not used with nested menu items
                       setFormData(prev => ({
                         ...prev,
                         categoryId: e.target.value as string
@@ -497,6 +494,7 @@ function ProductDetailPage() {
                   toolbar: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['link', 'image'],
                     ['clean']
@@ -505,10 +503,11 @@ function ProductDetailPage() {
                 formats={[
                   'header',
                   'bold', 'italic', 'underline', 'strike',
+                  'color', 'background',
                   'list', 'bullet',
                   'link', 'image'
                 ]}
-                className="rounded border border-gray-300"
+                className="border border-gray-300 rounded"
               />
             </Box>
 

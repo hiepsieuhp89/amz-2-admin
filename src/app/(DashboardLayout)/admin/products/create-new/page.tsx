@@ -31,8 +31,8 @@ const NestedMenuItem = ({ category, level = 0, onSelect }: {
       <MenuItem 
         value={category.id} 
         style={{ 
-          paddingLeft: `${paddingLeft}px`,
-          paddingRight: '16px',
+          paddingLeft: `${Math.max(paddingLeft, 24)}px`,
+          paddingRight: '24px',
           fontWeight: isParent ? '600' : '400',
           backgroundColor: isParent ? '#f5f5f5' : 'transparent'
         }}
@@ -350,7 +350,7 @@ export default function CreateProductPage() {
                 
                 
                 <Box>
-                  <Typography fontSize={14} variant="subtitle1" className="mb-2">
+                  <Typography fontSize={14} variant="subtitle1" className="!mb-4">
                     Mô tả chi tiết
                   </Typography>
                   <ReactQuill
@@ -360,6 +360,7 @@ export default function CreateProductPage() {
                       toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
                         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                         ['link', 'image'],
                         ['clean']
@@ -368,10 +369,11 @@ export default function CreateProductPage() {
                     formats={[
                       'header',
                       'bold', 'italic', 'underline', 'strike',
+                      'color', 'background',
                       'list', 'bullet',
                       'link', 'image'
                     ]}
-                    className="rounded border border-gray-300"
+                    className="border border-gray-300 rounded"
                   />
                 </Box>
               </Box>
@@ -406,7 +408,7 @@ export default function CreateProductPage() {
                         </Grid>
                       ))}
                       <Grid item xs={6} sm={6}>
-                        <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-md border-gray-300 aspect-square cursor-pointer">
+                        <label className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer aspect-square">
                           <Box className="flex flex-col items-center justify-center p-4">
                             <IconPlus size={24} className="mb-2 text-gray-400" />
                             <Typography className="text-sm text-gray-400">
