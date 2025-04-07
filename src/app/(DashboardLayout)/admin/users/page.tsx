@@ -169,6 +169,31 @@ function UsersPage() {
     setMenuUserId(null);
   };
 
+  const handleToggleFreeze = async (userId: string) => {
+    try {
+      const user = filteredUsers.find(u => u.id === userId);
+      if (!user) return;
+      
+      const newStatus = user.shopStatus === "SUSPEND" ? "ACTIVE" : "SUSPEND";
+      
+      await updateUserMutation.mutateAsync({
+        id: userId,
+        payload: {
+          shopStatus: newStatus
+        }
+      });
+      
+      message.success(newStatus === "SUSPEND" 
+        ? "Đã đóng băng shop thành công!" 
+        : "Đã bỏ đóng băng shop thành công!");
+      
+      handleMenuClose();
+    } catch (error) {
+      message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
+      console.error(error);
+    }
+  };
+
   const columns = [
     { key: 'stt', label: 'STT' },
     { key: 'email', label: 'Email' },
@@ -176,7 +201,7 @@ function UsersPage() {
     { key: 'fullName', label: 'Họ tên' },
     { key: 'phone', label: 'Số điện thoại' },
     { key: 'role', label: 'Vai trò' },
-    { key: 'isActive', label: 'Trạng thái' },
+    { key: 'status', label: 'Trạng thái' },
     { key: 'actions', label: 'Thao tác' },
   ];
 
@@ -237,12 +262,37 @@ function UsersPage() {
         />
       </TableCell>
       <TableCell>
-        <Chip
-          label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
-          color={user.isActive ? "success" : "error"}
-          size="small"
-          variant="filled"
-        />
+        {user.role === "shop" ? (
+          <Chip
+            label={
+              user.shopStatus === "PENDING" 
+                ? "Chờ duyệt" 
+                : user.shopStatus === "SUSPEND" 
+                  ? "Đã đóng băng" 
+                  : user.isActive 
+                    ? "Đang hoạt động" 
+                    : "Đã khóa"
+            }
+            color={
+              user.shopStatus === "PENDING" 
+                ? "warning" 
+                : user.shopStatus === "SUSPEND" 
+                  ? "error" 
+                  : user.isActive 
+                    ? "success" 
+                    : "error"
+            }
+            size="small"
+            variant="filled"
+          />
+        ) : (
+          <Chip
+            label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
+            color={user.isActive ? "success" : "error"}
+            size="small"
+            variant="filled"
+          />
+        )}
       </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
@@ -296,6 +346,16 @@ function UsersPage() {
                 <Box className="flex items-center gap-2">
                   <IconMessage size={16} className="text-green-400" />
                   <span>Nhắn tin</span>
+                </Box>
+              </MenuItem>
+            )}
+            {user.role === "shop" && (
+              <MenuItem onClick={() => {
+                handleToggleFreeze(user.id);
+              }}>
+                <Box className="flex items-center gap-2">
+                  <IconWallet size={16} className={user.shopStatus === "SUSPEND" ? "text-green-400" : "text-red-400"} />
+                  <span>{user.shopStatus === "SUSPEND" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
                 </Box>
               </MenuItem>
             )}
