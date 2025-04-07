@@ -14,9 +14,7 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography,
-  Menu,
-  MenuItem
+  Typography
 } from "@mui/material"
 import {
   IconBrandTelegram,
@@ -25,8 +23,7 @@ import {
   IconPackages,
   IconPlus,
   IconSearch,
-  IconTrash,
-  IconDotsVertical
+  IconTrash
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -41,8 +38,6 @@ function SpreadPackagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [menuPackageId, setMenuPackageId] = useState<string | null>(null)
 
   const { data, isLoading, error } = useGetAllSpreadPackages()
   const deletePackageMutation = useDeleteSpreadPackage()
@@ -58,20 +53,9 @@ function SpreadPackagesPage() {
     router.push(`/admin/spread-packages/${id}`)
   }
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, id: string) => {
-    setAnchorEl(event.currentTarget)
-    setMenuPackageId(id)
-  }
-
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-    setMenuPackageId(null)
-  }
-
   const openDeleteDialog = (id: string) => {
     setPackageToDelete(id)
     setDeleteDialogOpen(true)
-    handleMenuClose()
   }
 
   const handleDeleteConfirm = async () => {
@@ -129,38 +113,13 @@ function SpreadPackagesPage() {
       <TableCell>{pkg.duration}</TableCell>
       <TableCell>{new Date(pkg.createdAt).toLocaleDateString('vi-VN')}</TableCell>
       <TableCell>
-        <Box className="flex items-center justify-center">
-          <IconButton 
-            onClick={(e) => handleMenuOpen(e, pkg.id)}
-            size="medium"
-          >
-            <IconDotsVertical size={18} />
+        <Box className="flex items-center justify-center gap-4">
+          <IconButton onClick={() => handleView(pkg.id)} size="medium" className="!bg-blue-100">
+            <IconEye size={18} className="text-blue-400" />
           </IconButton>
-          
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl) && menuPackageId === pkg.id}
-            onClose={handleMenuClose}
-            PaperProps={{
-              className: "!rounded-[6px] shadow-xl",
-            }}
-          >
-            <MenuItem onClick={() => {
-              handleView(pkg.id);
-              handleMenuClose();
-            }}>
-              <Box className="flex items-center gap-2">
-                <IconEye size={16} className="text-blue-400" />
-                <span>Xem chi tiết</span>
-              </Box>
-            </MenuItem>
-            <MenuItem onClick={() => openDeleteDialog(pkg.id)}>
-              <Box className="flex items-center gap-2">
-                <IconTrash size={16} className="text-red-400" />
-                <span>Xóa</span>
-              </Box>
-            </MenuItem>
-          </Menu>
+          <IconButton onClick={() => openDeleteDialog(pkg.id)} size="medium" className="!bg-red-100">
+            <IconTrash size={18} className="text-red-400" />
+          </IconButton>
         </Box>
       </TableCell>
     </TableRow>
@@ -209,7 +168,7 @@ function SpreadPackagesPage() {
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 bg-white rounded shadow-sm"
+              className="flex-1 rounded shadow-sm"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
