@@ -538,7 +538,6 @@ function UserDetailPage() {
               />
             </div>
           </div>
-
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button

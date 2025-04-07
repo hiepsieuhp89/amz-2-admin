@@ -605,7 +605,7 @@ function ProductDetailPage() {
         </form>
 
         {!isEditing && (
-          <Box className="flex justify-end gap-2 mt-4">
+          <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
             <Button
               variant="contained"
               startIcon={<IconTrash size={18} />}
