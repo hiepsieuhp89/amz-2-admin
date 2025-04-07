@@ -563,7 +563,7 @@ function UserDetailPage() {
             </Box>
           )}
         </form>
-        <Box className="flex justify-end gap-2 mt-4 mb-4">
+        <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
           {!isEditing ? (
             <>
               <Button
