@@ -13,6 +13,7 @@ export interface IUser {
   referralCode?: string;
   role: string;
   isActive: boolean;
+  isVerified: boolean;
   balance: string;
   fedexBalance: string;
   bankName: string | null;
@@ -34,6 +35,7 @@ export interface IUser {
   spreadPackageExpiry: string | null;
   sellerPackageId: string | null;
   spreadPackageId: string | null;
+  [key: string]: any;
 }
 
 export interface ICreateUser {

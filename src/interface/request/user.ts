@@ -95,5 +95,7 @@ export interface IUpdateUser {
     cityId?: string | null
     districtId?: string | null
     postalCodeId?: string | null
+    isVerified?: boolean
+    [key: string]: any
 }
 

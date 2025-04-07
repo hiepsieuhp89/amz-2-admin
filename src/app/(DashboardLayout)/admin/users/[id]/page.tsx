@@ -20,11 +20,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { IconArrowLeft, IconEdit, IconTrash, IconMessage } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconMessage, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { message } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useUploadImage } from "@/hooks/image";
 import { useGetAllSellerPackages } from "@/hooks/seller-package";
 import { useGetAllSpreadPackages } from "@/hooks/spread-package";
 import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user";
@@ -71,6 +72,19 @@ function UserDetailPage() {
     referralCode: "",
     sellerPackageId: "",
     spreadPackageId: "",
+    withdrawPassword: "",
+    view: 0,
+    totalProfit: 0,
+    shopStatus: "",
+    idCardType: "",
+    idCardNumber: "",
+    idCardFrontImage: "",
+    idCardBackImage: "",
+    productCount: 0,
+    totalWithdrawn: 0,
+    pendingOrdersValue: 0,
+    completedOrdersValue: 0,
+    loginPassword: "",
   });
   const [errors, setErrors] = useState({
     email: "",
@@ -78,12 +92,19 @@ function UserDetailPage() {
   });
   const [sellerPackages, setSellerPackages] = useState<ISellerPackage[]>([]);
   const [spreadPackages, setSpreadPackages] = useState<ISpreadPackage[]>([]);
+  const [idCardFrontImageFile, setIdCardFrontImageFile] = useState<File | null>(null);
+  const [idCardBackImageFile, setIdCardBackImageFile] = useState<File | null>(null);
+  const [showLoginPasswordReset, setShowLoginPasswordReset] = useState(false);
+  const [showWithdrawPasswordReset, setShowWithdrawPasswordReset] = useState(false);
+  const [newLoginPassword, setNewLoginPassword] = useState("");
+  const [newWithdrawPassword, setNewWithdrawPassword] = useState("");
 
   const { data: userData, isLoading, error } = useGetUserById(id);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
   const { data: sellerPackageData } = useGetAllSellerPackages();
   const { data: spreadPackageData } = useGetAllSpreadPackages();
+  const uploadImageMutation = useUploadImage();
 
   useEffect(() => {
     if (userData?.data) {
@@ -120,6 +141,19 @@ function UserDetailPage() {
         referralCode: userData.data.referralCode || "",
         sellerPackageId: userData.data.sellerPackageId || "",
         spreadPackageId: userData.data.spreadPackageId || "",
+        withdrawPassword: userData.data.withdrawPassword || "",
+        view: Number(userData.data.view) || 0,
+        totalProfit: Number(userData.data.totalProfit) || 0,
+        shopStatus: userData.data.shopStatus || "",
+        idCardType: userData.data.idCardType || "",
+        idCardNumber: userData.data.idCardNumber || "",
+        idCardFrontImage: userData.data.idCardFrontImage || "",
+        idCardBackImage: userData.data.idCardBackImage || "",
+        productCount: userData.data.metadata?.productCount ? Number(userData.data.metadata.productCount) : 0,
+        totalWithdrawn: userData.data.metadata?.totalWithdrawn ? Number(userData.data.metadata.totalWithdrawn) : 0,
+        pendingOrdersValue: userData.data.metadata?.pendingOrdersValue ? Number(userData.data.metadata.pendingOrdersValue) : 0,
+        completedOrdersValue: userData.data.metadata?.completedOrdersValue ? Number(userData.data.metadata.completedOrdersValue) : 0,
+        loginPassword: userData.data.metadata?.loginPassword || "",
       });
     }
     if (sellerPackageData?.data) {
@@ -192,6 +226,54 @@ function UserDetailPage() {
     }
   };
 
+  const handleIdCardFrontImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setIdCardFrontImageFile(file);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({
+          ...prev,
+          idCardFrontImage: event.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleIdCardBackImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setIdCardBackImageFile(file);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({
+          ...prev,
+          idCardBackImage: event.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeIdCardFrontImage = () => {
+    setIdCardFrontImageFile(null);
+    setFormData(prev => ({
+      ...prev,
+      idCardFrontImage: "",
+    }));
+  };
+
+  const removeIdCardBackImage = () => {
+    setIdCardBackImageFile(null);
+    setFormData(prev => ({
+      ...prev,
+      idCardBackImage: "",
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -201,24 +283,83 @@ function UserDetailPage() {
     }
 
     try {
+      // Create a payload with only defined values
+      const payload: Record<string, any> = {};
+      
+      // Add fields to payload only if they have values
+      if (formData.username) payload.username = formData.username;
+      if (formData.email) payload.email = formData.email;
+      if (formData.phone) payload.phone = formData.phone;
+      if (formData.fullName) payload.fullName = formData.fullName;
+      if (formData.role) payload.role = formData.role;
+      if (formData.shopName) payload.shopName = formData.shopName;
+      if (formData.shopAddress) payload.shopAddress = formData.shopAddress;
+      if (formData.balance) payload.balance = formData.balance.toString();
+      if (formData.fedexBalance) payload.fedexBalance = formData.fedexBalance.toString();
+      if (formData.invitationCode) payload.invitationCode = formData.invitationCode;
+      if (formData.sellerPackageId) payload.sellerPackageId = formData.sellerPackageId;
+      if (formData.sellerPackageExpiry) payload.sellerPackageExpiry = formData.sellerPackageExpiry;
+      if (formData.spreadPackageId) payload.spreadPackageId = formData.spreadPackageId;
+      if (formData.spreadPackageExpiry) payload.spreadPackageExpiry = formData.spreadPackageExpiry;
+      if (formData.stars) payload.stars = formData.stars;
+      if (formData.reputationPoints) payload.reputationPoints = formData.reputationPoints;
+      if (formData.view) payload.view = formData.view;
+      if (formData.withdrawPassword) payload.withdrawPassword = formData.withdrawPassword;
+      if (formData.idCardType) payload.idCardType = formData.idCardType;
+      if (formData.idCardNumber) payload.idCardNumber = formData.idCardNumber;
+      
+      // Upload ID card front image if changed
+      if (idCardFrontImageFile) {
+        message.loading({ content: "Đang tải ảnh mặt trước...", key: "uploadFrontImage" });
+        
+        const uploadResult = await uploadImageMutation.mutateAsync({
+          file: idCardFrontImageFile,
+          isPublic: true,
+          description: `Ảnh mặt trước giấy tờ của người dùng: ${formData.fullName || formData.username}`
+        });
+        
+        message.success({ content: "Tải ảnh mặt trước thành công!", key: "uploadFrontImage" });
+        
+        // Update image URL from upload result
+        payload.idCardFrontImage = uploadResult.data.url;
+      } else if (formData.idCardFrontImage) {
+        payload.idCardFrontImage = formData.idCardFrontImage;
+      }
+      
+      // Upload ID card back image if changed
+      if (idCardBackImageFile) {
+        message.loading({ content: "Đang tải ảnh mặt sau...", key: "uploadBackImage" });
+        
+        const uploadResult = await uploadImageMutation.mutateAsync({
+          file: idCardBackImageFile,
+          isPublic: true,
+          description: `Ảnh mặt sau giấy tờ của người dùng: ${formData.fullName || formData.username}`
+        });
+        
+        message.success({ content: "Tải ảnh mặt sau thành công!", key: "uploadBackImage" });
+        
+        // Update image URL from upload result
+        payload.idCardBackImage = uploadResult.data.url;
+      } else if (formData.idCardBackImage) {
+        payload.idCardBackImage = formData.idCardBackImage;
+      }
+      
+      // Metadata fields
+      const metadata: Record<string, any> = {};
+      if (formData.productCount) metadata.productCount = formData.productCount.toString();
+      if (formData.totalWithdrawn) metadata.totalWithdrawn = formData.totalWithdrawn.toString();
+      if (formData.pendingOrdersValue) metadata.pendingOrdersValue = formData.pendingOrdersValue.toString();
+      if (formData.completedOrdersValue) metadata.completedOrdersValue = formData.completedOrdersValue.toString();
+      if (formData.loginPassword) metadata.loginPassword = formData.loginPassword;
+      
+      // Only add metadata if there are values
+      if (Object.keys(metadata).length > 0) {
+        payload.metadata = metadata;
+      }
+
       await updateUserMutation.mutateAsync({
         id,
-        payload: {
-          username: formData.username,
-          email: formData.email,
-          phone: formData.phone,
-          fullName: formData.fullName,
-          role: formData.role,
-          shopName: formData.shopName,
-          shopAddress: formData.shopAddress,
-          balance: formData.balance.toString(),
-          fedexBalance: formData.fedexBalance.toString(),
-          invitationCode: formData.invitationCode,
-          sellerPackageId: formData.sellerPackageId,
-          sellerPackageExpiry: formData.sellerPackageExpiry,
-          spreadPackageId: formData.spreadPackageId,
-          spreadPackageExpiry: formData.spreadPackageExpiry,
-        },
+        payload,
       });
       message.success("Thông tin người dùng đã được cập nhật!");
       setIsEditing(false);
@@ -227,6 +368,34 @@ function UserDetailPage() {
         "Không thể cập nhật thông tin người dùng. Vui lòng thử lại."
       );
       console.error(error);
+    }
+  };
+
+  const handleResetLoginPassword = () => {
+    if (newLoginPassword.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        loginPassword: newLoginPassword
+      }));
+      setShowLoginPasswordReset(false);
+      setNewLoginPassword("");
+      message.success("Mật khẩu đăng nhập đã được cập nhật. Lưu để áp dụng thay đổi.");
+    } else {
+      message.error("Vui lòng nhập mật khẩu mới");
+    }
+  };
+
+  const handleResetWithdrawPassword = () => {
+    if (newWithdrawPassword.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        withdrawPassword: newWithdrawPassword
+      }));
+      setShowWithdrawPasswordReset(false);
+      setNewWithdrawPassword("");
+      message.success("Mật khẩu giao dịch đã được cập nhật. Lưu để áp dụng thay đổi.");
+    } else {
+      message.error("Vui lòng nhập mật khẩu mới");
     }
   };
 
@@ -367,7 +536,7 @@ function UserDetailPage() {
                   }
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
-                  <MenuItem value="seller">Người bán</MenuItem>
+                  <MenuItem value="shop">Người bán</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>
@@ -536,6 +705,499 @@ function UserDetailPage() {
                   shrink: true,
                 }}
               />
+            </div>
+          </div>
+
+          {/* Shop Information Section */}
+          <Typography variant="h6" className="!text-main-golden-orange font-semibold mt-6 mb-4">
+            Thông tin cửa hàng
+          </Typography>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <TextField
+                size="small"
+                label="Tên cửa hàng"
+                name="shopName"
+                value={formData.shopName}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Địa chỉ cửa hàng"
+                name="shopAddress"
+                value={formData.shopAddress}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <TextField
+                size="small"
+                label="Số sao (1-5)"
+                name="stars"
+                type="number"
+                inputProps={{ min: 0, max: 5, step: 0.1 }}
+                value={formData.stars}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Điểm uy tín"
+                name="reputationPoints"
+                type="number"
+                value={formData.reputationPoints}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Lượt xem cửa hàng"
+                name="view"
+                type="number"
+                value={formData.view}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <TextField
+                size="small"
+                label="Số lượng sản phẩm"
+                name="productCount"
+                type="number"
+                value={formData.productCount}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Tổng lợi nhuận"
+                name="totalProfit"
+                type="number"
+                value={formData.totalProfit}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+            <div>
+              <FormControl fullWidth size="small" disabled={!isEditing}>
+                <InputLabel>Trạng thái cửa hàng</InputLabel>
+                <Select
+                  name="shopStatus"
+                  value={formData.shopStatus || ""}
+                  label="Trạng thái cửa hàng"
+                  onChange={(e) => handleChange(e as any)}
+                >
+                  <MenuItem value="PENDING">Đang chờ duyệt</MenuItem>
+                  <MenuItem value="ACTIVE">Hoạt động</MenuItem>
+                  <MenuItem value="SUSPENDED">Đóng băng</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+          </div>
+          
+          {/* Financial Information Section */}
+          <Typography variant="h6" className="!text-main-golden-orange font-semibold mt-6 mb-4">
+            Thông tin tài chính
+          </Typography>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <TextField
+                size="small"
+                label="Số dư ví cửa hàng"
+                name="balance"
+                type="number"
+                value={formData.balance}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Số dư ví Fedex"
+                name="fedexBalance"
+                type="number"
+                value={formData.fedexBalance}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Tổng tiền đã rút"
+                name="totalWithdrawn"
+                type="number"
+                value={formData.totalWithdrawn}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <TextField
+                size="small"
+                label="Tổng tiền hàng đang giao"
+                name="pendingOrdersValue"
+                type="number"
+                value={formData.pendingOrdersValue}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Tổng tiền hàng đã giao"
+                name="completedOrdersValue"
+                type="number"
+                value={formData.completedOrdersValue}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Tổng tiền hàng đã rút"
+                name="totalWithdrawn"
+                type="number"
+                value={formData.totalWithdrawn}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          {/* Password Section */}
+          <Typography variant="h6" className="!text-main-golden-orange font-semibold mt-6 mb-4">
+            Thông tin mật khẩu
+          </Typography>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <div className="flex flex-col space-y-2">
+                <Typography fontSize={14} variant="subtitle1">
+                  Mật khẩu đăng nhập
+                </Typography>
+                
+                {!showLoginPasswordReset ? (
+                  <div className="flex items-center space-x-2">
+                    <TextField
+                      size="small"
+                      type="password"
+                      value="••••••••"
+                      disabled
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                    {isEditing && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setShowLoginPasswordReset(true)}
+                        className="whitespace-nowrap"
+                      >
+                        Đặt lại
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col space-y-2">
+                    <TextField
+                      size="small"
+                      placeholder="Nhập mật khẩu mới"
+                      type="password"
+                      value={newLoginPassword}
+                      onChange={(e) => setNewLoginPassword(e.target.value)}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setShowLoginPasswordReset(false);
+                          setNewLoginPassword("");
+                        }}
+                      >
+                        Hủy
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleResetLoginPassword}
+                        className="!bg-main-golden-orange text-black"
+                      >
+                        Xác nhận
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex flex-col space-y-2">
+                <Typography fontSize={14} variant="subtitle1">
+                  Mật khẩu giao dịch
+                </Typography>
+                
+                {!showWithdrawPasswordReset ? (
+                  <div className="flex items-center space-x-2">
+                    <TextField
+                      size="small"
+                      type="password"
+                      value="••••••••"
+                      disabled
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                    {isEditing && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setShowWithdrawPasswordReset(true)}
+                        className="whitespace-nowrap"
+                      >
+                        Đặt lại
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col space-y-2">
+                    <TextField
+                      size="small"
+                      placeholder="Nhập mật khẩu mới"
+                      type="password"
+                      value={newWithdrawPassword}
+                      onChange={(e) => setNewWithdrawPassword(e.target.value)}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                    />
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setShowWithdrawPasswordReset(false);
+                          setNewWithdrawPassword("");
+                        }}
+                      >
+                        Hủy
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleResetWithdrawPassword}
+                        className="!bg-main-golden-orange text-black"
+                      >
+                        Xác nhận
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* ID Card Information */}
+          <Typography variant="h6" className="!text-main-golden-orange font-semibold mt-6 mb-4">
+            Thông tin giấy tờ
+          </Typography>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <TextField
+                size="small"
+                label="Loại giấy tờ"
+                name="idCardType"
+                value={formData.idCardType}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Số giấy tờ"
+                name="idCardNumber"
+                value={formData.idCardNumber}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <Typography fontSize={14} variant="subtitle1" className="!mb-2">
+                Ảnh mặt trước giấy tờ
+              </Typography>
+              {formData.idCardFrontImage ? (
+                <div className="relative flex-1 w-full h-40 overflow-hidden border border-gray-300 rounded">
+                  <img
+                    src={formData.idCardFrontImage}
+                    alt="ID Card Front"
+                    className="object-contain w-full h-full"
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={removeIdCardFrontImage}
+                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                    >
+                      <IconX size={16} color="white" />
+                    </button>
+                  )}
+                </div>
+              ) : isEditing ? (
+                <label className="flex flex-col items-center justify-center w-full h-40 transition-colors border border-gray-300 border-dashed !rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <IconUpload size={24} className="mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
+                  </div>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleIdCardFrontImageChange} 
+                  />
+                </label>
+              ) : (
+                <div className="flex items-center justify-center h-40 border border-gray-200 rounded bg-gray-50">
+                  <Typography className="text-gray-400">Chưa có ảnh</Typography>
+                </div>
+              )}
+            </div>
+            <div>
+              <Typography fontSize={14} variant="subtitle1" className="!mb-2">
+                Ảnh mặt sau giấy tờ
+              </Typography>
+              {formData.idCardBackImage ? (
+                <div className="relative flex-1 w-full h-40 overflow-hidden border border-gray-300 rounded">
+                  <img
+                    src={formData.idCardBackImage}
+                    alt="ID Card Back"
+                    className="object-contain w-full h-full"
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={removeIdCardBackImage}
+                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                    >
+                      <IconX size={16} color="white" />
+                    </button>
+                  )}
+                </div>
+              ) : isEditing ? (
+                <label className="flex flex-col items-center justify-center w-full h-40 transition-colors border border-gray-300 border-dashed !rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <IconUpload size={24} className="mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-400">Upload ảnh mặt sau</p>
+                  </div>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleIdCardBackImageChange} 
+                  />
+                </label>
+              ) : (
+                <div className="flex items-center justify-center h-40 border border-gray-200 rounded bg-gray-50">
+                  <Typography className="text-gray-400">Chưa có ảnh</Typography>
+                </div>
+              )}
             </div>
           </div>
 
