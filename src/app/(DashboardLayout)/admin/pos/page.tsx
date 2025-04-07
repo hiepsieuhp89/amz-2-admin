@@ -78,12 +78,13 @@ const AdminPosPage = () => {
     search: searchShop,
   })
 
-  const { data: allShopUsers, isLoading: isLoadingAllShopUsers } = useGetAllUsers({
+  const { data: usersData, isLoading: isLoadingUsers } = useGetAllUsers({
     role: "user",
+    take: 9999999999,
   })
 
   const [currentPage, setCurrentPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [rowsPerPage, setRowsPerPage] = useState(21)
   const { data: productsData, isLoading } = useGetAllShopProducts({
     shopId: selectedShopId,
     page: currentPage,
@@ -124,7 +125,6 @@ const AdminPosPage = () => {
   const { data: countries } = useGetCountries({ take: 9999999999 })
   const { data: states } = useGetStates({ countryId: selectedCountry, take: 9999999999 })
   const { data: cities } = useGetCities({ stateId: selectedState, take: 9999999999 })
-  // const { data: postalCodes } = useGetPostalCodes({ cityId: selectedCity, take: 9999999999 })
   const { mutate: createUser } = useCreateUser()
   const [isCopied, setIsCopied] = useState(false)
 
@@ -528,18 +528,23 @@ const AdminPosPage = () => {
                       />
                     )}
                     renderOption={(props, option) => (
-                      <MenuItem {...props}>
+                      <MenuItem 
+                        key={option.id} 
+                        onClick={props.onClick}
+                        onTouchStart={props.onTouchStart}
+                        className={props.className}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box
                             sx={{
-                              width: 24,
-                              height: 24,
+                              width: 40,
+                              height: 40,
                               borderRadius: "50%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                               fontWeight: 500,
-                              fontSize: 12,
+                              fontSize: 14,
                               ...getCustomerColor(option),
                             }}
                           >
@@ -811,11 +816,6 @@ const AdminPosPage = () => {
                                       Tên sản phẩm: {product.name.slice(0, 50)}
                                       {product.name.length > 50 && "..."}
                                     </Box>
-                                    <Box className={styles.productDescription}>
-                                      <strong>Mô tả: </strong>
-                                      {product.description.slice(0, 100)}
-                                      {product.description.length > 100 && "..."}
-                                    </Box>
                                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                                       <Box sx={{ display: "flex", gap: 1 }}>
                                         <span>Giá niêm yết:</span>
@@ -936,12 +936,6 @@ const AdminPosPage = () => {
                                         </div>
                                       </Stack>
                                     }
-                                    secondary={
-                                      <>
-                                        {(item as any).product.description.slice(0, 100)}
-                                        {(item as any).product.description.length > 100 && "..."}
-                                      </>
-                                    }
                                   />
                                 </ListItem>
                               </Collapse>
@@ -1041,22 +1035,27 @@ const AdminPosPage = () => {
                       />
                     )}
                     renderOption={(props, option) => (
-                      <MenuItem {...props}>
+                      <MenuItem 
+                        key={option.id} 
+                        onClick={props.onClick}
+                        onTouchStart={props.onTouchStart}
+                        className={props.className}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box
                             sx={{
-                              width: 24,
-                              height: 24,
+                              width: 40,
+                              height: 40,
                               borderRadius: "50%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                               fontWeight: 500,
-                              fontSize: 12,
+                              fontSize: 14,
                               ...getCustomerColor(option),
                             }}
                           >
-                            {option.username?.substring(0, 2).toUpperCase()}
+                            {option.fullName?.substring(0, 2).toUpperCase()}
                           </Box>
                           <Box>
                             <Typography>{option.fullName}</Typography>
@@ -1064,27 +1063,9 @@ const AdminPosPage = () => {
                               {option.email}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {option?.address || "Chưa có địa chỉ"}
+                              {option.phone || 'Chưa có số điện thoại'}
                             </Typography>
                           </Box>
-                          {!option.address && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenAddressDialog(option);
-                              }}
-                              sx={{
-                                ml: 1,
-                                color: "#5D87FF",
-                                "&:hover": {
-                                  backgroundColor: "#ECF2FF",
-                                },
-                              }}
-                            >
-                              <IconMapPinPin className="w-4 h-4" />
-                            </IconButton>
-                          )}
                         </Box>
                       </MenuItem>
                     )}
@@ -1145,10 +1126,7 @@ const AdminPosPage = () => {
                                 </Box>
                                 <Box>
                                   <Typography variant="body1">
-                                    {product.name.slice(0, 50) + (product.name.length > 50 ? "..." : "")}
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
+                                    {product.name.slice(0, 100) + (product.name.length > 100 ? "..." : "")}
                                   </Typography>
                                 </Box>
                                 <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
@@ -1443,6 +1421,7 @@ const AdminPosPage = () => {
                   backgroundColor: "#ECF2FF",
                   borderRadius: "4px",
                   color: "#5D87FF",
+                  border: "1px solid #5D87FF50",
                 }}
               >
                 <IconAlertCircle className="w-4 h-4" />
@@ -1500,6 +1479,7 @@ const AdminPosPage = () => {
                     backgroundColor: "#E6F9FF",
                     borderRadius: "4px",
                     color: "#33C4FF",
+                    border: "1px solid #33C4FF50",
                   }}
                 >
                   <IconBrandProducthunt className="w-4 h-4" />
@@ -1595,7 +1575,7 @@ const AdminPosPage = () => {
                 Đang xử lý...
               </Box>
             ) : (
-              "Xác nhận đặt hàng"
+              <span className="text-white">Xác nhận đặt hàng</span>
             )}
           </Button>
         </DialogActions>

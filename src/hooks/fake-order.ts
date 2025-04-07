@@ -31,8 +31,7 @@ export const useGetValidUsers = (
 ): UseQueryResult<IValidUserListResponse> => {
   return useQuery({
     queryKey: [VALID_USERS_KEY, params],
-    queryFn: () => getValidUsers(params),
-    enabled: !!params.search,
+    queryFn: () => getValidUsers(params)
   });
 };
 
