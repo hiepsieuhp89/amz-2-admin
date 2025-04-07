@@ -25,10 +25,13 @@ import {
   IconArrowLeft,
   IconEdit,
   IconTrash,
+  IconUpload,
+  IconX,
 } from "@tabler/icons-react"
 import { message } from "antd"
 
 import { useDeleteCategory, useGetCategoryById, useUpdateCategory, useGetAllCategories } from "@/hooks/category"
+import { useUploadImage } from "@/hooks/image"
 import { ICategory } from "@/interface/request/category"
 
 function CategoryDetailPage() {
@@ -41,15 +44,53 @@ function CategoryDetailPage() {
     name: "",
     description: "",
     parentId: "",
+    imageUrl: "",
   })
   const [errors, setErrors] = useState({
     name: "",
   })
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   const { data: categoryData, isLoading, error } = useGetCategoryById(id)
   const { data: categoriesData } = useGetAllCategories()
   const deleteCategory = useDeleteCategory()
   const updateCategory = useUpdateCategory()
+  const uploadImageMutation = useUploadImage()
+
+  const handlePaste = (e: ClipboardEvent) => {
+    if (!isEditing) return;
+    
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          setImageFile(file);
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setImagePreview(event.target?.result as string);
+          };
+          reader.readAsDataURL(file);
+
+          setFormData((prev) => ({
+            ...prev,
+            imageUrl: "image-url-placeholder",
+          }));
+          break;
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [isEditing]);
 
   useEffect(() => {
     if (categoryData?.data) {
@@ -58,7 +99,11 @@ function CategoryDetailPage() {
         name: category.name || "",
         description: category.description || "",
         parentId: category.parentId || "",
+        imageUrl: (category as any)?.imageUrl || "",
       })
+      if ((category as any)?.imageUrl) {
+        setImagePreview((category as any)?.imageUrl)
+      }
     }
   }, [categoryData])
 
@@ -104,6 +149,33 @@ function CategoryDetailPage() {
     }
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImageFile(file)
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      setFormData((prev) => ({
+        ...prev,
+        imageUrl: "image-url-placeholder",
+      }))
+    }
+  }
+
+  const removeImage = () => {
+    setImagePreview(null)
+    setImageFile(null)
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: "",
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
@@ -113,10 +185,30 @@ function CategoryDetailPage() {
     }
     
     try {
+      let updatedFormData = { ...formData }
+      
+      if (imageFile) {
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        
+        const uploadResult = await uploadImageMutation.mutateAsync({
+          file: imageFile,
+          isPublic: true,
+          description: `Hình ảnh cho danh mục: ${formData.name}`
+        })
+        
+        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+        
+        // Cập nhật URL hình ảnh từ kết quả tải lên
+        updatedFormData = {
+          ...updatedFormData,
+          imageUrl: uploadResult.data.url
+        }
+      }
+      
       await updateCategory.mutateAsync({
         id,
         payload: {
-          ...formData,
+          ...updatedFormData,
           id: categoryData?.data?.id || "",
         },
       })
@@ -210,8 +302,8 @@ function CategoryDetailPage() {
                   onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="">Không có</MenuItem>
-                  {availableParentCategories.map((category) => (
-                    <MenuItem key={category.id} value={category.id || ""}>
+                  {availableParentCategories.map((category: ICategory) => (
+                    <MenuItem key={category.id} value={category.id}>
                       {category.name}
                     </MenuItem>
                   ))}
@@ -220,7 +312,7 @@ function CategoryDetailPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <TextField
                 size="small"
@@ -235,6 +327,43 @@ function CategoryDetailPage() {
                 className="rounded"
                 disabled={!isEditing}
               />
+            </div>
+            <div>
+              <Typography fontSize={14} variant="subtitle1" className="!mb-2">
+                Hình ảnh danh mục
+              </Typography>
+              {imagePreview ? (
+                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
+                  <img
+                    src={imagePreview}
+                    alt="Category preview"
+                    className="object-cover w-full h-full"
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                    >
+                      <IconX size={16} color="white" />
+                    </button>
+                  )}
+                </div>
+              ) : isEditing ? (
+                <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <IconUpload size={24} className="mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-400">Upload hình ảnh</p>
+                  </div>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                </label>
+              ) : (
+                <div className="flex items-center justify-center w-full h-32 border border-gray-300 rounded">
+                  <Typography className="text-gray-400">
+                    Chưa có hình ảnh
+                  </Typography>
+                </div>
+              )}
             </div>
           </div>
 

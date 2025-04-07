@@ -13,6 +13,8 @@ import {
   DialogTitle,
   IconButton,
   InputAdornment,
+  Menu,
+  MenuItem,
   TableCell,
   TableRow,
   TextField,
@@ -21,7 +23,8 @@ import {
 import {
   IconEye,
   IconSearch,
-  IconTrash
+  IconTrash,
+  IconDotsVertical
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -34,6 +37,8 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [menuCategoryId, setMenuCategoryId] = useState<string | null>(null)
   const { data: categoriesData, isLoading, error } = useGetAllCategories({
     page,
     take: rowsPerPage,
@@ -80,6 +85,16 @@ export default function CategoriesPage() {
     }
   }
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, categoryId: string) => {
+    setAnchorEl(event.currentTarget);
+    setMenuCategoryId(categoryId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuCategoryId(null);
+  };
+
   const columns = [
     { key: 'name', label: 'Tên danh mục' },
     { key: 'description', label: 'Mô tả' },
@@ -108,13 +123,41 @@ export default function CategoriesPage() {
       <TableCell>{new Date(category.createdAt).toLocaleDateString('vi-VN')}</TableCell>
       <TableCell>{new Date(category.updatedAt).toLocaleDateString('vi-VN')}</TableCell>
       <TableCell>
-        <Box className="flex items-center gap-2">
-          <IconButton onClick={() => handleView(category.id)} size="medium" className="!bg-blue-100">
-            <IconEye size={18} className="text-blue-400" />
+        <Box className="flex items-center justify-center">
+          <IconButton 
+            onClick={(e) => handleMenuOpen(e, category.id)}
+            size="medium"
+          >
+            <IconDotsVertical size={18} />
           </IconButton>
-          <IconButton onClick={() => openDeleteDialog(category.id)} size="medium" className="!bg-red-100">
-            <IconTrash size={18} className="text-red-400" />
-          </IconButton>
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl) && menuCategoryId === category.id}
+            onClose={handleMenuClose}
+            PaperProps={{
+              className: "!rounded-[6px] shadow-xl",
+            }}
+          >
+            <MenuItem onClick={() => {
+              handleView(category.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconEye size={16} className="text-blue-400" />
+                <span>Xem chi tiết</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => {
+              openDeleteDialog(category.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconTrash size={16} className="text-red-400" />
+                <span>Xóa</span>
+              </Box>
+            </MenuItem>
+          </Menu>
         </Box>
       </TableCell>
     </TableRow>
