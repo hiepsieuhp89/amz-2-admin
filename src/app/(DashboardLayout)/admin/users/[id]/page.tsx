@@ -32,7 +32,6 @@ import { useGetAllSpreadPackages } from "@/hooks/spread-package";
 import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user";
 import { ISellerPackage } from "@/interface/response/seller-package";
 import { ISpreadPackage } from "@/interface/response/spread-package";
-import { useUploadImage } from "@/hooks/image";
 
 function UserDetailPage() {
   const router = useRouter();
@@ -829,9 +828,9 @@ function UserDetailPage() {
               <TextField
                 size="small"
                 label="Số lượng sản phẩm"
-                name="productCount"
+                name="totalProducts"
                 type="number"
-                value={formData.productCount}
+                value={formData.totalProducts}
                 InputProps={{
                   readOnly: true,
                 }}
