@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem, IconButton } from '@mui/material';
-import { IconArrowLeft, IconUpload, IconX, IconPlus } from '@tabler/icons-react';
+import { IconArrowLeft, IconUpload, IconX, IconPlus, IconCubePlus } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
 import { useCreateProduct } from '@/hooks/product';
@@ -13,24 +13,24 @@ import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css'; // Import styles for the editor
 
 // Sử dụng dynamic import để tải ReactQuill chỉ ở phía client
-const ReactQuill = dynamic(() => import('react-quill'), { 
+const ReactQuill = dynamic(() => import('react-quill'), {
   ssr: false,
   loading: () => <p>Loading editor...</p>, // Optional: Hiển thị loading state
 });
 
-const NestedMenuItem = ({ category, level = 0, onSelect }: { 
-  category: any, 
+const NestedMenuItem = ({ category, level = 0, onSelect }: {
+  category: any,
   level?: number,
-  onSelect: (categoryId: string, categoryName: string) => void 
+  onSelect: (categoryId: string, categoryName: string) => void
 }) => {
   const paddingLeft = level * 20;
   const isParent = category?.children?.length > 0;
 
   return (
     <>
-      <MenuItem 
-        value={category.id} 
-        style={{ 
+      <MenuItem
+        value={category.id}
+        style={{
           paddingLeft: `${Math.max(paddingLeft, 24)}px`,
           paddingRight: '24px',
           fontWeight: isParent ? '600' : '400',
@@ -46,9 +46,9 @@ const NestedMenuItem = ({ category, level = 0, onSelect }: {
         {isParent && <span style={{ marginLeft: '8px', color: '#757575' }}>▼</span>}
       </MenuItem>
       {category?.children?.map((child: any) => (
-        <NestedMenuItem 
-          key={child.id} 
-          category={child} 
+        <NestedMenuItem
+          key={child.id}
+          category={child}
           level={level + 1}
           onSelect={onSelect}
         />
@@ -64,9 +64,9 @@ const buildNestedCategories = (categories: any[]) => {
   // First pass: create map of all categories including parents
   categories.forEach(category => {
     // Add current category
-    categoryMap.set(category.id, { 
-      ...category, 
-      children: category.children || [] 
+    categoryMap.set(category.id, {
+      ...category,
+      children: category.children || []
     });
 
     // Add parent category if it exists and not already in map
@@ -109,7 +109,7 @@ export default function CreateProductPage() {
   const router = useRouter();
   const createProductMutation = useCreateProduct();
   const uploadImageMutation = useUploadImage();
-  const { data: categoriesData } = useGetAllCategories({take: 999999});
+  const { data: categoriesData } = useGetAllCategories({ take: 999999 });
 
   const [formData, setFormData] = useState<ICreateProduct>({
     name: '',
@@ -161,7 +161,7 @@ export default function CreateProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Prepare the payload
       let payload: ICreateProduct = {
@@ -173,14 +173,14 @@ export default function CreateProductPage() {
         categoryId: formData.categoryId || undefined,
         imageUrls: []
       };
-      
+
       // Upload images if available
       if (imageFiles.length > 0) {
         message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" });
-        
+
         try {
           const uploadedUrls: string[] = [];
-          
+
           // Upload each image
           for (const file of imageFiles) {
             const uploadResult = await uploadImageMutation.mutateAsync({
@@ -188,12 +188,12 @@ export default function CreateProductPage() {
               isPublic: true,
               description: `Hình ảnh cho sản phẩm: ${formData.name}`
             });
-            
+
             uploadedUrls.push(uploadResult.data.url);
           }
-          
+
           message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" });
-          
+
           // Add the image URLs to the payload
           payload.imageUrls = uploadedUrls;
         } catch (error) {
@@ -202,11 +202,11 @@ export default function CreateProductPage() {
           return; // Stop if image upload fails
         }
       }
-      
+
       // Create the product
       message.loading({ content: "Đang tạo sản phẩm...", key: "createProduct" });
       await createProductMutation.mutateAsync(payload);
-      
+
       message.success({ content: "Sản phẩm đã được tạo thành công!", key: "createProduct" });
       router.push("/admin/products");
     } catch (error) {
@@ -216,58 +216,34 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="p-6">
-      <Box className="flex items-center justify-between mb-4">
-        <Button
-          variant="text"
-          startIcon={<IconArrowLeft size={18} />}
-          onClick={() => router.push("/admin/products")}
-          className="mr-4"
-        >
-          Quay lại
-        </Button>
-        <Typography 
-          fontSize={18}
-          fontWeight={700}
-          variant="h5" 
-          className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
-        >
-          Tạo sản phẩm mới
-        </Typography>
+    <div className='flex flex-col h-full min-h-screen'>
+      <Box className="py-8">
+        <Box className="relative" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconCubePlus size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+            Thêm sản phẩm mới
+          </Typography>
+        </Box>
       </Box>
-
-      <Paper className="p-6 border">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Box className="flex gap-6">
-            {/* Left Column */}
-          
-            <Box className="w-2/3">
-            <Typography fontSize={14} variant="subtitle1" className="!mb-4">
+      <Box className='flex flex-col flex-1 p-6'>
+        <Paper className="flex flex-col flex-1 h-full p-6">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full space-y-4">
+            <Box className="flex gap-6">
+              {/* Left Column */}
+              <Box className="w-2/3">
+                <Typography fontSize={14} variant="subtitle1" className="!mb-4">
                   Thông tin sản phẩm
                 </Typography>
-              <Box className="flex flex-col gap-6">
-                <Box>
-                  <TextField
-                    size="small"
-                    label="Tên sản phẩm"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                  />
-                </Box>
-                
-                <Box className="flex gap-6">
-                  <Box className="flex-1">
+                <Box className="flex flex-col gap-6">
+                  <Box>
                     <TextField
                       size="small"
-                      label="Giá"
-                      name="price"
-                      type="number"
-                      value={formData.price}
+                      label="Tên sản phẩm"
+                      name="name"
+                      value={formData.name}
                       onChange={handleChange}
                       required
                       fullWidth
@@ -275,194 +251,213 @@ export default function CreateProductPage() {
                       className="rounded"
                     />
                   </Box>
-                  
-                  <Box className="flex-1">
-                    <TextField
-                      size="small"
-                      label="Giá khuyến mãi"
-                      name="salePrice"
-                      type="number"
-                      value={formData.salePrice}
-                      onChange={handleChange}
-                      fullWidth
-                      variant="outlined"
-                      className="rounded"
-                    />
-                  </Box>
-                </Box>
-                
-                <Box className="flex gap-6">
-                  <Box className="flex-1">
-                    <FormControl fullWidth size="small">
-                      <InputLabel id="categoryId-label">Danh mục</InputLabel>
-                      <Select
-                        labelId="categoryId-label"
-                        name="categoryId"
-                        value={formData.categoryId}
-                        label="Danh mục"
-                        displayEmpty
-                        open={selectOpen}
-                        onOpen={() => setSelectOpen(true)}
-                        onClose={() => setSelectOpen(false)}
-                        renderValue={() => selectedCategoryName}
-                        MenuProps={{
-                          PaperProps: {
-                            style: {
-                              maxHeight: 300,
-                            },
-                          },
-                        }}
+
+                  <Box className="flex gap-6">
+                    <Box className="flex-1">
+                      <TextField
+                        size="small"
+                        label="Giá"
+                        name="price"
+                        type="number"
+                        value={formData.price}
+                        onChange={handleChange}
                         required
-                      >
-                        {nestedCategories.map((category) => (
-                          <NestedMenuItem 
-                            key={category.id} 
-                            category={category} 
-                            onSelect={(categoryId, categoryName) => {
-                              setFormData(prev => ({
-                                ...prev,
-                                categoryId
-                              }));
-                              setSelectedCategoryName(categoryName);
-                              setSelectOpen(false); // Close the dropdown after selection
-                            }}
-                          />
-                        ))}
-                      </Select>
-                    </FormControl>
+                        fullWidth
+                        variant="outlined"
+                        className="rounded"
+                      />
+                    </Box>
+
+                    <Box className="flex-1">
+                      <TextField
+                        size="small"
+                        label="Giá khuyến mãi"
+                        name="salePrice"
+                        type="number"
+                        value={formData.salePrice}
+                        onChange={handleChange}
+                        fullWidth
+                        variant="outlined"
+                        className="rounded"
+                      />
+                    </Box>
                   </Box>
-                  
-                  <Box className="flex-1">
-                    <TextField
-                      size="small"
-                      label="Số lượng"
-                      name="stock"
-                      type="number"
-                      value={formData.stock}
-                      onChange={handleChange}
-                      required
-                      fullWidth
-                      variant="outlined"
-                      className="rounded"
+
+                  <Box className="flex gap-6">
+                    <Box className="flex-1">
+                      <FormControl fullWidth size="small">
+                        <InputLabel id="categoryId-label">Danh mục</InputLabel>
+                        <Select
+                          labelId="categoryId-label"
+                          name="categoryId"
+                          value={formData.categoryId}
+                          label="Danh mục"
+                          displayEmpty
+                          open={selectOpen}
+                          onOpen={() => setSelectOpen(true)}
+                          onClose={() => setSelectOpen(false)}
+                          renderValue={() => selectedCategoryName}
+                          MenuProps={{
+                            PaperProps: {
+                              style: {
+                                maxHeight: 300,
+                              },
+                            },
+                          }}
+                          required
+                        >
+                          {nestedCategories.map((category) => (
+                            <NestedMenuItem
+                              key={category.id}
+                              category={category}
+                              onSelect={(categoryId, categoryName) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  categoryId
+                                }));
+                                setSelectedCategoryName(categoryName);
+                                setSelectOpen(false); // Close the dropdown after selection
+                              }}
+                            />
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <Box className="flex-1">
+                      <TextField
+                        size="small"
+                        label="Số lượng"
+                        name="stock"
+                        type="number"
+                        value={formData.stock}
+                        onChange={handleChange}
+                        required
+                        fullWidth
+                        variant="outlined"
+                        className="rounded"
+                      />
+                    </Box>
+                  </Box>
+
+
+                  <Box>
+                    <Typography fontSize={14} variant="subtitle1" className="!mb-4">
+                      Mô tả chi tiết
+                    </Typography>
+                    <ReactQuill
+                      value={formData.description}
+                      onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                      modules={{
+                        toolbar: [
+                          [{ 'header': [1, 2, 3, false] }],
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ 'color': [] }, { 'background': [] }],
+                          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                          ['link', 'image'],
+                          ['clean']
+                        ]
+                      }}
+                      formats={[
+                        'header',
+                        'bold', 'italic', 'underline', 'strike',
+                        'color', 'background',
+                        'list', 'bullet',
+                        'link', 'image'
+                      ]}
+                      className="border border-gray-300 rounded"
                     />
                   </Box>
                 </Box>
-                
-                
+              </Box>
+
+              {/* Right Column - Image Upload */}
+              <Box className="w-1/3">
                 <Box>
                   <Typography fontSize={14} variant="subtitle1" className="!mb-4">
-                    Mô tả chi tiết
+                    Hình ảnh sản phẩm
                   </Typography>
-                  <ReactQuill
-                    value={formData.description}
-                    onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
-                    modules={{
-                      toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link', 'image'],
-                        ['clean']
-                      ]
-                    }}
-                    formats={[
-                      'header',
-                      'bold', 'italic', 'underline', 'strike',
-                      'color', 'background',
-                      'list', 'bullet',
-                      'link', 'image'
-                    ]}
-                    className="border border-gray-300 rounded"
-                  />
+
+                  {imagePreviews.length > 0 ? (
+                    <Box>
+                      <Grid container spacing={2}>
+                        {imagePreviews.map((preview, index) => (
+                          <Grid item key={index} xs={6} sm={6}>
+                            <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
+                              <img
+                                src={preview}
+                                alt={`Product preview ${index}`}
+                                className="object-cover w-full h-full"
+                              />
+                              <IconButton
+                                onClick={() => removeImage(index)}
+                                className="absolute p-1 transition-colors rounded-full top-2 right-2 hover:bg-red-600"
+                                size="small"
+                              >
+                                <IconX size={16} color="white" />
+                              </IconButton>
+                            </Box>
+                          </Grid>
+                        ))}
+                        <Grid item xs={6} sm={6}>
+                          <label className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer aspect-square">
+                            <Box className="flex flex-col items-center justify-center p-4">
+                              <IconPlus size={24} className="mb-2 text-gray-400" />
+                              <Typography className="text-sm text-gray-400">
+                                Thêm ảnh
+                              </Typography>
+                              <input
+                                type="file"
+                                multiple
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                              />
+                            </Box>
+                          </label>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                      <div className="flex flex-col items-center justify-center py-4">
+                        <IconUpload size={24} className="mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-400">Upload hình ảnh</p>
+                      </div>
+                      <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageChange} />
+                    </label>
+                  )}
                 </Box>
               </Box>
             </Box>
 
-            {/* Right Column - Image Upload */}
-            <Box className="w-1/3">
-              <Box>
-                <Typography fontSize={14} variant="subtitle1" className="!mb-4">
-                  Hình ảnh sản phẩm
-                </Typography>
-                
-                {imagePreviews.length > 0 ? (
-                  <Box>
-                    <Grid container spacing={2}>
-                      {imagePreviews.map((preview, index) => (
-                        <Grid item key={index} xs={6} sm={6}>
-                          <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
-                            <img
-                              src={preview}
-                              alt={`Product preview ${index}`}
-                              className="object-cover w-full h-full"
-                            />
-                            <IconButton
-                              onClick={() => removeImage(index)}
-                              className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                              size="small"
-                            >
-                              <IconX size={16} color="white" />
-                            </IconButton>
-                          </Box>
-                        </Grid>
-                      ))}
-                      <Grid item xs={6} sm={6}>
-                        <label className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer aspect-square">
-                          <Box className="flex flex-col items-center justify-center p-4">
-                            <IconPlus size={24} className="mb-2 text-gray-400" />
-                            <Typography className="text-sm text-gray-400">
-                              Thêm ảnh
-                            </Typography>
-                            <input
-                              type="file"
-                              multiple
-                              className="hidden"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                            />
-                          </Box>
-                        </label>
-                      </Grid>
-                    </Grid>
-                  </Box>
+            <Box className="flex flex-col items-end justify-end flex-1 gap-4">
+         <Box className="flex items-end justify-end gap-4">
+              <Button
+                className="!normal-case"
+                type="button"
+                variant="outlined"
+                onClick={() => router.push("/admin/products")}
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={createProductMutation.isPending}
+                className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
+              >
+                {createProductMutation.isPending ? (
+                  <CircularProgress size={24} className="text-gray-800" />
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <IconUpload size={24} className="mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-400">Upload hình ảnh</p>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageChange} />
-                  </label>
+                  "Tạo sản phẩm"
                 )}
-              </Box>
+              </Button>
             </Box>
-          </Box>
-          
-          <Box className="flex justify-end gap-4">
-            <Button
-              className="!normal-case"
-              type="button"
-              variant="outlined"
-              onClick={() => router.push("/admin/products")}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={createProductMutation.isPending}
-              className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
-            >
-              {createProductMutation.isPending ? (
-                <CircularProgress size={24} className="text-gray-800" />
-              ) : (
-                "Tạo sản phẩm"
-              )}
-            </Button>
-          </Box>
-        </form>
-      </Paper>
+         </Box>
+          </form>
+        </Paper>
+      </Box>
     </div>
   );
 }
