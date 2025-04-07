@@ -308,77 +308,81 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <FormControl fullWidth size="small">
-                <InputLabel>Gói Seller</InputLabel>
-                <Select
-                  name="sellerPackageId"
-                  value={formData.sellerPackageId}
-                  label="Gói Seller"
-                  onChange={(e) => handleChange(e as any)}
-                >
-                  {sellerPackages.map((pkg) => (
-                    <MenuItem key={pkg.id} value={pkg.id}>
-                      {pkg.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Ngày hết hạn Seller Package"
-                name="sellerPackageExpiry"
-                type="datetime-local"
-                value={formData.sellerPackageExpiry}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </div>
-          </div>
+          {formData.role !== "admin" && (
+            <>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Gói Seller</InputLabel>
+                    <Select
+                      name="sellerPackageId"
+                      value={formData.sellerPackageId}
+                      label="Gói Seller"
+                      onChange={(e) => handleChange(e as any)}
+                    >
+                      {sellerPackages.map((pkg) => (
+                        <MenuItem key={pkg.id} value={pkg.id}>
+                          {pkg.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div>
+                  <TextField
+                    size="small"
+                    label="Ngày hết hạn Seller Package"
+                    name="sellerPackageExpiry"
+                    type="datetime-local"
+                    value={formData.sellerPackageExpiry}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <FormControl fullWidth size="small">
-                <InputLabel>Gói Spread</InputLabel>
-                <Select
-                  name="spreadPackageId"
-                  value={formData.spreadPackageId}
-                  label="Gói Spread"
-                  onChange={(e) => handleChange(e as any)}
-                >
-                  {spreadPackages.map((pkg) => (
-                    <MenuItem key={pkg.id} value={pkg.id}>
-                      {pkg.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Ngày hết hạn Spread Package"
-                name="spreadPackageExpiry"
-                type="datetime-local"
-                value={formData.spreadPackageExpiry}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Gói Spread</InputLabel>
+                    <Select
+                      name="spreadPackageId"
+                      value={formData.spreadPackageId}
+                      label="Gói Spread"
+                      onChange={(e) => handleChange(e as any)}
+                    >
+                      {spreadPackages.map((pkg) => (
+                        <MenuItem key={pkg.id} value={pkg.id}>
+                          {pkg.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div>
+                  <TextField
+                    size="small"
+                    label="Ngày hết hạn Spread Package"
+                    name="spreadPackageExpiry"
+                    type="datetime-local"
+                    value={formData.spreadPackageExpiry}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <Box className="flex justify-end gap-4">
             <Button

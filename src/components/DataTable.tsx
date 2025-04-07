@@ -134,7 +134,7 @@ export default function DataTable({
             </Paper>
           </Box>
           {pagination && (
-            <Box sx={{ border: 'none !important', backgroundColor: '#F5F5F5' }}>
+            <Box sx={{ border: 'none !important', backgroundColor: 'white' }}>
               <TablePagination
                 rowsPerPageOptions={[]}
                 component="div"

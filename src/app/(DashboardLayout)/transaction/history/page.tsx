@@ -46,8 +46,8 @@ function getTransactionTypeLabel(type: string): string {
   switch (type) {
     case "package_purchase":
       return "Mua gói tiếp thị"
-    case "package_upgrade":
-      return "Mua gói nâng cấp"
+    case "package_spread":
+      return "Mua gói quảng bá"
     case "fedex_payment":
       return "Thanh toán đơn hàng"
     case "order_profit":

@@ -408,6 +408,7 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Sắp xếp</InputLabel>
             <Select
+              className="bg-white"
               value={filters.order}
               label="Sắp xếp"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, order: e.target.value }))}
@@ -419,6 +420,7 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Trạng thái</InputLabel>
             <Select
+              className="bg-white"
               value={filters.status}
               label="Trạng thái"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, status: e.target.value }))}
@@ -432,6 +434,7 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Vai trò</InputLabel>
             <Select
+              className="bg-white"
               value={filters.role}
               label="Vai trò"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, role: e.target.value }))}
@@ -445,6 +448,7 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Có shop</InputLabel>
             <Select
+              className="bg-white"
               value={filters.hasShop}
               label="Có shop"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, hasShop: e.target.value }))}
@@ -500,7 +504,7 @@ function UsersPage() {
           <Button
             variant="outlined"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors !bg-red-500"
+            className="text-white transition-colors !bg-red-500 !border-red-500"
             disabled={deleteUserMutation.isPending}
           >
             {deleteUserMutation.isPending ?
@@ -554,7 +558,7 @@ function UsersPage() {
           <Button
             variant="outlined"
             onClick={handleBalanceUpdate}
-            className="text-white transition-colors !bg-main-golden-orange"
+            className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
             disabled={updateUserMutation.isPending}
           >
             {updateUserMutation.isPending ? (
@@ -563,7 +567,7 @@ function UsersPage() {
                 Đang xử lý...
               </div>
             ) : (
-              balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
+              balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
             )}
           </Button>
         </DialogActions>
