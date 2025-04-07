@@ -22,7 +22,7 @@ import {
   MenuItem,
   IconButton,
 } from "@mui/material"
-import { IconSearch, IconCash, IconFilter, IconCopy, IconInbox, IconMoodSadDizzy } from "@tabler/icons-react"
+import { IconCopy, IconMoodSadDizzy, IconTransactionDollar } from "@tabler/icons-react"
 import { message } from "antd"
 
 import { useGetTransactionHistory } from "@/hooks/transaction"
@@ -136,20 +136,20 @@ function TransactionHistoryPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center">
-          <IconCash size={28} className="mr-3 text-main-golden-orange" />
-          <Typography
-            fontSize={18}
-            fontWeight={700}
-            variant="h5"
-            className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
-          >
+    <>
+     <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconTransactionDollar size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
             Lịch sử giao dịch
           </Typography>
-        </div>
-
+        </Box>
+      </Box>
+    <div className="p-6 pt-0 space-y-6">
+      <div className="flex flex-col items-start justify-end gap-4 sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-4">
           <TextField
             size="small"
@@ -298,6 +298,7 @@ function TransactionHistoryPage() {
         </>
       )}
     </div>
+    </>
   )
 }
 

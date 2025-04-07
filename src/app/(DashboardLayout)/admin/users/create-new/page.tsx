@@ -144,8 +144,12 @@ export default function CreateUserPage() {
       })
       message.success("Người dùng đã được tạo thành công!")
       router.push("/admin/users")
-    } catch (error) {
-      message.error("Không thể tạo người dùng. Vui lòng thử lại.")
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        message.error("Người dùng này đã tồn tại.")
+      } else {
+        message.error("Không thể tạo người dùng. Vui lòng thử lại.")
+      }
       console.error(error)
     }
   }

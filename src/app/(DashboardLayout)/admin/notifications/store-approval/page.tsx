@@ -22,7 +22,7 @@ import {
     Typography,
     Menu
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconMapPinCheck } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -484,15 +484,15 @@ function ShopsPage() {
                         user.shopStatus === "PENDING"
                             ? "Chờ duyệt"
                             : user.shopStatus === "SUSPENDED"
-                            ? "Đã đóng băng"
-                            : "Hoạt động"
+                                ? "Đã đóng băng"
+                                : "Hoạt động"
                     }
                     color={
                         user.shopStatus === "PENDING"
                             ? "warning"
                             : user.shopStatus === "SUSPENDED"
-                            ? "error"
-                            : "success"
+                                ? "error"
+                                : "success"
                     }
                     size="small"
                 />
@@ -535,7 +535,7 @@ function ShopsPage() {
     if (error) {
         return (
             <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
-            <IconMoodSadDizzy size={48} className="text-gray-400" />
+                <IconMoodSadDizzy size={48} className="text-gray-400" />
                 <Typography variant="h6" className="mb-2 text-red-400">
                     Lỗi khi tải danh sách người dùng
                 </Typography>
@@ -546,6 +546,17 @@ function ShopsPage() {
 
     return (
         <>
+            <Box className="relative flex flex-col items-center justify-center py-8">
+                <Box className="absolute" />
+                <Box className="relative flex flex-col items-center gap-2">
+                    <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+                        <IconMapPinCheck size={36} className="text-main-golden-orange" />
+                    </Box>
+                    <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+                        Quản lý phê duyệt cửa hàng
+                    </Typography>
+                </Box>
+            </Box>
             <Box sx={{ width: '100%' }}>
                 <DataTable
                     columns={columns}

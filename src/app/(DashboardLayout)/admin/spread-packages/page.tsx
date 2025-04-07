@@ -14,15 +14,19 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography
+  Typography,
+  Menu,
+  MenuItem
 } from "@mui/material"
 import {
   IconBrandTelegram,
   IconEye,
   IconMoodSadDizzy,
+  IconPackages,
   IconPlus,
   IconSearch,
-  IconTrash
+  IconTrash,
+  IconDotsVertical
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -37,6 +41,8 @@ function SpreadPackagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [menuPackageId, setMenuPackageId] = useState<string | null>(null)
 
   const { data, isLoading, error } = useGetAllSpreadPackages()
   const deletePackageMutation = useDeleteSpreadPackage()
@@ -52,9 +58,20 @@ function SpreadPackagesPage() {
     router.push(`/admin/spread-packages/${id}`)
   }
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, id: string) => {
+    setAnchorEl(event.currentTarget)
+    setMenuPackageId(id)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+    setMenuPackageId(null)
+  }
+
   const openDeleteDialog = (id: string) => {
     setPackageToDelete(id)
     setDeleteDialogOpen(true)
+    handleMenuClose()
   }
 
   const handleDeleteConfirm = async () => {
@@ -112,13 +129,38 @@ function SpreadPackagesPage() {
       <TableCell>{pkg.duration}</TableCell>
       <TableCell>{new Date(pkg.createdAt).toLocaleDateString('vi-VN')}</TableCell>
       <TableCell>
-        <Box className="flex items-center justify-center gap-4">
-          <IconButton onClick={() => handleView(pkg.id)} size="medium" className="!bg-blue-100">
-            <IconEye size={18} className="text-blue-400" />
+        <Box className="flex items-center justify-center">
+          <IconButton 
+            onClick={(e) => handleMenuOpen(e, pkg.id)}
+            size="medium"
+          >
+            <IconDotsVertical size={18} />
           </IconButton>
-          <IconButton onClick={() => openDeleteDialog(pkg.id)} size="medium" className="!bg-red-100">
-            <IconTrash size={18} className="text-red-400" />
-          </IconButton>
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl) && menuPackageId === pkg.id}
+            onClose={handleMenuClose}
+            PaperProps={{
+              className: "!rounded-[6px] shadow-xl",
+            }}
+          >
+            <MenuItem onClick={() => {
+              handleView(pkg.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconEye size={16} className="text-blue-400" />
+                <span>Xem chi tiết</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => openDeleteDialog(pkg.id)}>
+              <Box className="flex items-center gap-2">
+                <IconTrash size={16} className="text-red-400" />
+                <span>Xóa</span>
+              </Box>
+            </MenuItem>
+          </Menu>
         </Box>
       </TableCell>
     </TableRow>
@@ -137,47 +179,18 @@ function SpreadPackagesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center">
-          <IconBrandTelegram size={28} className="mr-3 text-main-golden-orange" />
-          <Typography
-            fontSize={18}
-            fontWeight={700}
-            variant="h5"
-            className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
-          >
+    <div>
+      <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconPackages size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
             Quản lý gói quảng bá
           </Typography>
-        </div>
-        <div className="flex items-center gap-4">
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm gói quảng bá..."
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<IconPlus size={18} />}
-            onClick={handleCreateNew}
-            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
-          >
-            Tạo gói quảng bá mới
-          </Button>
-        </div>
-      </div>
-
+        </Box>
+      </Box>
       <DataTable
         columns={columns}
         data={filteredPackages}
@@ -196,7 +209,7 @@ function SpreadPackagesPage() {
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 rounded shadow-sm"
+              className="flex-1 bg-white rounded shadow-sm"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

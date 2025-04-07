@@ -20,9 +20,11 @@ import {
     TableRow,
     TextField,
     Typography,
-    Menu
+    Menu,
+    FormControl,
+    InputLabel
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -231,20 +233,20 @@ function ShopsPage() {
         try {
             const user = filteredUsers.find(u => u.id === userId);
             if (!user) return;
-            
+
             const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
-            
+
             await updateUserMutation.mutateAsync({
                 id: userId,
                 payload: {
                     shopStatus: newStatus
                 }
             });
-            
-            message.success(newStatus === "SUSPENDED" 
-                ? "Đã đóng băng shop thành công!" 
+
+            message.success(newStatus === "SUSPENDED"
+                ? "Đã đóng băng shop thành công!"
                 : "Đã bỏ đóng băng shop thành công!");
-            
+
             handleMenuClose();
         } catch (error) {
             message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
@@ -279,8 +281,8 @@ function ShopsPage() {
 
             const currentBalance = Number(currentUser.balance);
             const amountNumber = Number(amount);
-            const newBalance = balanceActionType === 'deposit' 
-                ? currentBalance + amountNumber 
+            const newBalance = balanceActionType === 'deposit'
+                ? currentBalance + amountNumber
                 : currentBalance - amountNumber;
 
             await updateUserMutation.mutateAsync({
@@ -448,28 +450,28 @@ function ShopsPage() {
                             message.success(`Đã sao chép email: ${user.email}`);
                         }}
                     >
-                        <IconCopy size={16} className="text-blue-500"/>
+                        <IconCopy size={16} className="text-blue-500" />
                     </IconButton>
                 </Box>
             </TableCell>
             <TableCell>
                 <Chip
                     label={
-                        user.shopStatus === "PENDING" 
-                            ? "Chờ duyệt" 
-                            : user.shopStatus === "SUSPENDED" 
-                                ? "Đã đóng băng" 
-                                : user.isActive 
-                                    ? "Đang hoạt động" 
+                        user.shopStatus === "PENDING"
+                            ? "Chờ duyệt"
+                            : user.shopStatus === "SUSPENDED"
+                                ? "Đã đóng băng"
+                                : user.isActive
+                                    ? "Đang hoạt động"
                                     : "Đã khóa"
                     }
                     color={
-                        user.shopStatus === "PENDING" 
-                            ? "warning" 
-                            : user.shopStatus === "SUSPENDED" 
-                                ? "error" 
-                                : user.isActive 
-                                    ? "success" 
+                        user.shopStatus === "PENDING"
+                            ? "warning"
+                            : user.shopStatus === "SUSPENDED"
+                                ? "error"
+                                : user.isActive
+                                    ? "success"
                                     : "error"
                     }
                     size="small"
@@ -489,13 +491,13 @@ function ShopsPage() {
             <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
             <TableCell>
                 <Box className="flex items-center justify-center gap-4">
-                    <IconButton 
+                    <IconButton
                         onClick={(e) => handleMenuOpen(e, user.id)}
                         size="medium"
                     >
                         <IconDotsVertical size={18} />
                     </IconButton>
-                    
+
                     <Menu
                         anchorEl={anchorEl}
                         open={Boolean(anchorEl) && menuUserId === user.id}
@@ -592,7 +594,36 @@ function ShopsPage() {
 
     return (
         <>
+            <Box className="relative flex flex-col items-center justify-center py-8">
+                <Box className="absolute" />
+                <Box className="relative flex flex-col items-center gap-2">
+                    <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+                        <IconBuildingStore size={36} className="text-main-golden-orange" />
+                    </Box>
+                    <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+                        Quản lý cửa hàng
+                    </Typography>
+                </Box>
+            </Box>
+
             <Box sx={{ width: '100%' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0 }}>
+                    <TextField
+                        size="small"
+                        placeholder="Tìm kiếm cửa hàng..."
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1 bg-white"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <IconSearch size={20} />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                </Box>
                 <DataTable
                     columns={columns}
                     data={filteredUsers}
@@ -605,26 +636,26 @@ function ShopsPage() {
                     }}
                     renderRow={renderRow}
                     emptyMessage="Không tìm thấy người dùng nào"
-                    searchComponent={
-                        <div className="flex items-center gap-4">
-                            <TextField
-                                size="small"
-                                placeholder="Tìm kiếm cửa hàng..."
-                                variant="outlined"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="flex-1 rounded shadow-sm"
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <IconSearch size={20} className="text-main-golden-orange" />
-                                        </InputAdornment>
-                                    ),
-                                    className: "text-white rounded-lg hover:shadow-md transition-shadow",
-                                }}
-                            />
-                        </div>
-                    }
+                // searchComponent={
+                //     <div className="flex items-center gap-4">
+                //         <TextField
+                //             size="small"
+                //             placeholder="Tìm kiếm cửa hàng..."
+                //             variant="outlined"
+                //             value={searchTerm}
+                //             onChange={(e) => setSearchTerm(e.target.value)}
+                //             className="flex-1 rounded shadow-sm"
+                //             InputProps={{
+                //                 startAdornment: (
+                //                     <InputAdornment position="start">
+                //                         <IconSearch size={20} className="text-main-golden-orange" />
+                //                     </InputAdornment>
+                //                 ),
+                //                 className: "text-white rounded-lg hover:shadow-md transition-shadow",
+                //             }}
+                //         />
+                //     </div>
+                // }
                 />
             </Box>
 
@@ -903,7 +934,7 @@ function ShopsPage() {
                     <Button
                         variant="outlined"
                         onClick={handleBalanceUpdate}
-                        className="text-white transition-colors !bg-main-golden-orange"
+                        className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
                         disabled={updateUserMutation.isPending}
                     >
                         {updateUserMutation.isPending ? (
@@ -912,7 +943,7 @@ function ShopsPage() {
                                 Đang xử lý...
                             </div>
                         ) : (
-                            balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
+                            balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
                         )}
                     </Button>
                 </DialogActions>

@@ -28,7 +28,8 @@ import {
   IconSearch,
   IconTable,
   IconTrash,
-  IconMoodSadDizzy
+  IconMoodSadDizzy,
+  IconArchive
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -324,6 +325,17 @@ function ProductsPage() {
   }
   return (
     <>
+     <Box className="relative flex flex-col items-center justify-center py-8">
+                <Box className="absolute" />
+                <Box className="relative flex flex-col items-center gap-2">
+                    <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+                        <IconArchive size={36} className="text-main-golden-orange" />
+                    </Box>
+                    <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+                        Quản lý sản phẩm
+                    </Typography>
+                </Box>
+            </Box>
       <Box>
         <Box sx={{
           padding: 3,
@@ -333,7 +345,6 @@ function ProductsPage() {
           gap: 2
         }}>
           <Box sx={{
-            padding: 3,
             paddingBottom: 0,
             display: 'flex',
             alignItems: 'center',
@@ -342,6 +353,7 @@ function ProductsPage() {
             <Box sx={{ flex: 1, mr: 2 }}>
               <TextField
                 size="small"
+                className="bg-white"
                 placeholder="Tìm kiếm sản phẩm..."
                 variant="outlined"
                 value={searchTerm}
@@ -351,24 +363,23 @@ function ProductsPage() {
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Button
-                variant="outlined"
+                variant="contained"
+                className="!bg-main-golden-orange !border-main-golden-orange !text-white"
                 endIcon={<IconPlus size={18} />}
                 onClick={handleCreateNew}
               >
                 Tạo sản phẩm mới
               </Button>
-              <ButtonGroup variant="outlined" aria-label="outlined button group">
+              <ButtonGroup variant="contained" aria-label="outlined button group">
                 <Button
-                  className={viewMode === 'grid' ? '!bg-gray-200' : ''}
-                  variant={viewMode === 'table' ? 'outlined' : 'outlined'}
+                  className={viewMode === 'table' ? '!bg-main-golden-orange !border-main-golden-orange !text-white' : 'border-main-golden-orange !bg-white !text-main-golden-orange'}
                   onClick={() => setViewMode('table')}
                   startIcon={<IconList />}
                 >
                   Bảng
                 </Button>
                 <Button
-                  className={viewMode === 'table' ? '!bg-gray-200' : ''}
-                  variant={viewMode === 'grid' ? 'outlined' : 'outlined'}
+                  className={viewMode === 'grid' ? '!bg-main-golden-orange !border-main-golden-orange !text-white' : 'border-main-golden-orange !bg-white !text-main-golden-orange'}
                   onClick={() => setViewMode('grid')}
                   startIcon={<IconTable />}
                 >
@@ -382,6 +393,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Sắp xếp</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.order}
                 label="Sắp xếp"
                 onChange={(e) => setFilters(prev => ({ ...prev, order: e.target.value }))}
@@ -391,9 +403,10 @@ function ProductsPage() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+            <FormControl  size="small" sx={{ minWidth: 140 }}>
               <InputLabel>Sản phẩm mới</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.isNew}
                 label="Sản phẩm mới"
                 onChange={(e) => setFilters(prev => ({ ...prev, isNew: e.target.value }))}
@@ -407,6 +420,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Nổi bật</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.isHot}
                 label="Nổi bật"
                 onChange={(e) => setFilters(prev => ({ ...prev, isHot: e.target.value }))}
@@ -419,6 +433,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Danh mục</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.categoryId}
                 label="Danh mục"
                 open={selectOpen}

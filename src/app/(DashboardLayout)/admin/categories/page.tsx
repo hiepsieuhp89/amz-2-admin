@@ -25,7 +25,8 @@ import {
   IconSearch,
   IconTrash,
   IconDotsVertical,
-  IconMoodSadDizzy
+  IconMoodSadDizzy,
+  IconCategoryPlus
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -125,13 +126,13 @@ export default function CategoriesPage() {
       <TableCell>{new Date(category.updatedAt).toLocaleDateString('vi-VN')}</TableCell>
       <TableCell>
         <Box className="flex items-center justify-center">
-          <IconButton 
+          <IconButton
             onClick={(e) => handleMenuOpen(e, category.id)}
             size="medium"
           >
             <IconDotsVertical size={18} />
           </IconButton>
-          
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl) && menuCategoryId === category.id}
@@ -175,46 +176,58 @@ export default function CategoriesPage() {
       </Box>
     )
   }
-
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={filteredCategories}
-        isLoading={isLoading}
-        pagination={pagination}
-        onPageChange={setPage}
-        onRowsPerPageChange={(newRowsPerPage) => {
-          setRowsPerPage(newRowsPerPage)
-          setPage(1)
-        }}
-        renderRow={(row: any, index: number) => renderRow(row, index)}
-        emptyMessage="Không tìm thấy danh mục nào"
-        createNewButton={{
-          label: "Tạo danh mục mới",
-          onClick: handleCreateNew
-        }}
-        searchComponent={
-          <div className="flex items-center gap-4">
-            <TextField
-              size="small"
-              placeholder="Tìm kiếm danh mục..."
-              variant="outlined"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 rounded shadow-sm"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconSearch size={20} className="text-main-golden-orange" />
-                  </InputAdornment>
-                ),
-                className: "text-white rounded-lg hover:shadow-md transition-shadow",
-              }}
-            />
-          </div>
-        }
-      />
+      <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconCategoryPlus size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+            Quản lý danh mục
+          </Typography>
+        </Box>
+      </Box>
+      <Box>
+        <DataTable
+          columns={columns}
+          data={filteredCategories}
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage)
+            setPage(1)
+          }}
+          renderRow={(row: any, index: number) => renderRow(row, index)}
+          emptyMessage="Không tìm thấy danh mục nào"
+          createNewButton={{
+            label: "Tạo danh mục mới",
+            onClick: handleCreateNew
+          }}
+          searchComponent={
+            <div className="flex items-center gap-4">
+              <TextField
+                size="small"
+                placeholder="Tìm kiếm danh mục..."
+                variant="outlined"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-white rounded shadow-sm"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconSearch size={20} className="text-main-golden-orange" />
+                    </InputAdornment>
+                  ),
+                  className: "text-white rounded-lg hover:shadow-md transition-shadow",
+                }}
+              />
+            </div>
+          }
+        />
+      </Box>
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -222,7 +235,7 @@ export default function CategoriesPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-          <DialogTitle fontSize={18}>Xác nhận xóa</DialogTitle>
+        <DialogTitle fontSize={18}>Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
             Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.
