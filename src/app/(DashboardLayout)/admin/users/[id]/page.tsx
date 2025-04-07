@@ -92,14 +92,12 @@ function UserDetailPage() {
   const [imagePreviewBack, setImagePreviewBack] = useState<string | null>(null);
   const [imageFileFront, setImageFileFront] = useState<File | null>(null);
   const [imageFileBack, setImageFileBack] = useState<File | null>(null);
-
   const { data: userData, isLoading, error } = useGetUserById(id);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
   const { data: sellerPackageData } = useGetAllSellerPackages();
   const { data: spreadPackageData } = useGetAllSpreadPackages();
   const uploadImageMutation = useUploadImage();
-  console.log(userData)
   useEffect(() => {
     if (userData?.data) {
       setFormData({

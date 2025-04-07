@@ -593,7 +593,7 @@ function ShopsPage() {
     }
 
     return (
-        <>
+        <div className="flex flex-col h-full min-h-screen ">
             <Box className="relative flex flex-col items-center justify-center py-8">
                 <Box className="absolute" />
                 <Box className="relative flex flex-col items-center gap-2">
@@ -605,9 +605,8 @@ function ShopsPage() {
                     </Typography>
                 </Box>
             </Box>
-
-            <Box sx={{ width: '100%' }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0 }}>
+            <Box className="flex flex-col flex-1 w-full bg-[#F5F5F5]">
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0}}>
                     <TextField
                         size="small"
                         placeholder="Tìm kiếm cửa hàng..."
@@ -624,41 +623,22 @@ function ShopsPage() {
                         }}
                     />
                 </Box>
-                <DataTable
-                    columns={columns}
-                    data={filteredUsers}
-                    isLoading={isLoading}
-                    pagination={pagination}
-                    onPageChange={setPage}
-                    onRowsPerPageChange={(newRowsPerPage) => {
-                        setRowsPerPage(newRowsPerPage);
-                        setPage(1);
-                    }}
-                    renderRow={renderRow}
-                    emptyMessage="Không tìm thấy người dùng nào"
-                // searchComponent={
-                //     <div className="flex items-center gap-4">
-                //         <TextField
-                //             size="small"
-                //             placeholder="Tìm kiếm cửa hàng..."
-                //             variant="outlined"
-                //             value={searchTerm}
-                //             onChange={(e) => setSearchTerm(e.target.value)}
-                //             className="flex-1 rounded shadow-sm"
-                //             InputProps={{
-                //                 startAdornment: (
-                //                     <InputAdornment position="start">
-                //                         <IconSearch size={20} className="text-main-golden-orange" />
-                //                     </InputAdornment>
-                //                 ),
-                //                 className: "text-white rounded-lg hover:shadow-md transition-shadow",
-                //             }}
-                //         />
-                //     </div>
-                // }
-                />
+                <Box className="flex-1 overflow-auto">
+                    <DataTable
+                        columns={columns}
+                        data={filteredUsers}
+                        isLoading={isLoading}
+                        pagination={pagination}
+                        onPageChange={setPage}
+                        onRowsPerPageChange={(newRowsPerPage) => {
+                            setRowsPerPage(newRowsPerPage);
+                            setPage(1);
+                        }}
+                        renderRow={renderRow}
+                        emptyMessage="Không tìm thấy người dùng nào"
+                    />
+                </Box>
             </Box>
-
             <Dialog
                 open={deleteDialogOpen}
                 onClose={() => setDeleteDialogOpen(false)}
@@ -888,7 +868,7 @@ function ShopsPage() {
                         variant="contained"
                         onClick={handleEditOrderSubmit}
                         disabled={updateOrderMutation.isPending}
-                        className="!normal-case !bg-blue-500 hover:!bg-blue-600"
+                        className="!normal-case ! hover:!bg-blue-600"
                     >
                         {updateOrderMutation.isPending ? (
                             <Box className="flex items-center gap-2">
@@ -948,7 +928,7 @@ function ShopsPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </ div>
     )
 }
 

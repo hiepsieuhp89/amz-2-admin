@@ -33,7 +33,7 @@ function RootLayout({
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   return (
-    <MainWrapper className='mainwrapper'>
+    <MainWrapper className='mainwrapper !bg-[#F5F5F5]'>
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         isMobileSidebarOpen={isMobileSidebarOpen}
@@ -41,7 +41,7 @@ function RootLayout({
       />
       <PageWrapper className='overflow-hidden !bg-[#F5F5F5] h-fit !pb-0 !mb-0'>
         <Header toggleMobileSidebar={() => setMobileSidebarOpen(true)} />
-        <Box className='pt-[64px] bg-[#F5F5F5] h-full'>{children}</Box>
+        <Box className='pt-[64px] !bg-[#F5F5F5] h-full'>{children}</Box>
       </PageWrapper>
     </MainWrapper>
   );
