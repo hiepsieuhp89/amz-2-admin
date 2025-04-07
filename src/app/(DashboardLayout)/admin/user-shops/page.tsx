@@ -22,7 +22,7 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical, IconMoodSadDizzy } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -139,8 +139,8 @@ function UsersPage() {
       // Calculate new balance
       const currentBalance = Number(currentUser.balance);
       const amountNumber = Number(amount);
-      const newBalance = balanceActionType === 'deposit' 
-        ? currentBalance + amountNumber 
+      const newBalance = balanceActionType === 'deposit'
+        ? currentBalance + amountNumber
         : currentBalance - amountNumber;
 
       // Update balance
@@ -173,20 +173,20 @@ function UsersPage() {
     try {
       const user = filteredUsers.find(u => u.id === userId);
       if (!user) return;
-      
+
       const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
-      
+
       await updateUserMutation.mutateAsync({
         id: userId,
         payload: {
           shopStatus: newStatus
         }
       });
-      
-      message.success(newStatus === "SUSPENDED" 
-        ? "Đã đóng băng shop thành công!" 
+
+      message.success(newStatus === "SUSPENDED"
+        ? "Đã đóng băng shop thành công!"
         : "Đã bỏ đóng băng shop thành công!");
-      
+
       handleMenuClose();
     } catch (error) {
       message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
@@ -224,7 +224,7 @@ function UsersPage() {
               message.success(`Đã sao chép email: ${user.email}`);
             }}
           >
-            <IconCopy size={16} className="text-blue-500"/>
+            <IconCopy size={16} className="text-blue-500" />
           </IconButton>
         </Box>
       </TableCell>
@@ -240,7 +240,7 @@ function UsersPage() {
               message.success(`Đã sao chép số điện thoại: ${user.phone}`);
             }}
           >
-            <IconCopy size={16} className="text-blue-500"/>
+            <IconCopy size={16} className="text-blue-500" />
           </IconButton>
         </Box>
       </TableCell>
@@ -254,13 +254,13 @@ function UsersPage() {
       </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
-          <IconButton 
+          <IconButton
             onClick={(e) => handleMenuOpen(e, user.id)}
             size="medium"
           >
             <IconDotsVertical size={18} />
           </IconButton>
-          
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl) && menuUserId === user.id}
@@ -334,7 +334,8 @@ function UsersPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải danh sách người dùng
         </Typography>
@@ -352,7 +353,7 @@ function UsersPage() {
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
+            className="flex-1 bg-white"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

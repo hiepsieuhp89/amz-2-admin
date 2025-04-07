@@ -22,7 +22,7 @@ import {
     Typography,
     Menu
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -534,7 +534,8 @@ function ShopsPage() {
 
     if (error) {
         return (
-            <Box className="p-8 text-center">
+            <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+            <IconMoodSadDizzy size={48} className="text-gray-400" />
                 <Typography variant="h6" className="mb-2 text-red-400">
                     Lỗi khi tải danh sách người dùng
                 </Typography>

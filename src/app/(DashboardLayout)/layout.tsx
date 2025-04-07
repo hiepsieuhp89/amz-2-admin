@@ -39,10 +39,10 @@ function RootLayout({
         isMobileSidebarOpen={isMobileSidebarOpen}
         onSidebarClose={() => setMobileSidebarOpen(false)}
       />
-      <PageWrapper className='page-wrapper overflow-hidden'>
+      <PageWrapper className='overflow-hidden page-wrapper !bg-[#F5F5F5]'>
         <Header toggleMobileSidebar={() => setMobileSidebarOpen(true)} />
 
-        <div className='container_box mt-[90px] '>
+        <div className='container_box mt-[64px] bg-[#F5F5F5]'>
           <Box sx={{ minHeight: 'calc(110vh - 170px)' }}>{children}</Box>
         </div>
       </PageWrapper>

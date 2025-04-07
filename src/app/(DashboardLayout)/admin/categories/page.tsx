@@ -24,7 +24,8 @@ import {
   IconEye,
   IconSearch,
   IconTrash,
-  IconDotsVertical
+  IconDotsVertical,
+  IconMoodSadDizzy
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -165,9 +166,10 @@ export default function CategoriesPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
-          Lỗi khi tải danh sách danh mục
+          Lỗi khi tải danh mục
         </Typography>
         <Typography className="text-gray-400">{error.message || "Vui lòng thử lại sau"}</Typography>
       </Box>

@@ -9,6 +9,7 @@ export interface ICategory {
     createdAt: string
     updatedAt: string
     deletedAt: null | string
+    
 }
 
 export interface ICreateCategory {

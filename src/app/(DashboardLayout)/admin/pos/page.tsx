@@ -470,6 +470,7 @@ const AdminPosPage = () => {
                     backgroundColor: "#ECF2FF",
                     borderRadius: "4px",
                     color: "#5D87FF",
+                    border: "1px solid #5D87FF50",
                   }}
                 >
                   <IconBuildingStore className="w-4 h-4" />
@@ -502,6 +503,7 @@ const AdminPosPage = () => {
                         label="Tìm kiếm shop"
                         variant="outlined"
                         size="small"
+                        className="bg-white"
                         value={selectedCustomer ?
                           `${selectedCustomer.shopName} - ${selectedCustomer.email} - ${selectedCustomer.phone}`
                           : ''
@@ -558,8 +560,6 @@ const AdminPosPage = () => {
                   />
                 </FormControl>
               </Box>
-
-
               <Popover
                 sx={{
                   pointerEvents: "none",
@@ -740,236 +740,238 @@ const AdminPosPage = () => {
               </Popover>
             </Box>
             {showProducts && (
-              <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "30px",
-                      height: "30px",
-                      backgroundColor: "#ECF2FF",
-                      borderRadius: "4px",
-                      color: "#5D87FF",
-                    }}
-                  >
-                    <IconBrandProducthunt className="w-4 h-4" />
+              <Paper className="p-4 bg-white">
+                <Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "30px",
+                        height: "30px",
+                        backgroundColor: "#ECF2FF",
+                        borderRadius: "4px",
+                        color: "#5D87FF",
+                        border: "1px solid #5D87FF50",
+                      }}
+                    >
+                      <IconBrandProducthunt className="w-4 h-4" />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: "#3F6AD8" }}>
+                      Sản phẩm hiện có của {selectedCustomer?.shopName} ({(productsData?.data?.data as any)?.length})
+                    </Typography>
+                    <Box sx={{ ml: 'auto' }}>
+                      <ButtonGroup variant="outlined" aria-label="outlined button group">
+                        <Button
+                          variant={viewMode === 'table' ? 'contained' : 'outlined'}
+                          onClick={() => setViewMode('table')}
+                          startIcon={<IconList />}
+                        >
+                          Bảng
+                        </Button>
+                        <Button
+                          variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+                          onClick={() => setViewMode('grid')}
+                          startIcon={<IconTable />}
+                        >
+                          Lưới
+                        </Button>
+                      </ButtonGroup>
+                    </Box>
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#3F6AD8" }}>
-                    Sản phẩm hiện có của {selectedCustomer?.shopName} ({(productsData?.data?.data as any)?.length})
-                  </Typography>
-                  <Box sx={{ ml: 'auto' }}>
-                    <ButtonGroup variant="outlined" aria-label="outlined button group">
-                      <Button
-                        variant={viewMode === 'table' ? 'contained' : 'outlined'}
-                        onClick={() => setViewMode('table')}
-                        startIcon={<IconList />}
-                      >
-                        Bảng
-                      </Button>
-                      <Button
-                        variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-                        onClick={() => setViewMode('grid')}
-                        startIcon={<IconTable />}
-                      >
-                        Lưới
-                      </Button>
-                    </ButtonGroup>
-                  </Box>
-                </Box>
-                {viewMode === 'grid' ? (
-                  <>
-                    <Box className="grid grid-cols-1 gap-4 mb-10 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
-                      {productsData?.data?.data?.length === 0 ? (
-                        <Box className="flex items-center justify-center h-full col-span-3">
-                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Shop chưa có sản phẩm."} />
-                        </Box>
-                      ) : (
-                        productsData?.data?.data?.map((item) => {
-                          const product = (item as any).product
-                          return (
-                            <Box key={item.id} className={styles.productCard}>
-                              <Box className={`${styles.card} !rounded-[8px] overflow-hidden`}>
-                                <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-                                  <Box className={styles.imageContainer}>
-                                    <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
-                                      Trong kho: {product.stock}
+                  {viewMode === 'grid' ? (
+                    <>
+                      <Box className="grid grid-cols-1 gap-4 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
+                        {productsData?.data?.data?.length === 0 ? (
+                          <Box className="flex items-center justify-center h-full col-span-3">
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Shop chưa có sản phẩm."} />
+                          </Box>
+                        ) : (
+                          productsData?.data?.data?.map((item) => {
+                            const product = (item as any).product
+                            return (
+                              <Box key={item.id} className={styles.productCard}>
+                                <Box className={`${styles.card} !rounded-[8px] overflow-hidden`}>
+                                  <Box sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}>
+                                    <Box className={styles.imageContainer}>
+                                      <Box className="h-6 bg-[#FEF5E5] text-[#FCAF17] font-semibold rounded-[4px] px-2 text-xs flex items-center justify-center absolute z-50 border-none -top-2 -right-2">
+                                        Trong kho: {product.stock}
+                                      </Box>
+                                      <Image
+                                        src={getFirstImage(product.imageUrls)}
+                                        alt={product.name}
+                                        className={`${styles.productImage}`}
+                                        width={140}
+                                        height={140}
+                                        draggable={false}
+                                      />
                                     </Box>
-                                    <Image
-                                      src={getFirstImage(product.imageUrls)}
-                                      alt={product.name}
-                                      className={`${styles.productImage}`}
-                                      width={140}
-                                      height={140}
-                                      draggable={false}
-                                    />
-                                  </Box>
-                                  <Box className={styles.productName}>
-                                    Tên sản phẩm: {product.name.slice(0, 50)}
-                                    {product.name.length > 50 && "..."}
-                                  </Box>
-                                  <Box className={styles.productDescription}>
-                                    <strong>Mô tả: </strong>
-                                    {product.description.slice(0, 100)}
-                                    {product.description.length > 100 && "..."}
-                                  </Box>
-                                  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                                    <Box sx={{ display: "flex", gap: 1 }}>
-                                      <span>Giá niêm yết:</span>
-                                      <span className="!text-green-500">${Number((item as any).salePrice)}</span>
+                                    <Box className={styles.productName}>
+                                      Tên sản phẩm: {product.name.slice(0, 50)}
+                                      {product.name.length > 50 && "..."}
                                     </Box>
-                                    <Box sx={{ display: "flex", gap: 1 }}>
-                                      <span>Giá nhập:</span>
-                                      <span className="!text-amber-500">${Number((item as any).price)}</span>
+                                    <Box className={styles.productDescription}>
+                                      <strong>Mô tả: </strong>
+                                      {product.description.slice(0, 100)}
+                                      {product.description.length > 100 && "..."}
                                     </Box>
-                                    <Box sx={{ display: "flex", gap: 1 }}>
-                                      <span>Lợi nhuận:</span>
-                                      <span className="!text-red-500 font-bold">${(item as any).profit}</span>
+                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                                      <Box sx={{ display: "flex", gap: 1 }}>
+                                        <span>Giá niêm yết:</span>
+                                        <span className="!text-green-500">${Number((item as any).salePrice)}</span>
+                                      </Box>
+                                      <Box sx={{ display: "flex", gap: 1 }}>
+                                        <span>Giá nhập:</span>
+                                        <span className="!text-amber-500">${Number((item as any).price)}</span>
+                                      </Box>
+                                      <Box sx={{ display: "flex", gap: 1 }}>
+                                        <span>Lợi nhuận:</span>
+                                        <span className="!text-red-500 font-bold">${(item as any).profit}</span>
+                                      </Box>
                                     </Box>
-                                  </Box>
-                                  <Box
-                                    className={styles.addButton}
-                                    onClick={() => addProduct(item)}
-                                  >
-                                    <Box className={styles.overlay}></Box>
-                                    <IconPlus className={styles.plusIcon} />
+                                    <Box
+                                      className={styles.addButton}
+                                      onClick={() => addProduct(item)}
+                                    >
+                                      <Box className={styles.overlay}></Box>
+                                      <IconPlus className={styles.plusIcon} />
+                                    </Box>
                                   </Box>
                                 </Box>
                               </Box>
-                            </Box>
-                          )
-                        })
+                            )
+                          })
+                        )}
+
+                      </Box>
+                      {(productsData?.data?.meta as any)?.itemCount > (productsData?.data?.meta as any)?.take && (
+                        <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 4 }}>
+                          <Pagination
+                            count={Math.ceil(
+                              (productsData?.data?.meta as any)?.itemCount / (productsData?.data?.meta as any)?.take,
+                            )}
+                            page={currentPage}
+                            onChange={handlePageChange}
+                            variant="outlined"
+                            color="primary"
+                          />
+                        </Box>
                       )}
-
-                    </Box>
-                    {(productsData?.data?.meta as any)?.itemCount > (productsData?.data?.meta as any)?.take && (
-                      <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 8 }}>
-                        <Pagination
-                          count={Math.ceil(
-                            (productsData?.data?.meta as any)?.itemCount / (productsData?.data?.meta as any)?.take,
-                          )}
-                          page={currentPage}
-                          onChange={handlePageChange}
-                          variant="outlined"
-                          color="primary"
-                        />
-                      </Box>
-                    )}
-                  </>
-                ) : (
-                  <Paper elevation={1} sx={{ borderRadius: 1 }}>
-                    <List sx={{ padding: 0 }} className="!px-0">
-                      {/* Thêm header */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.12)', fontWeight: 600 }}>
-                        <Box sx={{ width: '100px', mr: 2 }}>Hình ảnh</Box>
-                        <Box sx={{ width: '200px' }}>Tên sản phẩm</Box>
-                        <Box sx={{ width: '150px' }}>Giá niêm yết</Box>
-                        <Box sx={{ width: '150px' }}>Giá nhập</Box>
-                        <Box sx={{ width: '150px' }}>Lợi nhuận</Box>
-                      </Box>
-                      {productsData?.data?.data?.map((item, index) => {
-                        const product = (item as any).product
-                        const isSelected = selectedProducts.some(p => p.id === item.id)
-                        return (
-                          <div key={item.id}>
-                            <Collapse in={true} timeout="auto" unmountOnExit>
-                              <ListItem
-                                sx={{
-                                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                                  cursor: 'pointer',
-                                  '&:hover': { backgroundColor: '#f5f5f5' },
-                                  backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit",
-                                }}
-                              >
-                                <Checkbox
-                                  checked={isSelected}
-                                  onChange={() => {
-                                    if (isSelected) {
-                                      const index = selectedProducts.findIndex(p => p.id === item.id)
-                                      removeProduct(index)
-                                    } else {
-                                      addProduct(item)
-                                    }
+                    </>
+                  ) : (
+                    <Paper elevation={1} sx={{ borderRadius: 1 }}>
+                      <List sx={{ padding: 0 }} className="!px-0">
+                        {/* Thêm header */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.12)', fontWeight: 600 }}>
+                          <Box sx={{ width: '100px', mr: 2 }}>Hình ảnh</Box>
+                          <Box sx={{ width: '200px' }}>Tên sản phẩm</Box>
+                          <Box sx={{ width: '150px' }}>Giá niêm yết</Box>
+                          <Box sx={{ width: '150px' }}>Giá nhập</Box>
+                          <Box sx={{ width: '150px' }}>Lợi nhuận</Box>
+                        </Box>
+                        {productsData?.data?.data?.map((item, index) => {
+                          const product = (item as any).product
+                          const isSelected = selectedProducts.some(p => p.id === item.id)
+                          return (
+                            <div key={item.id}>
+                              <Collapse in={true} timeout="auto" unmountOnExit>
+                                <ListItem
+                                  sx={{
+                                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                                    cursor: 'pointer',
+                                    '&:hover': { backgroundColor: '#f5f5f5' },
+                                    backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit",
                                   }}
-                                  sx={{ mr: 1 }}
-                                  size="small"
-                                />
-                                {/* Thêm hình ảnh sản phẩm */}
-                                <Box sx={{ width: '100px', mr: 2 }}>
-                                  <Image
-                                    src={getFirstImage((item as any).product.imageUrls)}
-                                    alt={(item as any).product.name}
-                                    width={80}
-                                    height={80}
-                                    style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      if (isSelected) {
+                                        const index = selectedProducts.findIndex(p => p.id === item.id)
+                                        removeProduct(index)
+                                      } else {
+                                        addProduct(item)
+                                      }
+                                    }}
+                                    sx={{ mr: 1 }}
+                                    size="small"
                                   />
-                                </Box>
-                                <ListItemText
-                                  primary={
-                                    <Stack direction="row" spacing={2}>
-                                      <div style={{ width: '200px' }}>
-                                        <Typography
-                                          fontWeight={500}
-                                          sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
-                                        >
-                                          {(item as any).product.name.slice(0, 50)}
-                                          {(item as any).product.name.length > 50 && "..."}
-                                        </Typography>
-                                      </div>
-                                      <div style={{ width: '150px' }}>
-                                        <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          ${Number((item as any).salePrice)}
-                                        </Box>
-                                      </div>
-                                      <div style={{ width: '150px' }}>
-                                        <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          ${Number((item as any).price)}
-                                        </Box>
-                                      </div>
-                                      <div style={{ width: '150px' }}>
-                                        <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                          ${Number((item as any).profit)}
-                                        </Box>
-                                      </div>
-                                    </Stack>
-                                  }
-                                  secondary={
-                                    <>
-                                      {(item as any).product.description.slice(0, 100)}
-                                      {(item as any).product.description.length > 100 && "..."}
-                                    </>
-                                  }
-                                />
-                              </ListItem>
-                            </Collapse>
-                          </div>
-                        )
-                      })}
-                    </List>
-                    <TablePagination
-                      component="div"
-                      count={productsData?.data?.meta?.itemCount || 0}
-                      page={currentPage - 1}
-                      onPageChange={(e, newPage) => setCurrentPage(newPage + 1)}
-                      rowsPerPage={rowsPerPage}
-                      onRowsPerPageChange={handleChangeRowsPerPage}
-                      rowsPerPageOptions={[]}
-                      labelDisplayedRows={({ from, to, count }) =>
-                        `${from}–${to} của ${count}`
-                      }
-                      sx={{
-                        borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-                        '& .MuiTablePagination-toolbar': {
-                          paddingLeft: 2,
-                          paddingRight: 2,
+                                  {/* Thêm hình ảnh sản phẩm */}
+                                  <Box sx={{ width: '100px', mr: 2 }}>
+                                    <Image
+                                      src={getFirstImage((item as any).product.imageUrls)}
+                                      alt={(item as any).product.name}
+                                      width={80}
+                                      height={80}
+                                      style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                    />
+                                  </Box>
+                                  <ListItemText
+                                    primary={
+                                      <Stack direction="row" spacing={2}>
+                                        <div style={{ width: '200px' }}>
+                                          <Typography
+                                            fontWeight={500}
+                                            sx={{ display: "flex", alignItems: "center", color: "#FCAF17", fontSize: "16px" }}
+                                          >
+                                            {(item as any).product.name.slice(0, 50)}
+                                            {(item as any).product.name.length > 50 && "..."}
+                                          </Typography>
+                                        </div>
+                                        <div style={{ width: '150px' }}>
+                                          <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+                                            ${Number((item as any).salePrice)}
+                                          </Box>
+                                        </div>
+                                        <div style={{ width: '150px' }}>
+                                          <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+                                            ${Number((item as any).price)}
+                                          </Box>
+                                        </div>
+                                        <div style={{ width: '150px' }}>
+                                          <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+                                            ${Number((item as any).profit)}
+                                          </Box>
+                                        </div>
+                                      </Stack>
+                                    }
+                                    secondary={
+                                      <>
+                                        {(item as any).product.description.slice(0, 100)}
+                                        {(item as any).product.description.length > 100 && "..."}
+                                      </>
+                                    }
+                                  />
+                                </ListItem>
+                              </Collapse>
+                            </div>
+                          )
+                        })}
+                      </List>
+                      <TablePagination
+                        component="div"
+                        count={productsData?.data?.meta?.itemCount || 0}
+                        page={currentPage - 1}
+                        onPageChange={(e, newPage) => setCurrentPage(newPage + 1)}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        rowsPerPageOptions={[]}
+                        labelDisplayedRows={({ from, to, count }) =>
+                          `${from}–${to} của ${count}`
                         }
-                      }}
-                    />
-                  </Paper>
-                )}
+                        sx={{
+                          borderTop: '1px solid rgba(0, 0, 0, 0.12)',
+                          '& .MuiTablePagination-toolbar': {
+                            paddingLeft: 2,
+                            paddingRight: 2,
+                          }
+                        }}
+                      />
+                    </Paper>
+                  )}
 
-              </Box>
+                </Box></Paper>
             )}
           </Box>
           {/* Cột bên trái */}
@@ -986,6 +988,7 @@ const AdminPosPage = () => {
                     backgroundColor: "#FDEDE8",
                     borderRadius: "4px",
                     color: "#FB9F87",
+                    border: "1px solid #FB9F8750",
                   }}
                 >
                   <IconAlertCircle className="w-4 h-4" />
@@ -1013,6 +1016,7 @@ const AdminPosPage = () => {
                         label="Tìm kiếm người dùng"
                         variant="outlined"
                         size="small"
+                        className="bg-white"
                         value={selectedUser ?
                           `${selectedUser.fullName} - ${selectedUser.address || 'Chưa có địa chỉ'} - ${selectedUser.email} - ${selectedUser.phone || 'Chưa có số điện thoại'}`
                           : ''
@@ -1101,202 +1105,201 @@ const AdminPosPage = () => {
                 </IconButton>
               </Box>
             </Box>
-            {totalSelectedProducts > 0 && (
-              <Box className="my-3 text-center">
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "#3F6AD8" }}>
-                  Tổng sản phẩm đã chọn ({totalSelectedProducts})
-                </Typography>
-              </Box>
-            )}
-            <Box sx={{ padding: 0 }}>
-              <Box className={styles.selectedProducts}>
-                {selectedProducts.length > 0 ? (
-                  <>
-                    <List>
-                      {selectedProducts.map((item, index) => {
-                        const product = (item as any).product;
-                        return (
-                          <ListItem
-                            key={`${item.id}-${index}`}
-                            sx={{
-                              borderBottom: "1px solid #e0e0e0",
-                              "&:last-child": { borderBottom: "none" },
-                              "&:first-child": { paddingTop: "0px" },
-                              display: "flex",
-                              flexDirection: "column",
-                              padding: "16px 0px",
-                            }}
-                          >
-                            <Box className="flex items-start w-full gap-2">
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
-                                <Image
-                                  src={getFirstImage(product.imageUrls)}
-                                  alt={product.name}
-                                  className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
-                                  width={200}
-                                  height={200}
-                                  draggable={false}
-                                />
+            <Paper className="p-4 mt-5 bg-white">
+              {totalSelectedProducts > 0 && (
+                <Box className="mb-4 text-center">
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#3F6AD8" }}>
+                    Tổng sản phẩm đã chọn ({totalSelectedProducts})
+                  </Typography>
+                </Box>
+              )}
+              <Box sx={{ padding: 0 }}>
+                <Box className={styles.selectedProducts}>
+                  {selectedProducts.length > 0 ? (
+                    <>
+                      <List>
+                        {selectedProducts.map((item, index) => {
+                          const product = (item as any).product;
+                          return (
+                            <ListItem
+                              key={`${item.id}-${index}`}
+                              sx={{
+                                borderBottom: "1px solid #e0e0e0",
+                                "&:last-child": { borderBottom: "none" },
+                                "&:first-child": { paddingTop: "0px" },
+                                display: "flex",
+                                flexDirection: "column",
+                                padding: "16px 0px",
+                              }}
+                            >
+                              <Box className="flex items-start w-full gap-2">
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+                                  <Image
+                                    src={getFirstImage(product.imageUrls)}
+                                    alt={product.name}
+                                    className="w-24 h-24 object-cover rounded-[4px] border flex-shrink-0"
+                                    width={200}
+                                    height={200}
+                                    draggable={false}
+                                  />
+                                </Box>
+                                <Box>
+                                  <Typography variant="body1">
+                                    {product.name.slice(0, 50) + (product.name.length > 50 ? "..." : "")}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                  <IconButton
+                                    size="small"
+                                    sx={{ border: "2px solid #FDEDE8", bgcolor: "#FDEDE8", mb: 1 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      removeProduct(index)
+                                    }}
+                                    color="error"
+                                  >
+                                    <IconTrash className="w-3 h-3" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleQuantityChange(item.id, -1)
+                                    }}
+                                    sx={{ border: "1px solid #e0e0e0" }}
+                                  >
+                                    <IconMinus className="w-3 h-3" />
+                                  </IconButton>
+                                  <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[item.id] || 1}</Box>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleQuantityChange(item.id, 1)
+                                    }}
+                                    sx={{ border: "1px solid #e0e0e0" }}
+                                  >
+                                    <IconPlus className="w-3 h-3" />
+                                  </IconButton>
+                                </Box>
                               </Box>
-                              <Box>
-                                <Typography variant="body1">
-                                  {product.name.slice(0, 50) + (product.name.length > 50 ? "..." : "")}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {product.description.slice(0, 80) + (product.description.length > 80 ? "..." : "")}
-                                </Typography>
+                              <Box sx={{ display: "flex", mt: 2, width: "100%", justifyContent: "space-between" }}>
+                                <Box sx={{ display: "flex", gap: 1 }}>
+                                  <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
+                                  <span className="text-xs !text-green-500">${Number(item.salePrice)}</span>
+                                </Box>
+                                <Box sx={{ display: "flex", gap: 1 }}>
+                                  <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
+                                  <span className="text-xs !text-amber-500">${Number(item.price)}</span>
+                                </Box>
+                                <Box sx={{ display: "flex", gap: 1 }}>
+                                  <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
+                                  <span className="text-xs !text-red-500 font-bold">
+                                    ${Number(item.profit)}
+                                  </span>
+                                </Box>
                               </Box>
-                              <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                <IconButton
-                                  size="small"
-                                  sx={{ border: "2px solid #FDEDE8", bgcolor: "#FDEDE8", mb: 1 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    removeProduct(index)
-                                  }}
-                                  color="error"
-                                >
-                                  <IconTrash className="w-3 h-3" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleQuantityChange(item.id, -1)
-                                  }}
-                                  sx={{ border: "1px solid #e0e0e0" }}
-                                >
-                                  <IconMinus className="w-3 h-3" />
-                                </IconButton>
-                                <Box sx={{ minWidth: "30px", textAlign: "center" }}>{quantities[item.id] || 1}</Box>
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleQuantityChange(item.id, 1)
-                                  }}
-                                  sx={{ border: "1px solid #e0e0e0" }}
-                                >
-                                  <IconPlus className="w-3 h-3" />
-                                </IconButton>
-                              </Box>
-                            </Box>
-                            <Box sx={{ display: "flex", mt: 2, width: "100%", justifyContent: "space-between" }}>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
-                                <span className="text-xs !text-green-500">${Number(item.salePrice)}</span>
-                              </Box>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
-                                <span className="text-xs !text-amber-500">${Number(item.price)}</span>
-                              </Box>
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
-                                <span className="text-xs !text-red-500 font-bold">
-                                  ${Number(item.profit)}
-                                </span>
-                              </Box>
-                            </Box>
-                          </ListItem>
-                        )
-                      })}
-                    </List>
-                    <Box sx={{ width: "100%", pt: 2, borderTop: "1px solid #e0e0e0" }}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                        <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          Tổng:
-                        </Typography>
-                        <span className="font-normal text-gray-400">
-                          $
-                          {selectedProducts
-                            .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
-                          }
-                        </span>
-                      </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                        <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          Thuế (8%):
-                        </Typography>
-                        <span className="font-normal text-gray-400">
-                          $
-                          {(
-                            selectedProducts.reduce(
-                              (sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1),
-                              0,
-                            ) * 0.08
-                          )}
-                        </span>
-                      </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                        <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          Đang chuyển hàng:
-                        </Typography>
-                        <span className="font-normal text-gray-400">$5.00</span>
-                      </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                        <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          Giảm giá:
-                        </Typography>
-                        <span className="font-normal text-gray-400">$0.00</span>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          mt: 2,
-                          pt: 2,
-                          borderTop: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography fontSize="14px" sx={{ fontWeight: 700, color: "#2c3e50" }}>
-                          Toàn bộ:
-                        </Typography>
+                            </ListItem>
+                          )
+                        })}
+                      </List>
+                      <Box sx={{ width: "100%", pt: 2, borderTop: "1px solid #e0e0e0" }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                            Tổng:
+                          </Typography>
+                          <span className="font-normal text-gray-400">
+                            $
+                            {selectedProducts
+                              .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
+                            }
+                          </span>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                            Thuế (8%):
+                          </Typography>
+                          <span className="font-normal text-gray-400">
+                            $
+                            {(
+                              selectedProducts.reduce(
+                                (sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1),
+                                0,
+                              ) * 0.08
+                            )}
+                          </span>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                            Đang chuyển hàng:
+                          </Typography>
+                          <span className="font-normal text-gray-400">$5.00</span>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                            Giảm giá:
+                          </Typography>
+                          <span className="font-normal text-gray-400">$0.00</span>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 2,
+                            pt: 2,
+                            borderTop: "1px solid #e0e0e0",
+                          }}
+                        >
+                          <Typography fontSize="14px" sx={{ fontWeight: 700, color: "#2c3e50" }}>
+                            Toàn bộ:
+                          </Typography>
 
-                        <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
-                          ${" "}
-                          {(
-                            selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) *
-                            1.08 +
-                            5
-                          )}
+                          <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
+                            ${" "}
+                            {(
+                              selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) *
+                              1.08 +
+                              5
+                            )}
+                          </Box>
                         </Box>
                       </Box>
+                    </>
+                  ) : (
+                    <Box className="flex items-center justify-center h-[20%] col-span-3">
+                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Chưa có sản phẩm nào được chọn."} />
                     </Box>
-                  </>
-                ) : (
-                  <Box className="flex items-center justify-center h-[20%] col-span-3">
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={"Chưa có sản phẩm nào được chọn."} />
-                  </Box>
-                )}
+                  )}
+                </Box>
               </Box>
-            </Box>
-            <Box className="grid grid-cols-2 gap-2 mt-4">
-              <FormControl fullWidth>
-                <InputLabel>Trạng thái đơn hàng</InputLabel>
-                <Select size="small" label="Trạng thái đơn hàng" defaultValue="pending">
-                  <MenuItem value="pending">Đang chờ xử lý</MenuItem>
-                  <MenuItem value="confirmed">Đã xác nhận</MenuItem>
-                  <MenuItem value="shipping">Đang trên đường đi</MenuItem>
-                  <MenuItem value="delivered">Đã giao hàng</MenuItem>
-                </Select>
-              </FormControl>
+              <Box className="grid grid-cols-2 gap-2 mt-4">
+                <FormControl fullWidth>
+                  <InputLabel>Trạng thái đơn hàng</InputLabel>
+                  <Select size="small" label="Trạng thái đơn hàng" defaultValue="pending">
+                    <MenuItem value="pending">Đang chờ xử lý</MenuItem>
+                    <MenuItem value="confirmed">Đã xác nhận</MenuItem>
+                    <MenuItem value="shipping">Đang trên đường đi</MenuItem>
+                    <MenuItem value="delivered">Đã giao hàng</MenuItem>
+                  </Select>
+                </FormControl>
 
-              <Button
-                size="small"
-                variant="outlined"
-                fullWidth
-                onClick={handleCreateFakeOrder}
-                disabled={selectedProducts.length === 0 || !selectedUser}
-              >
-                Đặt hàng
-              </Button>
-            </Box>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  fullWidth
+                  onClick={handleCreateFakeOrder}
+                  disabled={selectedProducts.length === 0 || !selectedUser}
+                >
+                  Đặt hàng
+                </Button>
+              </Box>
+            </Paper>
           </Box>
         </Box>
-
-
       </Box>
-
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}

@@ -19,6 +19,7 @@ import {
 import {
   IconBrandTelegram,
   IconEye,
+  IconMoodSadDizzy,
   IconPlus,
   IconSearch,
   IconTrash
@@ -125,7 +126,8 @@ function SpreadPackagesPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải gói quảng bá
         </Typography>

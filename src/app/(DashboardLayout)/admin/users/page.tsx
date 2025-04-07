@@ -22,7 +22,7 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical, IconMoodSadDizzy } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -376,7 +376,8 @@ function UsersPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải danh sách người dùng
         </Typography>
@@ -395,7 +396,7 @@ function UsersPage() {
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
+            className="flex-1 bg-white"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
