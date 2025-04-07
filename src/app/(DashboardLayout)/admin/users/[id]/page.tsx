@@ -10,17 +10,17 @@ import {
   DialogContentText,
   DialogTitle,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   SelectChangeEvent,
-  Switch,
   TextField,
   Typography,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
-import { IconArrowLeft, IconEdit, IconTrash, IconMessage, IconUpload, IconX, IconStar } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconTrash, IconMessage, IconUpload, IconX, IconStar, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { message } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -39,6 +39,10 @@ function UserDetailPage() {
   const id = params.id as string;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showTransactionPassword, setShowTransactionPassword] = useState(false);
+  const [showWalletPassword, setShowWalletPassword] = useState(false);
+  const [showWithdrawPassword, setShowWithdrawPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -69,6 +73,7 @@ function UserDetailPage() {
     password: "",
     transactionPassword: "",
     walletPassword: "",
+    withdrawPassword: "",
     // Thông tin xác thực
     idCardType: "",
     idCardNumber: "",
@@ -121,6 +126,7 @@ function UserDetailPage() {
         bankAccountName: userData.data.bankAccountName || "",
         password: "",
         transactionPassword: "",
+        withdrawPassword: userData.data.withdrawPassword || "",
         walletPassword: "",
         idCardType: userData.data.idCardType || "",
         idCardNumber: userData.data.idCardNumber || "",
@@ -202,7 +208,7 @@ function UserDetailPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
+
       if (type === 'front') {
         setImageFileFront(file);
         const reader = new FileReader();
@@ -210,7 +216,7 @@ function UserDetailPage() {
           setImagePreviewFront(event.target?.result as string);
         };
         reader.readAsDataURL(file);
-        
+
         setFormData((prev) => ({
           ...prev,
           idCardFrontImage: "image-url-placeholder",
@@ -222,7 +228,7 @@ function UserDetailPage() {
           setImagePreviewBack(event.target?.result as string);
         };
         reader.readAsDataURL(file);
-        
+
         setFormData((prev) => ({
           ...prev,
           idCardBackImage: "image-url-placeholder",
@@ -259,37 +265,37 @@ function UserDetailPage() {
 
     try {
       let updatedFormData = { ...formData };
-      
+
       // Upload ảnh mặt trước nếu có
       if (imageFileFront) {
         message.loading({ content: "Đang tải ảnh mặt trước lên...", key: "uploadImageFront" });
-        
+
         const uploadResultFront = await uploadImageMutation.mutateAsync({
           file: imageFileFront,
           isPublic: true,
           description: `Ảnh mặt trước giấy tờ của người dùng: ${updatedFormData.email}`
         });
-        
+
         message.success({ content: "Tải ảnh mặt trước thành công!", key: "uploadImageFront" });
-        
+
         updatedFormData = {
           ...updatedFormData,
           idCardFrontImage: uploadResultFront.data.url
         };
       }
-      
+
       // Upload ảnh mặt sau nếu có
       if (imageFileBack) {
         message.loading({ content: "Đang tải ảnh mặt sau lên...", key: "uploadImageBack" });
-        
+
         const uploadResultBack = await uploadImageMutation.mutateAsync({
           file: imageFileBack,
           isPublic: true,
           description: `Ảnh mặt sau giấy tờ của người dùng: ${updatedFormData.email}`
         });
-        
+
         message.success({ content: "Tải ảnh mặt sau thành công!", key: "uploadImageBack" });
-        
+
         updatedFormData = {
           ...updatedFormData,
           idCardBackImage: uploadResultBack.data.url
@@ -460,7 +466,7 @@ function UserDetailPage() {
               </Select>
             </FormControl>
           </div>
-          
+
           {/* Thông tin người dùng (chỉ hiển thị cho user và admin) */}
           {(userData?.data.role === "user" || userData?.data.role === "admin") && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -546,15 +552,50 @@ function UserDetailPage() {
               disabled={!isEditing}
             />
           </div>}
+
+          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div>
+              <TextField
+                size="small"
+                label="Số lượng sản phẩm"
+                name="totalProducts"
+                type="number"
+                value={formData.totalProducts}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Tổng lợi nhuận"
+                name="totalProfit"
+                type="number"
+                value={formData.totalProfit}
+                InputProps={{
+                  readOnly: true,
+                }}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                disabled={true}
+              />
+            </div>
+          </div>}
           {userData?.data.role === "shop" && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <Typography variant="subtitle1" className="mb-2">Logo cửa hàng</Typography>
                 {formData.logoUrl ? (
                   <div className="relative w-32 h-32">
-                    <Image 
-                      src={formData.logoUrl} 
-                      alt="Logo cửa hàng" 
+                    <Image
+                      src={formData.logoUrl}
+                      alt="Logo cửa hàng"
                       fill
                       sizes="(max-width: 128px) 100vw, 128px"
                       className="object-contain rounded"
@@ -647,7 +688,7 @@ function UserDetailPage() {
               className="rounded"
               disabled={!isEditing}
             />
-            </div>}
+          </div>}
           {userData?.data.role === "shop" && <TextField
             size="small"
             label="Số lượng sản phẩm"
@@ -660,7 +701,7 @@ function UserDetailPage() {
             className="rounded"
             disabled={!isEditing}
           />}
-          
+
           {/* Thông tin ngân hàng (chỉ hiển thị cho user và admin) */}
           {(userData?.data.role === "user" || userData?.data.role === "admin") && (
             <>
@@ -710,38 +751,98 @@ function UserDetailPage() {
               size="small"
               label="Mật khẩu đăng nhập"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleChange}
               fullWidth
               variant="outlined"
               className="rounded"
               disabled={!isEditing}
+              InputProps={formData.password ? {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              } : undefined}
             />
             <TextField
               size="small"
               label="Mật khẩu giao dịch cửa hàng"
               name="transactionPassword"
-              type="password"
+              type={showTransactionPassword ? "text" : "password"}
               value={formData.transactionPassword}
               onChange={handleChange}
               fullWidth
               variant="outlined"
               className="rounded"
               disabled={!isEditing}
+              InputProps={formData.transactionPassword ? {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowTransactionPassword(!showTransactionPassword)}
+                      edge="end"
+                    >
+                      {showTransactionPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              } : undefined}
             />
           </div>
           <TextField
             size="small"
             label="Mật khẩu giao dịch ví"
             name="walletPassword"
-            type="password"
+            type={showWalletPassword ? "text" : "password"}
             value={formData.walletPassword}
             onChange={handleChange}
             fullWidth
             variant="outlined"
             className="rounded"
             disabled={!isEditing}
+            InputProps={formData.walletPassword ? {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowWalletPassword(!showWalletPassword)}
+                    edge="end"
+                  >
+                    {showWalletPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            } : undefined}
+          />
+          <TextField
+            size="small"
+            label="Mật khẩu rút tiền"
+            name="withdrawPassword"
+            type={showWithdrawPassword ? "text" : "password"}
+            value={formData.withdrawPassword}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            className="rounded"
+            disabled={!isEditing}
+            InputProps={formData.withdrawPassword ? {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowWithdrawPassword(!showWithdrawPassword)}
+                    edge="end"
+                  >
+                    {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            } : undefined}
           />
 
           {/* Thông tin xác thực */}
@@ -774,138 +875,15 @@ function UserDetailPage() {
               />
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div>
-              <TextField
-                size="small"
-                label="Số sao (1-5)"
-                name="stars"
-                type="number"
-                inputProps={{ min: 0, max: 5, step: 0.1 }}
-                value={formData.stars}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Điểm uy tín"
-                name="reputationPoints"
-                type="number"
-                value={formData.reputationPoints}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Lượt xem cửa hàng"
-                name="view"
-                type="number"
-                value={formData.view}
-                InputProps={{
-                  readOnly: true,
-                }}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={true}
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div>
-              <TextField
-                size="small"
-                label="Số lượng sản phẩm"
-                name="totalProducts"
-                type="number"
-                value={formData.totalProducts}
-                InputProps={{
-                  readOnly: true,
-                }}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={true}
-              />
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Tổng lợi nhuận"
-                name="totalProfit"
-                type="number"
-                value={formData.totalProfit}
-                InputProps={{
-                  readOnly: true,
-                }}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={true}
-              />
-            </div>
-            <div>
-              <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
-              {imagePreviewFront || formData.idCardFrontImage ? (
-                <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
-                  <img 
-                    src={imagePreviewFront || formData.idCardFrontImage} 
-                    alt="Ảnh mặt trước" 
-                    className="object-cover w-full h-full"
-                  />
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => removeImage('front')}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                isEditing ? (
-                  <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <IconUpload size={24} className="mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
-                  </label>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    Chưa có ảnh
-                  </Typography>
-                )
-              )}
-            </div>
-          </div>
-          
-          {/* Financial Information Section */}
-          <Typography variant="h6" className="!text-main-golden-orange font-semibold mt-6 mb-4">
-            Thông tin tài chính
-          </Typography>
-          
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <Typography variant="subtitle1" className="!mb-2">Ảnh mặt sau</Typography>
               {imagePreviewBack || formData.idCardBackImage ? (
                 <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
-                  <img 
-                    src={imagePreviewBack || formData.idCardBackImage} 
-                    alt="Ảnh mặt sau" 
+                  <img
+                    src={imagePreviewBack || formData.idCardBackImage}
+                    alt="Ảnh mặt sau"
                     className="object-cover w-full h-full"
                   />
                   {isEditing && (
@@ -934,8 +912,42 @@ function UserDetailPage() {
                 )
               )}
             </div>
+            <div>
+            <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
+            {imagePreviewFront || formData.idCardFrontImage ? (
+              <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                <img
+                  src={imagePreviewFront || formData.idCardFrontImage}
+                  alt="Ảnh mặt trước"
+                  className="object-cover w-full h-full"
+                />
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => removeImage('front')}
+                    className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                  >
+                    <IconX size={16} color="white" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              isEditing ? (
+                <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <IconUpload size={24} className="mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
+                  </div>
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
+                </label>
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  Chưa có ảnh
+                </Typography>
+              )
+            )}
           </div>
-
+          </div>
           {isEditing && (
             <Box className="flex justify-end gap-4">
               <Button
