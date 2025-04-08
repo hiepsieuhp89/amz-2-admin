@@ -219,7 +219,7 @@ const filterMenuItems = (items: any[], role?: string, shopName?: string) => {
       );
     } else if (!shopName) {
       return items.filter(item => 
-        ["Quản lý POS", "Quản lý cửa hàng", "Quản lý đánh giá"].includes(item.title)
+        ["Quản lý POS", "Quản lý cửa hàng", "Quản lý đánh giá", "Thông báo"].includes(item.title)
       );
     }
   }
