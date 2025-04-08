@@ -200,6 +200,7 @@ function UsersPage() {
     { key: 'username', label: 'Tên đăng nhập' },
     { key: 'fullName', label: 'Họ tên' },
     { key: 'phone', label: 'Số điện thoại' },
+    { key: 'invitationCode', label: 'Mã mời' },
     { key: 'role', label: 'Vai trò' },
     { key: 'status', label: 'Trạng thái' },
     { key: 'actions', label: 'Thao tác' },
@@ -243,6 +244,22 @@ function UsersPage() {
           >
             <IconCopy size={16} className="text-blue-500" />
           </IconButton>
+        </Box>
+      </TableCell>
+      <TableCell>
+        <Box display="flex" alignItems="center" gap={1}>
+          {user.invitationCode}
+          {user.invitationCode && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                navigator.clipboard.writeText(user.invitationCode || "");
+                message.success(`Đã sao chép mã giới thiệu: ${user.invitationCode}`);
+              }}
+            >
+              <IconCopy size={16} className="text-blue-500" />
+            </IconButton>
+          )}
         </Box>
       </TableCell>
       <TableCell>
