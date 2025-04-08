@@ -19,6 +19,7 @@ import {
   Typography,
   IconButton,
   InputAdornment,
+  Switch,
 } from "@mui/material";
 import { IconArrowLeft, IconEdit, IconTrash, IconMessage, IconUpload, IconX, IconStar, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { message } from "antd";
@@ -53,6 +54,7 @@ function UserDetailPage() {
     // Thông tin cửa hàng
     shopName: "",
     shopAddress: "",
+    shopStatus: "PENDING",
     view: 0,
     stars: 0,
     reputationPoints: 0,
@@ -93,6 +95,7 @@ function UserDetailPage() {
   const [imageFileFront, setImageFileFront] = useState<File | null>(null);
   const [imageFileBack, setImageFileBack] = useState<File | null>(null);
   const { data: userData, isLoading, error } = useGetUserById(id);
+  console.log(userData?.data);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
   const { data: sellerPackageData } = useGetAllSellerPackages();
@@ -108,6 +111,7 @@ function UserDetailPage() {
         fullName: userData.data.fullName || "",
         shopName: userData.data.shopName || "",
         shopAddress: userData.data.shopAddress || "",
+        shopStatus: userData.data.shopStatus || "PENDING",
         view: Number(userData.data.view),
         stars: Number(userData.data.stars),
         reputationPoints: Number(userData.data.reputationPoints),
@@ -307,6 +311,7 @@ function UserDetailPage() {
           phone: updatedFormData.phone,
           address: updatedFormData.address,
           shopName: updatedFormData.shopName,
+          shopStatus: updatedFormData.shopStatus,
           view: updatedFormData.view,
           stars: updatedFormData.stars,
           reputationPoints: updatedFormData.reputationPoints,
@@ -494,7 +499,26 @@ function UserDetailPage() {
           )}
 
           {/* Thông tin cửa hàng */}
-          {userData?.data.role === "shop" && <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>}
+          {userData?.data.role === "shop" && 
+          <div className="flex items-center justify-between">
+            <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>
+            <div className="flex items-center gap-2">
+              <Typography variant="body2" color={formData.shopStatus === "PENDING" ? "error" : "primary"}>
+                {formData.shopStatus === "PENDING" ? "Chờ duyệt" : "Đã duyệt"}
+              </Typography>
+              <Switch
+                checked={formData.shopStatus === "ACTIVE"}
+                onChange={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    shopStatus: e.target.checked ? "ACTIVE" : "PENDING"
+                  }))
+                }}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          }
           {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <TextField
               size="small"
