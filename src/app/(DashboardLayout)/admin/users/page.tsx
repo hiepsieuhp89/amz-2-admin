@@ -248,17 +248,22 @@ function UsersPage() {
       <TableCell>
         <Chip
           label={
+            user.shopName === "admin2" ? "Xuất nhập khoản" :
+            user.role === "supper_admin" ? "Super Admin" :
             user.role === "admin" ? "Admin" :
               user.role === "shop" ? "Người bán" :
                 "Khách ảo"
           }
           color={
+            user.shopName === "admin2" ? "info" :
+            user.role === "supper_admin" ? "secondary" :
             user.role === "admin" ? "primary" :
               user.role === "shop" ? "warning" :
                 "success"
           }
           size="small"
           variant="filled"
+          className={user.role === "supper_admin" ? "!text-white" : ""}
         />
       </TableCell>
       <TableCell>

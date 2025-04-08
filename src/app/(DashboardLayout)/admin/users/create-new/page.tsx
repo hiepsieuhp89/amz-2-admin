@@ -136,11 +136,13 @@ export default function CreateUserPage() {
     try {
       await createUserMutation.mutateAsync({
         ...formData,
+        role: formData.role === "admin2" ? "admin" : formData.role,
         balance: formData.balance?.toString(), // Convert number to string
         sellerPackageId: formData?.sellerPackageId || undefined,
         spreadPackageId: formData?.spreadPackageId || undefined,
         sellerPackageExpiry: formData?.sellerPackageExpiry || undefined,
-        spreadPackageExpiry: formData?.spreadPackageExpiry || undefined
+        spreadPackageExpiry: formData?.spreadPackageExpiry || undefined,
+        shopName: formData.role === "admin2" ? "admin2" : formData.shopName
       })
       message.success("Người dùng đã được tạo thành công!")
       router.push("/admin/users")
@@ -271,7 +273,8 @@ export default function CreateUserPage() {
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
                   <MenuItem value="seller">Người bán</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                    <MenuItem value="admin2">Xuất nhập khoản</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -312,7 +315,7 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {formData.role !== "admin" && (
+          {formData.role === "seller" && (
             <>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
