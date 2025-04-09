@@ -25,7 +25,7 @@ import {
 import { IconCopy, IconMoodSadDizzy, IconTransactionDollar } from "@tabler/icons-react"
 import { message } from "antd"
 
-import { useGetTransactionHistory } from "@/hooks/transaction"
+import { useGetTransactionHistory, useGetAdminWithdrawals, useUpdateWithdrawalStatus } from "@/hooks/transaction"
 import { TransactionStatus, TransactionType } from "@/interface/request/transaction"
 
 function formatMoney(money: string): string {
@@ -74,6 +74,114 @@ function getStatusChipProps(status: string) {
     default:
       return { label: "Không xác định", color: "default" as const }
   }
+}
+
+function WithdrawalTable() {
+  const { data: withdrawalsData, isLoading, error, refetch } = useGetAdminWithdrawals()
+  const { mutate: updateStatus } = useUpdateWithdrawalStatus()
+
+  const withdrawals = withdrawalsData?.data?.data || []
+
+  const handleApprove = (id: string) => {
+    updateStatus({ id, status: "COMPLETED" }, {
+      onSuccess: () => {
+        refetch()
+        message.success("Yêu cầu rút tiền đã được phê duyệt")
+      },
+      onError: () => {
+        message.error("Có lỗi xảy ra khi phê duyệt yêu cầu rút tiền")
+      }
+    })
+  }
+
+  const handleReject = (id: string) => {
+    const rejectionReason = prompt("Nhập lý do từ chối:")
+    const adminNote = prompt("Nhập ghi chú của admin:")
+    if (rejectionReason && adminNote) {
+      updateStatus({ id, status: "PENDING", rejectionReason, adminNote }, {
+        onSuccess: () => {
+          refetch()
+          message.success("Yêu cầu rút tiền đã bị từ chối")
+        },
+        onError: () => {
+          message.error("Có lỗi xảy ra khi từ chối yêu cầu rút tiền")
+        }
+      })
+    }
+  }
+
+  if (error) {
+    return (
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
+        <Typography variant="h6" className="mb-2 text-red-400">
+          Lỗi khi tải danh sách rút tiền
+        </Typography>
+        <Typography className="text-gray-400">{error.message || "Vui lòng thử lại sau"}</Typography>
+      </Box>
+    )
+  }
+
+  return (
+    <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0", marginTop: 2 }}>
+      <Typography variant="h4" className="p-4">Danh sách yêu cầu rút tiền</Typography>
+      <TableContainer sx={{ maxHeight: 440 }}>
+        <Table stickyHeader sx={{ minWidth: 650 }} aria-label="withdrawal table">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>ID</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày tạo</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số tiền</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Trạng thái</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Mô tả</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {withdrawals.map((withdrawal: any) => (
+              <TableRow
+                key={withdrawal.id}
+                sx={{
+                  "&:first-child td, &:first-child th": { borderTop: "1px solid #E0E0E0" },
+                  "& td": { borderBottom: "1px solid #E0E0E0" },
+                }}
+              >
+                <TableCell>{withdrawal.id}</TableCell>
+                <TableCell>{formatDate(withdrawal.createdAt)}</TableCell>
+                <TableCell>{formatMoney(withdrawal.money)}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={getStatusChipProps(withdrawal.status).label}
+                    color={getStatusChipProps(withdrawal.status).color}
+                    size="small"
+                    variant="outlined"
+                  />
+                </TableCell>
+                <TableCell>{withdrawal.description}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => handleApprove(withdrawal.id)}
+                    sx={{ marginRight: 1 }}
+                  >
+                    Phê duyệt
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleReject(withdrawal.id)}
+                  >
+                    Từ chối
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  )
 }
 
 function TransactionHistoryPage() {
@@ -209,6 +317,7 @@ function TransactionHistoryPage() {
       ) : (
         <>
           <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0" }}>
+            <Typography variant="h4" className="p-4">Danh sách giao dịch</Typography>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader sx={{ minWidth: 650 }} aria-label="transaction table">
                 <TableHead>
@@ -219,6 +328,9 @@ function TransactionHistoryPage() {
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Loại giao dịch</TableCell>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Trạng thái</TableCell>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Mô tả</TableCell>
+                    <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Tên người dùng</TableCell>
+                    <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Email</TableCell>
+                    <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số điện thoại</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -278,6 +390,9 @@ function TransactionHistoryPage() {
                           />
                         </div>
                       </TableCell>
+                      <TableCell>{transaction.user?.fullName}</TableCell>
+                      <TableCell>{transaction.user?.email}</TableCell>
+                      <TableCell>{transaction.user?.phone}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -295,6 +410,7 @@ function TransactionHistoryPage() {
               labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
             />
           </Paper>
+          <WithdrawalTable />
         </>
       )}
     </div>
