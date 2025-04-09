@@ -63,12 +63,15 @@ function getTransactionTypeLabel(type: string): string {
   }
 }
 
-function getStatusChipProps(status: string) {
+function getStatusChipProps(_status: string) {
+  const status = _status?.toLowerCase() as TransactionStatus
   switch (status) {
     case TransactionStatus.COMPLETED:
       return { label: "Hoàn thành", color: "success" as const }
     case TransactionStatus.PENDING:
       return { label: "Đang xử lý", color: "warning" as const }
+    case TransactionStatus.APPROVED:
+      return { label: "Đã phê duyệt", color: "success" as const }
     case TransactionStatus.REJECTED:
       return { label: "Từ chối", color: "error" as const }
     default:
@@ -83,7 +86,7 @@ function WithdrawalTable() {
   const withdrawals = withdrawalsData?.data?.data || []
 
   const handleApprove = (id: string) => {
-    updateStatus({ id, status: "COMPLETED" }, {
+    updateStatus({ id, status: "APPROVED" }, {
       onSuccess: () => {
         refetch()
         message.success("Yêu cầu rút tiền đã được phê duyệt")
@@ -98,7 +101,7 @@ function WithdrawalTable() {
     const rejectionReason = prompt("Nhập lý do từ chối:")
     const adminNote = prompt("Nhập ghi chú của admin:")
     if (rejectionReason && adminNote) {
-      updateStatus({ id, status: "PENDING", rejectionReason, adminNote }, {
+      updateStatus({ id, status: "REJECTED", rejectionReason, adminNote }, {
         onSuccess: () => {
           refetch()
           message.success("Yêu cầu rút tiền đã bị từ chối")
@@ -133,7 +136,10 @@ function WithdrawalTable() {
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày tạo</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số tiền</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Trạng thái</TableCell>
-              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Mô tả</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Người dùng</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số tài khoản</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Tên ngân hàng</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Chi nhánh</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -148,7 +154,7 @@ function WithdrawalTable() {
               >
                 <TableCell>{withdrawal.id}</TableCell>
                 <TableCell>{formatDate(withdrawal.createdAt)}</TableCell>
-                <TableCell>{formatMoney(withdrawal.money)}</TableCell>
+                <TableCell>{formatMoney(withdrawal.amount)}</TableCell>
                 <TableCell>
                   <Chip
                     label={getStatusChipProps(withdrawal.status).label}
@@ -157,13 +163,18 @@ function WithdrawalTable() {
                     variant="outlined"
                   />
                 </TableCell>
-                <TableCell>{withdrawal.description}</TableCell>
+                <TableCell>{withdrawal.user?.fullName}</TableCell>
+                <TableCell>{withdrawal.user?.bankAccountNumber}</TableCell>
+                <TableCell>{withdrawal.user?.bankName}</TableCell>
+                <TableCell>{withdrawal.user?.bankBranch}</TableCell>
                 <TableCell>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleApprove(withdrawal.id)}
-                    sx={{ marginRight: 1 }}
+                  {withdrawal.status?.toLowerCase() === TransactionStatus.PENDING && (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleApprove(withdrawal.id)}
+                        sx={{ marginRight: 1 }}
                   >
                     Phê duyệt
                   </Button>
@@ -172,8 +183,10 @@ function WithdrawalTable() {
                     color="error"
                     onClick={() => handleReject(withdrawal.id)}
                   >
-                    Từ chối
-                  </Button>
+                        Từ chối
+                      </Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
