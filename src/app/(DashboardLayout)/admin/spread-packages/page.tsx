@@ -19,6 +19,8 @@ import {
 import {
   IconBrandTelegram,
   IconEye,
+  IconMoodSadDizzy,
+  IconPackages,
   IconPlus,
   IconSearch,
   IconTrash
@@ -125,7 +127,8 @@ function SpreadPackagesPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải gói quảng bá
         </Typography>
@@ -135,47 +138,18 @@ function SpreadPackagesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center">
-          <IconBrandTelegram size={28} className="mr-3 text-main-golden-orange" />
-          <Typography
-            fontSize={18}
-            fontWeight={700}
-            variant="h5"
-            className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
-          >
+    <div>
+      <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconPackages size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
             Quản lý gói quảng bá
           </Typography>
-        </div>
-        <div className="flex items-center gap-4">
-          <TextField
-            size="small"
-            placeholder="Tìm kiếm gói quảng bá..."
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<IconPlus size={18} />}
-            onClick={handleCreateNew}
-            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
-          >
-            Tạo gói quảng bá mới
-          </Button>
-        </div>
-      </div>
-
+        </Box>
+      </Box>
       <DataTable
         columns={columns}
         data={filteredPackages}
@@ -237,7 +211,7 @@ function SpreadPackagesPage() {
               <div className="flex items-center gap-2 text-white">
                 <CircularProgress size={16} className="text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div> : <span className="!text-white">Xóa</span>}
           </Button>
         </DialogActions>
       </Dialog>

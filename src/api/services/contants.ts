@@ -70,7 +70,7 @@ export const ConfigUserEndPoint = {
 
 export const ConfigTransactionEndPoint = {
   BASE: "/transaction",
-  HISTORY: "/transaction/history",
+  HISTORY: "/transaction/admin/history",
   RECHARGE: "/transaction/recharge",
   WITHDRAW: "/transaction/withdraw",
 };
@@ -131,4 +131,14 @@ export const ConfigNotificationEndPoint = {
   GET_BY_ID: (id: string) => `/admin/notifications/system/${id}`,
   DELETE: (id: string) => `/admin/notifications/system/${id}`,
   MARK_AS_READ: (id: string) => `/admin/notifications/system/${id}/read`,
+};
+
+export const ConfigMaintenanceModeEndPoint = {
+  BASE: "/maintenance-mode",
+};
+
+export const ConfigSettingsEndPoint = {
+  BASE: "/admin/settings",
+  GET_SETTINGS: "/admin/settings",
+  UPDATE_SETTINGS: "/admin/settings",
 };

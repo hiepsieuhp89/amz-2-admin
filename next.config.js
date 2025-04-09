@@ -3,8 +3,30 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: process.env.NEXT_PUBLIC_API_URL
-      ? [process.env.NEXT_PUBLIC_API_URL, "example.com", "picsum.photos", "m.media-amazon.com"]
-      : ["amz.dunghaysai.site", "example.com", "picsum.photos", "m.media-amazon.com"],
+      ? [
+          process.env.NEXT_PUBLIC_API_URL, 
+          "example.com", 
+          "picsum.photos", 
+          "m.media-amazon.com", 
+          "img2.yeshen.cc"
+        ]
+      : [
+          "amz.dunghaysai.site", 
+          "example.com", 
+          "picsum.photos", 
+          "m.media-amazon.com", 
+          "img2.yeshen.cc"
+        ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      }
+    ],
     unoptimized: true,
   },
   eslint: {

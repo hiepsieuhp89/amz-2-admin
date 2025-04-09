@@ -74,21 +74,12 @@ export interface ITransaction {
   data: any
 }
 
-export interface IPaginationMeta {
-  page: number
-  limit: number
-  total: number
-  pageCount: number
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-}
-
 export interface ITransactionListResponse {
   status: boolean
   message: string
   data: {
     data: ITransaction[]
-    meta: IPaginationMeta
+    meta: any
   }
   errors: any | null
   timestamp: string

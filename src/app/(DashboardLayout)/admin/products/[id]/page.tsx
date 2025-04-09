@@ -112,14 +112,11 @@ function ProductDetailPage() {
   const deleteProductMutation = useDeleteProduct()
   const updateProductMutation = useUpdateProduct()
   const uploadImageMutation = useUploadImage()
-
   const buildNestedCategories = (categories: any[]) => {
     const categoryMap = new Map();
     const rootCategories: any[] = [];
 
-    // First pass: create map of all categories including parents
     categories.forEach(category => {
-      // Add current category
       categoryMap.set(category.id, { 
         ...category, 
         children: category.children || [] 
@@ -432,7 +429,6 @@ function ProductDetailPage() {
                     onOpen={() => setSelectOpen(true)}
                     onClose={() => setSelectOpen(false)}
                     onChange={(e) => {
-                      // This is only for direct selection, not used with nested menu items
                       setFormData(prev => ({
                         ...prev,
                         categoryId: e.target.value as string
@@ -486,7 +482,7 @@ function ProductDetailPage() {
             </Box>
 
             <Box>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
+              <Typography fontSize={14} variant="subtitle1" className="!mb-4">
                 Mô tả chi tiết
               </Typography>
               <ReactQuill
@@ -497,6 +493,7 @@ function ProductDetailPage() {
                   toolbar: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['link', 'image'],
                     ['clean']
@@ -505,15 +502,16 @@ function ProductDetailPage() {
                 formats={[
                   'header',
                   'bold', 'italic', 'underline', 'strike',
+                  'color', 'background',
                   'list', 'bullet',
                   'link', 'image'
                 ]}
-                className="rounded border border-gray-300"
+                className="border border-gray-300 rounded"
               />
             </Box>
 
             <Box>
-              <Typography fontSize={14} variant="subtitle1" className="mb-2">
+              <Typography fontSize={14} variant="subtitle1" className="mb-4">
                 Hình ảnh sản phẩm
               </Typography>
               
@@ -607,7 +605,7 @@ function ProductDetailPage() {
         </form>
 
         {!isEditing && (
-          <Box className="flex justify-end gap-2 mt-4">
+          <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
             <Button
               variant="contained"
               startIcon={<IconTrash size={18} />}
@@ -652,16 +650,16 @@ function ProductDetailPage() {
           <Button
             variant="outlined"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors !bg-red-500 !normal-case"
+            className="!text-white transition-colors !bg-red-500 !normal-case"
             disabled={deleteProductMutation.isPending}
           >
             {deleteProductMutation.isPending ? (
-              <div className="flex items-center gap-2 text-white">
-                <CircularProgress size={16} className="text-white" />
+              <div className="flex items-center gap-2 !text-white">
+                <CircularProgress size={16} className="!text-white" />
                 Đang xóa...
               </div>
             ) : (
-              "Xóa"
+              <span className="!text-white">Xóa</span>
             )}
           </Button>
         </DialogActions>

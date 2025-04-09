@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Box, Typography, Paper, Switch, Alert, Link, useTheme, alpha } from "@mui/material"
 import {
   IconShieldLock,
@@ -28,6 +28,7 @@ import {
   IconBrandApple,
   IconNews,
 } from "@tabler/icons-react"
+import { useGetMaintenanceMode, useUpdateMaintenanceMode } from "@/hooks/config"
 
 interface SettingCardProps {
   title: string
@@ -43,6 +44,10 @@ interface SettingCardProps {
 
 const FeatureActivationPage = () => {
   const theme = useTheme()
+
+  // Get maintenance mode status
+  const { data: maintenanceMode, isLoading: isLoadingMaintenanceMode } = useGetMaintenanceMode()
+  const updateMaintenanceModeMutation = useUpdateMaintenanceMode()
 
   // State to track settings
   const [settings, setSettings] = useState({
@@ -72,6 +77,16 @@ const FeatureActivationPage = () => {
     apple_login: false,
   })
 
+  // Update maintenance mode from API when data is loaded
+  useEffect(() => {
+    if (maintenanceMode && !isLoadingMaintenanceMode) {
+      setSettings(prev => ({
+        ...prev,
+        maintenance_mode: maintenanceMode.isMaintenance || false
+      }))
+    }
+  }, [maintenanceMode, isLoadingMaintenanceMode])
+
   // Function to update settings
   const updateSettings = (key: string, value: boolean) => {
     setSettings((prevSettings) => ({
@@ -79,8 +94,13 @@ const FeatureActivationPage = () => {
       [key]: value,
     }))
 
-    // In a real app, this would make an API call to update the setting
-    console.log(`Setting ${key} updated to ${value}`)
+    // If maintenance mode is toggled, update it via API
+    if (key === "maintenance_mode") {
+      updateMaintenanceModeMutation.mutate({
+        isMaintenance: value,
+        message: null
+      })
+    }
   }
 
   // Custom styled Switch component
@@ -250,7 +270,12 @@ const FeatureActivationPage = () => {
           icon={<IconShieldLock size={20} />}
         />
 
-        <SettingCard title="Kích hoạt chế độ bảo trì" settingKey="maintenance_mode" icon={<IconTools size={20} />} />
+        <SettingCard
+          title="Kích hoạt chế độ bảo trì"
+          settingKey="maintenance_mode"
+          icon={<IconTools size={20} />}
+          defaultChecked={maintenanceMode?.isMaintenance || false}
+        />
 
         <SettingCard
           title="Disable image encoding?"

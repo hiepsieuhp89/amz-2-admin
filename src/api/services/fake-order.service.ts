@@ -20,6 +20,7 @@ export interface ICreateFakeOrderPayload {
   phone?: string
   address: string
   userId: string
+  orderTime?: string
 }
 
 export interface IShopOrderParams {

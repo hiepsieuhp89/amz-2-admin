@@ -53,6 +53,7 @@ export interface IUpdateUser {
     email?: string
     username?: string
     password?: string
+    shopStatus?: string
     fullName?: string
     phone?: string
     role?: string
@@ -94,5 +95,19 @@ export interface IUpdateUser {
     cityId?: string | null
     districtId?: string | null
     postalCodeId?: string | null
+    isActive?: boolean
+    isVerified?: boolean
+    totalProducts?: number
+    totalWithdrawn?: number
+    totalShippingOrders?: number
+    totalDeliveredOrders?: number
+    transactionPassword?: string
+    walletPassword?: string
+    totalProfit?: number
+    idCardType?: string
+    idCardNumber?: string
+    idCardFrontImage?: string
+    idCardBackImage?: string
+    logoUrl?: string
 }
 

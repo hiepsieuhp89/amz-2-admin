@@ -16,7 +16,7 @@ export enum TransactionType {
 
 export interface ITransactionHistoryParams {
   page?: number
-  limit?: number
+  take?: number
   status?: TransactionStatus
   type?: TransactionType
   userId?: string

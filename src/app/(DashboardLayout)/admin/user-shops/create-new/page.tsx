@@ -2,29 +2,28 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { 
-  TextField, 
-  Button, 
-  FormControlLabel, 
-  Switch, 
-  Box, 
-  Typography, 
-  Paper, 
+import {
+  Box,
+  Button,
   CircularProgress,
-  MenuItem,
-  Select,
   FormControl,
+  FormControlLabel,
   InputLabel,
-  FormHelperText
+  MenuItem,
+  Paper,
+  Select,
+  Switch,
+  TextField,
+  Typography
 } from "@mui/material"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { message } from "antd"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
-import { useCreateUser } from "@/hooks/user"
 import { useGetAllSellerPackages } from "@/hooks/seller-package"
 import { useGetAllSpreadPackages } from "@/hooks/spread-package"
+import { useCreateUser } from "@/hooks/user"
 import { ISellerPackage } from "@/interface/response/seller-package"
 import { ISpreadPackage } from "@/interface/response/spread-package"
 
@@ -136,22 +135,16 @@ export default function CreateUserPage() {
     try {
       await createUserMutation.mutateAsync({
         ...formData,
-        role: formData.role === "admin2" ? "admin" : formData.role,
         balance: formData.balance?.toString(), // Convert number to string
         sellerPackageId: formData?.sellerPackageId || undefined,
         spreadPackageId: formData?.spreadPackageId || undefined,
         sellerPackageExpiry: formData?.sellerPackageExpiry || undefined,
-        spreadPackageExpiry: formData?.spreadPackageExpiry || undefined,
-        shopName: formData.role === "admin2" ? "admin2" : formData.shopName
+        spreadPackageExpiry: formData?.spreadPackageExpiry || undefined
       })
       message.success("Người dùng đã được tạo thành công!")
       router.push("/admin/users")
-    } catch (error: any) {
-      if (error?.response?.status === 409) {
-        message.error("Người dùng này đã tồn tại.")
-      } else {
-        message.error("Không thể tạo người dùng. Vui lòng thử lại.")
-      }
+    } catch (error) {
+      message.error("Không thể tạo người dùng. Vui lòng thử lại.")
       console.error(error)
     }
   }
@@ -273,8 +266,7 @@ export default function CreateUserPage() {
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
                   <MenuItem value="seller">Người bán</MenuItem>
-                    <MenuItem value="admin">Admin</MenuItem>
-                    <MenuItem value="admin2">Xuất nhập khoản</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -315,81 +307,77 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {formData.role === "seller" && (
-            <>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Gói Seller</InputLabel>
-                    <Select
-                      name="sellerPackageId"
-                      value={formData.sellerPackageId}
-                      label="Gói Seller"
-                      onChange={(e) => handleChange(e as any)}
-                    >
-                      {sellerPackages.map((pkg) => (
-                        <MenuItem key={pkg.id} value={pkg.id}>
-                          {pkg.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div>
-                  <TextField
-                    size="small"
-                    label="Ngày hết hạn Seller Package"
-                    name="sellerPackageExpiry"
-                    type="datetime-local"
-                    value={formData.sellerPackageExpiry}
-                    onChange={handleChange}
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small">
+                <InputLabel>Gói Seller</InputLabel>
+                <Select
+                  name="sellerPackageId"
+                  value={formData.sellerPackageId}
+                  label="Gói Seller"
+                  onChange={(e) => handleChange(e as any)}
+                >
+                  {sellerPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Seller Package"
+                name="sellerPackageExpiry"
+                type="datetime-local"
+                value={formData.sellerPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Gói Spread</InputLabel>
-                    <Select
-                      name="spreadPackageId"
-                      value={formData.spreadPackageId}
-                      label="Gói Spread"
-                      onChange={(e) => handleChange(e as any)}
-                    >
-                      {spreadPackages.map((pkg) => (
-                        <MenuItem key={pkg.id} value={pkg.id}>
-                          {pkg.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div>
-                  <TextField
-                    size="small"
-                    label="Ngày hết hạn Spread Package"
-                    name="spreadPackageExpiry"
-                    type="datetime-local"
-                    value={formData.spreadPackageExpiry}
-                    onChange={handleChange}
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <FormControl fullWidth size="small">
+                <InputLabel>Gói Spread</InputLabel>
+                <Select
+                  name="spreadPackageId"
+                  value={formData.spreadPackageId}
+                  label="Gói Spread"
+                  onChange={(e) => handleChange(e as any)}
+                >
+                  {spreadPackages.map((pkg) => (
+                    <MenuItem key={pkg.id} value={pkg.id}>
+                      {pkg.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div>
+              <TextField
+                size="small"
+                label="Ngày hết hạn Spread Package"
+                name="spreadPackageExpiry"
+                type="datetime-local"
+                value={formData.spreadPackageExpiry}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                className="rounded"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+          </div>
 
           <Box className="flex justify-end gap-4">
             <Button

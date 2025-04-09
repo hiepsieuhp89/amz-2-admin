@@ -12,12 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
-import { IconArrowLeft } from "@tabler/icons-react"
+import { IconArrowLeft, IconUpload, IconX } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { useCreateCategory, useGetAllCategories } from "@/hooks/category"
+import { useUploadImage } from "@/hooks/image"
 
 // Add NestedMenuItem and buildNestedCategories from products page
 const NestedMenuItem = ({ category, level = 0 }: { category: any, level?: number }) => {
@@ -45,18 +46,32 @@ const NestedMenuItem = ({ category, level = 0 }: { category: any, level?: number
   );
 };
 
+// Hàm tạo ID theo định dạng UUID
+const generateId = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 export default function CreateCategoryPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     parentId: "",
+    imageUrl: "",
   })
   const [errors, setErrors] = useState({
     name: "",
   })
+  
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   const createCategoryMutation = useCreateCategory()
+  const uploadImageMutation = useUploadImage()
   const { data: categoriesData } = useGetAllCategories({
     page: 1,
     take: 999999,
@@ -85,7 +100,6 @@ export default function CreateCategoryPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
-    console.log('e', e)
     const { name, value } = e.target as HTMLInputElement
     
     if (name) {
@@ -94,6 +108,33 @@ export default function CreateCategoryPage() {
         [name]: value,
       })
     }
+  }
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImageFile(file)
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      setFormData((prev) => ({
+        ...prev,
+        imageUrl: "image-url-placeholder",
+      }))
+    }
+  }
+
+  const removeImage = () => {
+    setImagePreview(null)
+    setImageFile(null)
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: "",
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,14 +146,38 @@ export default function CreateCategoryPage() {
     }
     
     try {
+      let updatedFormData = { ...formData }
+      
+      if (imageFile) {
+        message.loading({ content: "Đang tải hình ảnh lên...", key: "uploadImage" })
+        
+        const uploadResult = await uploadImageMutation.mutateAsync({
+          file: imageFile,
+          isPublic: true,
+          description: `Hình ảnh cho danh mục: ${formData.name}`
+        })
+        
+        message.success({ content: "Tải hình ảnh thành công!", key: "uploadImage" })
+        
+        // Cập nhật URL hình ảnh từ kết quả tải lên
+        updatedFormData = {
+          ...updatedFormData,
+          imageUrl: uploadResult.data.url
+        }
+      }
+      
       await createCategoryMutation.mutateAsync({
-        ...formData,
-        id: "",
+        ...updatedFormData,
+        id: generateId(),
       })
       message.success("Danh mục đã được tạo thành công!")
       router.push("/admin/categories")
-    } catch (error) {
-      message.error("Không thể tạo danh mục. Vui lòng thử lại.")
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        message.error("Tên danh mục này đã tồn tại")
+      } else {
+        message.error("Không thể tạo danh mục. Vui lòng thử lại.")
+      }
       console.error(error)
     }
   }
@@ -160,6 +225,7 @@ export default function CreateCategoryPage() {
               <FormControl fullWidth size="small">
                 <InputLabel id="parentId-label">Danh mục cha</InputLabel>
                 <Select
+                  required
                   labelId="parentId-label"
                   name="parentId"
                   value={formData.parentId}
@@ -180,7 +246,7 @@ export default function CreateCategoryPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <TextField
                 size="small"
@@ -194,6 +260,35 @@ export default function CreateCategoryPage() {
                 variant="outlined"
                 className="rounded"
               />
+            </div>
+            <div>
+              <Typography fontSize={14} variant="subtitle1" className="!mb-2">
+                Hình ảnh danh mục
+              </Typography>
+              {imagePreview ? (
+                <div className="relative flex-1 w-full h-32 overflow-hidden border border-gray-600 rounded">
+                  <img
+                    src={imagePreview}
+                    alt="Category preview"
+                    className="object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                  >
+                    <IconX size={16} color="white" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <IconUpload size={24} className="mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-400">Upload hình ảnh</p>
+                  </div>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                </label>
+              )}
             </div>
           </div>
 

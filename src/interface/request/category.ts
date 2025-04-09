@@ -5,16 +5,19 @@ export interface ICategory {
     parentId: string | null
     children: ICategory[]
     parent?: ICategory
+    imageUrl?: string
     createdAt: string
     updatedAt: string
     deletedAt: null | string
+    
 }
 
 export interface ICreateCategory {
     id: string
     name: string
     description?: string
-    parentId: string 
+    parentId: string
+    imageUrl?: string
 }
 
 // Pagination metadata

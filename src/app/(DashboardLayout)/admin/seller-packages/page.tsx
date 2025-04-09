@@ -12,6 +12,7 @@ import {
 } from "@mui/material"
 import {
   IconEye,
+  IconBrandTelegram,
   IconSearch,
   IconTrash
 } from "@tabler/icons-react"
@@ -140,14 +141,26 @@ function SellerPackagesPage() {
     return (
       <Box className="p-8 text-center">
         <Typography variant="h6" className="mb-2 text-red-400">
-          Error loading seller packages
+          Lỗi khi tải gói bán hàng
         </Typography>
-        <Typography className="text-gray-400">{error.message || "Please try again later"}</Typography>
+        <Typography className="text-gray-400">{error.message || "Vui lòng thử lại sau"}</Typography>
       </Box>
     )
   }
 
   return (
+    <>
+    <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconBrandTelegram size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+            Quản lý gói bán hàng
+          </Typography>
+        </Box>
+      </Box>
     <DataTable
       columns={columns}
       data={filteredPackages}
@@ -166,7 +179,7 @@ function SellerPackagesPage() {
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
+            className="flex-1 bg-white rounded shadow-sm"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -179,6 +192,7 @@ function SellerPackagesPage() {
         </div>
       }
     />
+    </>
   )
 }
 

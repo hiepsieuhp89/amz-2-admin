@@ -108,8 +108,6 @@ const ShippingCitiesPage: React.FC = () => {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would trigger a search API call
-    console.log("Searching for:", searchTerm, "in state:", selectedState)
   }
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -119,9 +117,6 @@ const ShippingCitiesPage: React.FC = () => {
   const handleStatusChange = (id: number, checked: boolean) => {
     // Update the status of the city
     setCities((prevCities) => prevCities.map((city) => (city.id === id ? { ...city, status: checked } : city)))
-
-    // In a real app, this would make an API call to update the status
-    console.log(`City ${id} status updated to ${checked}`)
   }
 
   const handleNewCityNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,9 +172,6 @@ const ShippingCitiesPage: React.FC = () => {
     if (hasError) {
       return
     }
-
-    // In a real app, this would make an API call to add the city
-    console.log("Adding new city:", newCityName, "in state:", newCityState, "with cost:", newCityCost)
 
     // Reset form
     setNewCityName("")
@@ -513,8 +505,6 @@ const ShippingCitiesPage: React.FC = () => {
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  // In a real app, this would show a confirmation dialog
-                                  console.log(`Delete city ${city.id}`)
                                 }}
                               >
                                 <IconTrash size={16} />
@@ -562,10 +552,6 @@ const ShippingCitiesPage: React.FC = () => {
                                     borderRadius: "50%",
                                     width: 32,
                                     height: 32,
-                                  }}
-                                  onClick={() => {
-                                    // In a real app, this would show a confirmation dialog
-                                    console.log(`Delete city ${city.id}`)
                                   }}
                                 >
                                   <IconTrash size={16} />

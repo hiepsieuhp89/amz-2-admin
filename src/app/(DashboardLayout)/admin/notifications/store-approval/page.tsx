@@ -20,11 +20,9 @@ import {
     TableRow,
     TextField,
     Typography,
-    Menu,
-    FormControl,
-    InputLabel
+    Menu
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconMapPinCheck } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -57,12 +55,12 @@ function ShopsPage() {
     const { data: userData, isLoading, error } = useGetAllUsers({
         page,
         role: 'shop',
-        take: rowsPerPage,
+        take: 999999,
         order: "DESC",
         search: searchTerm
     })
 
-    const filteredUsers = userData?.data?.data || []
+    const filteredUsers = (userData?.data?.data || []).filter(user => user.shopStatus === "PENDING")
     const pagination = userData?.data?.meta || {
         page: 1,
         take: 10,
@@ -100,6 +98,8 @@ function ShopsPage() {
     const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
     const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
     const [amount, setAmount] = useState('');
+    const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+    const [shopToApprove, setShopToApprove] = useState<string | null>(null);
 
     const handleCreateNew = () => {
         router.push("/admin/users/create-new")
@@ -300,6 +300,31 @@ function ShopsPage() {
         }
     };
 
+    const handleApproveShop = async () => {
+        if (!shopToApprove) return;
+
+        try {
+            await updateUserMutation.mutateAsync({
+                id: shopToApprove,
+                payload: {
+                    shopStatus: "ACTIVE",
+                    isActive: true
+                }
+            });
+            message.success("Cửa hàng đã được phê duyệt thành công!");
+            setApprovalDialogOpen(false);
+            setShopToApprove(null);
+        } catch (error) {
+            message.error("Không thể phê duyệt cửa hàng. Vui lòng thử lại.");
+            console.error(error);
+        }
+    };
+
+    const openApprovalDialog = (id: string) => {
+        setShopToApprove(id);
+        setApprovalDialogOpen(true);
+    };
+
     const renderOrderFilters = () => (
         <Box className="grid grid-cols-2 gap-4 p-4">
             <TextField
@@ -421,7 +446,6 @@ function ShopsPage() {
         { key: 'username', label: 'Tên tài khoản' },
         { key: 'email', label: 'Mail' },
         { key: 'isActive', label: 'Trạng thái' },
-        { key: 'isVerified', label: 'Trạng thái xác minh' },
         { key: 'balance', label: 'Số dư cửa hàng' },
         { key: 'fedexBalance', label: 'Số dư Fedex' },
         { key: 'address', label: 'Địa chỉ' },
@@ -461,29 +485,16 @@ function ShopsPage() {
                             ? "Chờ duyệt"
                             : user.shopStatus === "SUSPENDED"
                                 ? "Đã đóng băng"
-                                : user.isActive
-                                    ? "Đang hoạt động"
-                                    : "Đã khóa"
+                                : "Hoạt động"
                     }
                     color={
                         user.shopStatus === "PENDING"
                             ? "warning"
                             : user.shopStatus === "SUSPENDED"
                                 ? "error"
-                                : user.isActive
-                                    ? "success"
-                                    : "error"
+                                : "success"
                     }
                     size="small"
-                    variant="filled"
-                />
-            </TableCell>
-            <TableCell>
-                <Chip
-                    label={user.isVerified ? "Đã xác minh" : "Chưa xác minh"}
-                    color={user.isVerified ? "success" : "error"}
-                    size="small"
-                    variant="filled"
                 />
             </TableCell>
             <TableCell>{user.balance?.toLocaleString()} USD</TableCell>
@@ -507,71 +518,12 @@ function ShopsPage() {
                         }}
                     >
                         <MenuItem onClick={() => {
-                            handleView(user.id);
+                            openApprovalDialog(user.id);
                             handleMenuClose();
                         }}>
                             <Box className="flex items-center gap-2">
                                 <IconEye size={16} className="text-blue-400" />
-                                <span>Xem chi tiết</span>
-                            </Box>
-                        </MenuItem>
-                        {user.role === "shop" && (
-                            <MenuItem onClick={() => {
-                                handleOpenChat(user.id);
-                                handleMenuClose();
-                            }}>
-                                <Box className="flex items-center gap-2">
-                                    <IconMessage size={16} className="text-green-400" />
-                                    <span>Nhắn tin</span>
-                                </Box>
-                            </MenuItem>
-                        )}
-                        {user.role === "shop" && (
-                            <MenuItem onClick={() => {
-                                handleViewOrders(user.id);
-                                handleMenuClose();
-                            }}>
-                                <Box className="flex items-center gap-2">
-                                    <IconList size={16} className="text-purple-400" />
-                                    <span>Xem đơn hàng</span>
-                                </Box>
-                            </MenuItem>
-                        )}
-                        {user.role === "shop" && (
-                            <MenuItem onClick={() => {
-                                handleToggleFreeze(user.id);
-                            }}>
-                                <Box className="flex items-center gap-2">
-                                    <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
-                                    <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
-                                </Box>
-                            </MenuItem>
-                        )}
-                        <MenuItem onClick={() => {
-                            handleBalanceDialogOpen(user.id, 'deposit');
-                            handleMenuClose();
-                        }}>
-                            <Box className="flex items-center gap-2">
-                                <IconWallet size={16} className="text-green-400" />
-                                <span>Nạp tiền</span>
-                            </Box>
-                        </MenuItem>
-                        <MenuItem onClick={() => {
-                            handleBalanceDialogOpen(user.id, 'withdraw');
-                            handleMenuClose();
-                        }}>
-                            <Box className="flex items-center gap-2">
-                                <IconWallet size={16} className="text-orange-400" />
-                                <span>Rút tiền</span>
-                            </Box>
-                        </MenuItem>
-                        <MenuItem onClick={() => {
-                            openDeleteDialog(user.id);
-                            handleMenuClose();
-                        }}>
-                            <Box className="flex items-center gap-2">
-                                <IconTrash size={16} className="text-red-400" />
-                                <span>Xóa</span>
+                                <span>Phê duyệt</span>
                             </Box>
                         </MenuItem>
                     </Menu>
@@ -593,52 +545,54 @@ function ShopsPage() {
     }
 
     return (
-        <div className="flex flex-col h-full min-h-screen ">
+        <>
             <Box className="relative flex flex-col items-center justify-center py-8">
                 <Box className="absolute" />
                 <Box className="relative flex flex-col items-center gap-2">
                     <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
-                        <IconBuildingStore size={36} className="text-main-golden-orange" />
+                        <IconMapPinCheck size={36} className="text-main-golden-orange" />
                     </Box>
                     <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
-                        Quản lý cửa hàng
+                        Quản lý phê duyệt cửa hàng
                     </Typography>
                 </Box>
             </Box>
-            <Box className="flex flex-col flex-1 w-full bg-[#F5F5F5]">
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0}}>
-                    <TextField
-                        size="small"
-                        placeholder="Tìm kiếm cửa hàng..."
-                        variant="outlined"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="flex-1 bg-white"
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <IconSearch size={20} />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                </Box>
-                <Box className="flex-1 overflow-auto">
-                    <DataTable
-                        columns={columns}
-                        data={filteredUsers}
-                        isLoading={isLoading}
-                        pagination={pagination}
-                        onPageChange={setPage}
-                        onRowsPerPageChange={(newRowsPerPage) => {
-                            setRowsPerPage(newRowsPerPage);
-                            setPage(1);
-                        }}
-                        renderRow={renderRow}
-                        emptyMessage="Không tìm thấy người dùng nào"
-                    />
-                </Box>
+            <Box sx={{ width: '100%' }}>
+                <DataTable
+                    columns={columns}
+                    data={filteredUsers}
+                    isLoading={isLoading}
+                    pagination={pagination}
+                    onPageChange={setPage}
+                    onRowsPerPageChange={(newRowsPerPage) => {
+                        setRowsPerPage(newRowsPerPage);
+                        setPage(1);
+                    }}
+                    renderRow={renderRow}
+                    emptyMessage="Không tìm thấy người dùng nào"
+                    searchComponent={
+                        <div className="flex items-center gap-4">
+                            <TextField
+                                size="small"
+                                placeholder="Tìm kiếm cửa hàng..."
+                                variant="outlined"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="flex-1 rounded shadow-sm"
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconSearch size={20} className="text-main-golden-orange" />
+                                        </InputAdornment>
+                                    ),
+                                    className: "text-white rounded-lg hover:shadow-md transition-shadow",
+                                }}
+                            />
+                        </div>
+                    }
+                />
             </Box>
+
             <Dialog
                 open={deleteDialogOpen}
                 onClose={() => setDeleteDialogOpen(false)}
@@ -868,7 +822,7 @@ function ShopsPage() {
                         variant="contained"
                         onClick={handleEditOrderSubmit}
                         disabled={updateOrderMutation.isPending}
-                        className="!normal-case ! hover:!bg-blue-600"
+                        className="!normal-case !bg-blue-500 hover:!bg-blue-600"
                     >
                         {updateOrderMutation.isPending ? (
                             <Box className="flex items-center gap-2">
@@ -914,7 +868,7 @@ function ShopsPage() {
                     <Button
                         variant="outlined"
                         onClick={handleBalanceUpdate}
-                        className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
+                        className="text-white transition-colors !bg-main-golden-orange"
                         disabled={updateUserMutation.isPending}
                     >
                         {updateUserMutation.isPending ? (
@@ -923,12 +877,49 @@ function ShopsPage() {
                                 Đang xử lý...
                             </div>
                         ) : (
-                            balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
+                            balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
                         )}
                     </Button>
                 </DialogActions>
             </Dialog>
-        </ div>
+
+            <Dialog
+                open={approvalDialogOpen}
+                onClose={() => setApprovalDialogOpen(false)}
+                PaperProps={{
+                    className: "!rounded-[6px] shadow-xl",
+                }}
+            >
+                <DialogTitle fontSize={18}>
+                    Xác nhận phê duyệt cửa hàng
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText className="text-gray-400">
+                        Bạn có chắc chắn muốn phê duyệt cửa hàng này?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions className="!p-4 !pb-6">
+                    <Button
+                        variant="outlined"
+                        onClick={() => setApprovalDialogOpen(false)}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleApproveShop}
+                        className="text-white transition-colors !bg-green-500"
+                        disabled={updateUserMutation.isPending}
+                    >
+                        {updateUserMutation.isPending ?
+                            <div className="flex items-center gap-2 text-white">
+                                <CircularProgress size={16} className="text-white" />
+                                Đang xử lý...
+                            </div> : <span className="!text-white">Phê duyệt</span>}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     )
 }
 

@@ -98,9 +98,6 @@ const ShippingCarriersPage: React.FC = () => {
     setCarriers((prevCarriers) =>
       prevCarriers.map((carrier) => (carrier.id === id ? { ...carrier, status: checked } : carrier)),
     )
-
-    // In a real app, this would make an API call to update the status
-    console.log(`Carrier ${id} status updated to ${checked}`)
   }
 
   const filteredCarriers = carriers.filter((carrier) => carrier.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -427,10 +424,6 @@ const ShippingCarriersPage: React.FC = () => {
                               borderRadius: "50%",
                               width: 32,
                               height: 32,
-                            }}
-                            onClick={() => {
-                              // In a real app, this would show a confirmation dialog
-                              console.log(`Delete carrier ${carrier.id}`)
                             }}
                           >
                             <IconTrash size={16} />

@@ -85,9 +85,6 @@ export default function ChatDialog({
   });
 
   const handleSendMessage = async () => {
-    console.log("selectedUserId", selectedUserId);
-    console.log("selectedShopId", selectedShopId);
-    console.log("message", message);
     if (!selectedUserId || !selectedShopId || !message) return;
 
     try {

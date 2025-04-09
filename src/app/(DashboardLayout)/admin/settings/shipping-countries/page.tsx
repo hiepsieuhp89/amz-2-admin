@@ -72,8 +72,6 @@ const ShippingCountriesPage: React.FC = () => {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would trigger a search API call
-    console.log("Searching for:", searchTerm)
   }
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -85,9 +83,6 @@ const ShippingCountriesPage: React.FC = () => {
     setCountries((prevCountries) =>
       prevCountries.map((country) => (country.id === id ? { ...country, status: checked } : country)),
     )
-
-    // In a real app, this would make an API call to update the status
-    console.log(`Country ${id} status updated to ${checked}`)
   }
 
   const toggleExpand = (id: number) => {

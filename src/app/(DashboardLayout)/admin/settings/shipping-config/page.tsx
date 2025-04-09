@@ -40,20 +40,14 @@ const ShippingConfigPage: React.FC = () => {
 
   const handleShippingTypeSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would submit the form data to the server
-    console.log("Shipping Type:", shippingType)
   }
 
   const handleFlatRateSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would submit the form data to the server
-    console.log("Flat Rate Shipping Cost:", flatRateShippingCost)
   }
 
   const handleShippingCostAdminSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // In a real app, this would submit the form data to the server
-    console.log("Shipping Cost Admin:", shippingCostAdmin)
   }
 
   // Custom Card Component

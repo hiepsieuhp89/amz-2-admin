@@ -14,6 +14,7 @@ import {
   InputAdornment,
   InputLabel,
   MenuItem,
+  Menu,
   Select,
   Switch,
   TableCell,
@@ -27,7 +28,10 @@ import {
   IconPlus,
   IconSearch,
   IconTable,
-  IconTrash
+  IconTrash,
+  IconMoodSadDizzy,
+  IconArchive,
+  IconDotsVertical
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -52,6 +56,8 @@ function ProductsPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [currentImage, setCurrentImage] = useState("")
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuProductId, setMenuProductId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     order: 'DESC',
     isNew: '',
@@ -93,8 +99,12 @@ function ProductsPage() {
       message.success("Sản phẩm đã được xóa thành công!")
       setDeleteDialogOpen(false)
       setProductToDelete(null)
-    } catch (error) {
-      message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        message.error("Sản phẩm này đã tồn tại trong cửa hàng hoặc đơn hàng")
+      } else {
+        message.error("Không thể xóa sản phẩm. Vui lòng thử lại.")
+      }
       console.error(error)
     }
   }
@@ -112,6 +122,16 @@ function ProductsPage() {
     setCurrentImage(imageUrl)
     setLightboxOpen(true)
   }
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, productId: string) => {
+    setAnchorEl(event.currentTarget);
+    setMenuProductId(productId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuProductId(null);
+  };
 
   const handleToggleHot = async (id: string, isHot: boolean) => {
     try {
@@ -286,21 +306,41 @@ function ProductsPage() {
       </TableCell>
       <TableCell>{product.category?.name || '-'}</TableCell>
       <TableCell>
-        <Box className="flex items-center gap-2">
-          <IconButton
-            onClick={() => handleView(product.id)}
+        <Box className="flex items-center justify-center gap-4">
+          <IconButton 
+            onClick={(e) => handleMenuOpen(e, product.id)}
             size="medium"
-            className="!bg-blue-100"
           >
-            <IconEye size={18} className="text-blue-400" />
+            <IconDotsVertical size={18} />
           </IconButton>
-          <IconButton
-            onClick={() => openDeleteDialog(product.id)}
-            size="medium"
-            className="!bg-red-100"
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl) && menuProductId === product.id}
+            onClose={handleMenuClose}
+            PaperProps={{
+              className: "!rounded-[6px] shadow-xl",
+            }}
           >
-            <IconTrash size={18} className="text-red-400" />
-          </IconButton>
+            <MenuItem onClick={() => {
+              handleView(product.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconEye size={16} className="text-blue-400" />
+                <span>Xem chi tiết</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => {
+              openDeleteDialog(product.id);
+              handleMenuClose();
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconTrash size={16} className="text-red-400" />
+                <span>Xóa</span>
+              </Box>
+            </MenuItem>
+          </Menu>
         </Box>
       </TableCell>
     </TableRow>
@@ -308,7 +348,8 @@ function ProductsPage() {
 
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải danh sách sản phẩm
         </Typography>
@@ -318,6 +359,17 @@ function ProductsPage() {
   }
   return (
     <>
+     <Box className="relative flex flex-col items-center justify-center py-8">
+                <Box className="absolute" />
+                <Box className="relative flex flex-col items-center gap-2">
+                    <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+                        <IconArchive size={36} className="text-main-golden-orange" />
+                    </Box>
+                    <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
+                        Quản lý sản phẩm
+                    </Typography>
+                </Box>
+            </Box>
       <Box>
         <Box sx={{
           padding: 3,
@@ -327,7 +379,6 @@ function ProductsPage() {
           gap: 2
         }}>
           <Box sx={{
-            padding: 3,
             paddingBottom: 0,
             display: 'flex',
             alignItems: 'center',
@@ -336,6 +387,7 @@ function ProductsPage() {
             <Box sx={{ flex: 1, mr: 2 }}>
               <TextField
                 size="small"
+                className="bg-white"
                 placeholder="Tìm kiếm sản phẩm..."
                 variant="outlined"
                 value={searchTerm}
@@ -345,24 +397,23 @@ function ProductsPage() {
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Button
-                variant="outlined"
+                variant="contained"
+                className="!bg-main-golden-orange !border-main-golden-orange !text-white"
                 endIcon={<IconPlus size={18} />}
                 onClick={handleCreateNew}
               >
                 Tạo sản phẩm mới
               </Button>
-              <ButtonGroup variant="outlined" aria-label="outlined button group">
+              <ButtonGroup variant="contained" aria-label="outlined button group">
                 <Button
-                  className={viewMode === 'grid' ? '!bg-gray-200' : ''}
-                  variant={viewMode === 'table' ? 'outlined' : 'outlined'}
+                  className={viewMode === 'table' ? '!bg-main-golden-orange !border-main-golden-orange !text-white' : 'border-main-golden-orange !bg-white !text-main-golden-orange'}
                   onClick={() => setViewMode('table')}
                   startIcon={<IconList />}
                 >
                   Bảng
                 </Button>
                 <Button
-                  className={viewMode === 'table' ? '!bg-gray-200' : ''}
-                  variant={viewMode === 'grid' ? 'outlined' : 'outlined'}
+                  className={viewMode === 'grid' ? '!bg-main-golden-orange !border-main-golden-orange !text-white' : 'border-main-golden-orange !bg-white !text-main-golden-orange'}
                   onClick={() => setViewMode('grid')}
                   startIcon={<IconTable />}
                 >
@@ -376,6 +427,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Sắp xếp</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.order}
                 label="Sắp xếp"
                 onChange={(e) => setFilters(prev => ({ ...prev, order: e.target.value }))}
@@ -385,9 +437,10 @@ function ProductsPage() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+            <FormControl  size="small" sx={{ minWidth: 140 }}>
               <InputLabel>Sản phẩm mới</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.isNew}
                 label="Sản phẩm mới"
                 onChange={(e) => setFilters(prev => ({ ...prev, isNew: e.target.value }))}
@@ -401,6 +454,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Nổi bật</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.isHot}
                 label="Nổi bật"
                 onChange={(e) => setFilters(prev => ({ ...prev, isHot: e.target.value }))}
@@ -413,6 +467,7 @@ function ProductsPage() {
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Danh mục</InputLabel>
               <Select
+                className="bg-white"
                 value={filters.categoryId}
                 label="Danh mục"
                 open={selectOpen}
@@ -567,10 +622,10 @@ function ProductsPage() {
             disabled={deleteProductMutation.isPending}
           >
             {deleteProductMutation.isPending ?
-              <div className="flex items-center gap-2 text-white">
-                <CircularProgress size={16} className="text-white" />
+              <div className="flex items-center gap-2 !text-white">
+                <CircularProgress size={16} className="!text-white" />
                 Đang xóa...
-              </div> : "Xóa"}
+              </div> : <span className="!text-white">Xóa</span>}
           </Button>
         </DialogActions>
       </Dialog>

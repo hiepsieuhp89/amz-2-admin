@@ -55,15 +55,15 @@ export default function DataTable({
   searchComponent,
 }: DataTableProps) {
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="p-6 pt-0 space-y-6">
+      <div className="flex flex-col items-start justify-end gap-4 sm:flex-row sm:items-center">
         {searchComponent}
         {createNewButton && (
           <Button
             variant="outlined"
             startIcon={<IconPlus size={18} />}
             onClick={createNewButton.onClick}
-            className="text-white !normal-case !bg-main-charcoal-blue hover:!bg-main-dark-blue transition-all shadow-md"
+            className="!text-white !normal-case !bg-main-golden-orange hover:!bg-main-golden-orange/80 !border-main-golden-orange transition-all shadow-md"
           >
             {createNewButton.label}
           </Button>
@@ -134,7 +134,7 @@ export default function DataTable({
             </Paper>
           </Box>
           {pagination && (
-            <Paper sx={{ mt: 2, border: '1px solid #E0E0E0' }}>
+            <Box sx={{ border: 'none !important', backgroundColor: 'white' }}>
               <TablePagination
                 rowsPerPageOptions={[]}
                 component="div"
@@ -144,9 +144,14 @@ export default function DataTable({
                 onPageChange={(_, newPage) => onPageChange?.(newPage + 1)}
                 onRowsPerPageChange={(e) => onRowsPerPageChange?.(parseInt(e.target.value, 10))}
                 sx={{
+                  border: '1px solid #E0E0E0',
+                  borderTop: 'none',
                   '& .MuiTablePagination-toolbar': {
                     padding: '0 16px'
-                  }
+                  },
+                  '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                    margin: 0,
+                  },
                 }}
                 nextIconButtonProps={{
                   disabled: pagination.hasNextPage === undefined ? false : !pagination.hasNextPage
@@ -155,7 +160,7 @@ export default function DataTable({
                   disabled: pagination.hasPreviousPage === undefined ? false : !pagination.hasPreviousPage
                 }}
               />
-            </Paper>
+            </Box>
           )}
         </Box>
       )}

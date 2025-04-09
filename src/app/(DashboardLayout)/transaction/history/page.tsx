@@ -20,18 +20,20 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
 } from "@mui/material"
-import { IconSearch, IconCash, IconFilter } from "@tabler/icons-react"
+import { IconCopy, IconMoodSadDizzy, IconTransactionDollar } from "@tabler/icons-react"
+import { message } from "antd"
 
 import { useGetTransactionHistory } from "@/hooks/transaction"
 import { TransactionStatus, TransactionType } from "@/interface/request/transaction"
 
 function formatMoney(money: string): string {
-  return parseFloat(money).toLocaleString("vi-VN") + " USD"
+  return parseFloat(money).toLocaleString("en-US") + " USD"
 }
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("vi-VN", {
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -42,20 +44,20 @@ function formatDate(dateString: string): string {
 
 function getTransactionTypeLabel(type: string): string {
   switch (type) {
-    case TransactionType.PACKAGE_PURCHASE:
-      return "Mua gói"
-    case TransactionType.PACKAGE_SPREAD:
-      return "Quảng bá gói"
-    case TransactionType.PACKAGE_REFUND:
-      return "Hoàn tiền gói"
-    case TransactionType.ORDER_PAYMENT:
+    case "package_purchase":
+      return "Mua gói tiếp thị"
+    case "package_spread":
+      return "Mua gói quảng bá"
+    case "fedex_payment":
       return "Thanh toán đơn hàng"
-    case TransactionType.ORDER_PROFIT:
+    case "order_profit":
       return "Lợi nhuận đơn hàng"
-    case TransactionType.RECHARGE:
+    case "recharge":
       return "Nạp tiền"
-    case TransactionType.WITHDRAW:
+    case "withdraw":
       return "Rút tiền"
+    case "manual_fedex_amount":
+      return "Điều chỉnh số dư Fedex"
     default:
       return "Không xác định"
   }
@@ -76,25 +78,26 @@ function getStatusChipProps(status: string) {
 
 function TransactionHistoryPage() {
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(8)
+  const [limit, setLimit] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | "">("")
   const [typeFilter, setTypeFilter] = useState<TransactionType | "">("")
 
   const { data: transactionsData, isLoading, error } = useGetTransactionHistory({
     page,
-    limit,
-    status: statusFilter || undefined,
-    type: typeFilter || undefined,
+    take: limit,
+    status: statusFilter ? (statusFilter as TransactionStatus) : undefined,
+    type: typeFilter ? (typeFilter as TransactionType) : undefined,
   })
 
-  const transactions = (transactionsData?.data?.data as any)?.data || []
+  const transactions = (transactionsData?.data?.data as any) || []
+
   const filteredTransactions = searchTerm
     ? transactions.filter(
-        (transaction: any) =>
-          transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      (transaction: any) =>
+        transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : transactions
 
   const handlePageChange = (_: unknown, newPage: number) => {
@@ -111,9 +114,19 @@ function TransactionHistoryPage() {
     setTypeFilter("")
   }
 
+  const handleCopy = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      message.success("Đã sao chép ID giao dịch vào clipboard!")
+    } catch (err) {
+      message.error("Không thể sao chép. Vui lòng thử lại!")
+    }
+  }
+
   if (error) {
     return (
-      <Box className="p-8 text-center">
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
+        <IconMoodSadDizzy size={48} className="text-gray-400" />
         <Typography variant="h6" className="mb-2 text-red-400">
           Lỗi khi tải lịch sử giao dịch
         </Typography>
@@ -123,82 +136,62 @@ function TransactionHistoryPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center">
-          <IconCash size={28} className="mr-3 text-main-golden-orange" />
-          <Typography
-            fontSize={18}
-            fontWeight={700}
-            variant="h5"
-            className="!text-main-golden-orange relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-[50%] after:h-0.5 after:bg-main-golden-orange after:rounded-full"
-          >
+    <>
+     <Box className="relative flex flex-col items-center justify-center py-8">
+        <Box className="absolute" />
+        <Box className="relative flex flex-col items-center gap-2">
+          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
+            <IconTransactionDollar size={36} className="text-main-golden-orange" />
+          </Box>
+          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
             Lịch sử giao dịch
           </Typography>
-        </div>
-        <div className="flex items-center gap-4">
+        </Box>
+      </Box>
+    <div className="p-6 pt-0 space-y-6">
+      <div className="flex flex-col items-start justify-end gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-4">
           <TextField
             size="small"
             placeholder="Tìm kiếm giao dịch..."
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 rounded shadow-sm"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconSearch size={20} className="text-main-golden-orange" />
-                </InputAdornment>
-              ),
-              className: "text-white rounded-lg hover:shadow-md transition-shadow",
-            }}
+            className="flex-1 bg-white rounded shadow-sm"
           />
+          <FormControl size="small" style={{ minWidth: 200 }}>
+            <InputLabel>Loại giao dịch</InputLabel>
+            <Select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as TransactionType | "")}
+              label="Loại giao dịch"
+              className="bg-white"
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="package_purchase">Mua gói tiếp thị</MenuItem>
+              <MenuItem value="package_upgrade">Mua gói nâng cấp</MenuItem>
+              <MenuItem value="fedex_payment">Thanh toán đơn hàng</MenuItem>
+              <MenuItem value="order_profit">Lợi nhuận đơn hàng</MenuItem>
+              <MenuItem value="recharge">Nạp tiền</MenuItem>
+              <MenuItem value="withdraw">Rút tiền</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" style={{ minWidth: 200 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | "")}
+              label="Trạng thái"
+              className="bg-white"
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="completed">Hoàn thành</MenuItem>
+              <MenuItem value="pending">Đang xử lý</MenuItem>
+              <MenuItem value="rejected">Từ chối</MenuItem>
+            </Select>
+          </FormControl>
         </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4">
-        <FormControl size="small" style={{ minWidth: 200 }}>
-          <InputLabel>Loại giao dịch</InputLabel>
-          <Select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as TransactionType | "")}
-            label="Loại giao dịch"
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Object.values(TransactionType).map((type) => (
-              <MenuItem key={type} value={type}>
-                {getTransactionTypeLabel(type)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" style={{ minWidth: 200 }}>
-          <InputLabel>Trạng thái</InputLabel>
-          <Select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | "")}
-            label="Trạng thái"
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Object.values(TransactionStatus).map((status) => (
-              <MenuItem key={status} value={status}>
-                {getStatusChipProps(status).label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {(statusFilter || typeFilter) && (
-          <Button
-            variant="outlined"
-            startIcon={<IconFilter size={18} />}
-            onClick={handleResetFilters}
-            size="small"
-          >
-            Xóa bộ lọc
-          </Button>
-        )}
       </div>
 
       {isLoading ? (
@@ -206,12 +199,13 @@ function TransactionHistoryPage() {
           <CircularProgress className="text-main-golden-orange" />
         </Box>
       ) : filteredTransactions.length === 0 ? (
-        <Box className="flex flex-col items-center justify-center gap-4 py-8 text-center border border-gray-700 border-dashed rounded-lg backdrop-blur-sm">
+        <Paper className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+          <IconMoodSadDizzy size={48} className="text-gray-400" />
           <Typography fontWeight={400} variant="h6" className="mb-2 text-gray-400">
             Không tìm thấy giao dịch nào.{" "}
             {searchTerm || statusFilter || typeFilter ? "Thử tìm kiếm với điều kiện khác" : "Chưa có giao dịch nào"}
           </Typography>
-        </Box>
+        </Paper>
       ) : (
         <>
           <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0" }}>
@@ -236,7 +230,20 @@ function TransactionHistoryPage() {
                         "& td": { borderBottom: "1px solid #E0E0E0" },
                       }}
                     >
-                      <TableCell>{transaction.id}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>{transaction.id}</span>
+                          <IconButton
+                            onClick={() => handleCopy(transaction.id, "id")}
+                            size="small"
+                          >
+                            <IconCopy
+                              size={16}
+                              className="text-blue-500"
+                            />
+                          </IconButton>
+                        </div>
+                      </TableCell>
                       <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                       <TableCell>{formatMoney(transaction.money)}</TableCell>
                       <TableCell>
@@ -256,34 +263,42 @@ function TransactionHistoryPage() {
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          className="max-w-[300px] truncate"
-                          title={transaction.description}
-                        >
-                          {transaction.description}
-                        </Typography>
+                        <div className="flex items-center gap-2 group">
+                          <Typography
+                            variant="body2"
+                            className="max-w-[300px] truncate"
+                            title={transaction.description}
+                          >
+                            {transaction.description}
+                          </Typography>
+                          <IconCopy
+                            size={16}
+                            className="text-gray-500 transition-opacity opacity-0 cursor-pointer hover:text-gray-700 group-hover:opacity-100"
+                            onClick={() => handleCopy(transaction.description, "description")}
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
-            {/* <TablePagination
+            <TablePagination
               rowsPerPageOptions={[5, 8, 10, 25]}
               component="div"
-              count={data?.data?.total || 0}
+              count={transactionsData?.data?.meta?.itemCount || 0}
               rowsPerPage={limit}
               page={page - 1}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleChangeRowsPerPage}
               labelRowsPerPage="Dòng mỗi trang:"
               labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
-            /> */}
+            />
           </Paper>
         </>
       )}
     </div>
+    </>
   )
 }
 

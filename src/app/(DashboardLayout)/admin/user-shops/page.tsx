@@ -22,7 +22,7 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical, IconMoodSadDizzy, IconUsers, IconUserCog } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconMessage, IconSearch, IconTrash, IconWallet, IconDotsVertical, IconMoodSadDizzy } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -53,7 +53,7 @@ function UsersPage() {
     search: searchTerm,
     order: filters.order as 'ASC' | 'DESC' | undefined,
     status: filters.status || undefined,
-    role: filters.role as 'shop' | 'admin' | 'user' | undefined,
+    role: 'shop',
     hasShop: filters.hasShop ? filters.hasShop === 'true' : undefined
   })
   const filteredUsers = userData?.data?.data || []
@@ -174,7 +174,7 @@ function UsersPage() {
       const user = filteredUsers.find(u => u.id === userId);
       if (!user) return;
 
-      const newStatus = user.shopStatus === "SUSPEND" ? "ACTIVE" : "SUSPEND";
+      const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
 
       await updateUserMutation.mutateAsync({
         id: userId,
@@ -183,7 +183,7 @@ function UsersPage() {
         }
       });
 
-      message.success(newStatus === "SUSPEND"
+      message.success(newStatus === "SUSPENDED"
         ? "Đã đóng băng shop thành công!"
         : "Đã bỏ đóng băng shop thành công!");
 
@@ -200,9 +200,7 @@ function UsersPage() {
     { key: 'username', label: 'Tên đăng nhập' },
     { key: 'fullName', label: 'Họ tên' },
     { key: 'phone', label: 'Số điện thoại' },
-    { key: 'invitationCode', label: 'Mã mời' },
-    { key: 'role', label: 'Vai trò' },
-    { key: 'status', label: 'Trạng thái' },
+    { key: 'isActive', label: 'Trạng thái' },
     { key: 'actions', label: 'Thao tác' },
   ];
 
@@ -247,74 +245,12 @@ function UsersPage() {
         </Box>
       </TableCell>
       <TableCell>
-        <Box display="flex" alignItems="center" gap={1}>
-          {user.invitationCode}
-          {user.invitationCode && (
-            <IconButton
-              size="small"
-              onClick={() => {
-                navigator.clipboard.writeText(user.invitationCode || "");
-                message.success(`Đã sao chép mã giới thiệu: ${user.invitationCode}`);
-              }}
-            >
-              <IconCopy size={16} className="text-blue-500" />
-            </IconButton>
-          )}
-        </Box>
-      </TableCell>
-      <TableCell>
         <Chip
-          label={
-            user.shopName === "admin2" ? "Xuất nhập khoản" :
-            user.role === "supper_admin" ? "Super Admin" :
-            user.role === "admin" ? "Admin" :
-              user.role === "shop" ? "Người bán" :
-                "Khách ảo"
-          }
-          color={
-            user.shopName === "admin2" ? "info" :
-            user.role === "supper_admin" ? "secondary" :
-            user.role === "admin" ? "primary" :
-              user.role === "shop" ? "warning" :
-                "success"
-          }
+          label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
+          color={user.isActive ? "success" : "error"}
           size="small"
           variant="filled"
-          className={user.role === "supper_admin" ? "!text-white" : ""}
         />
-      </TableCell>
-      <TableCell>
-        {user.role === "shop" ? (
-          <Chip
-            label={
-              user.shopStatus === "PENDING"
-                ? "Chờ duyệt"
-                : user.shopStatus === "SUSPEND"
-                  ? "Đã đóng băng"
-                  : user.isActive
-                    ? "Đang hoạt động"
-                    : "Đã khóa"
-            }
-            color={
-              user.shopStatus === "PENDING"
-                ? "warning"
-                : user.shopStatus === "SUSPEND"
-                  ? "error"
-                  : user.isActive
-                    ? "success"
-                    : "error"
-            }
-            size="small"
-            variant="filled"
-          />
-        ) : (
-          <Chip
-            label={user.isActive ? "Đang hoạt động" : "Đã khóa"}
-            color={user.isActive ? "success" : "error"}
-            size="small"
-            variant="filled"
-          />
-        )}
       </TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
@@ -376,8 +312,8 @@ function UsersPage() {
                 handleToggleFreeze(user.id);
               }}>
                 <Box className="flex items-center gap-2">
-                  <IconWallet size={16} className={user.shopStatus === "SUSPEND" ? "text-green-400" : "text-red-400"} />
-                  <span>{user.shopStatus === "SUSPEND" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
+                  <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
+                  <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
                 </Box>
               </MenuItem>
             )}
@@ -407,20 +343,8 @@ function UsersPage() {
       </Box>
     )
   }
-
   return (
     <>
-      <Box className="relative flex flex-col items-center justify-center py-8">
-        <Box className="absolute" />
-        <Box className="relative flex flex-col items-center gap-2">
-          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
-            <IconUserCog size={36} className="text-main-golden-orange" />
-          </Box>
-          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
-            Quản lý người dùng
-          </Typography>
-        </Box>
-      </Box>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ p: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
           <TextField
@@ -441,7 +365,6 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Sắp xếp</InputLabel>
             <Select
-              className="bg-white"
               value={filters.order}
               label="Sắp xếp"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, order: e.target.value }))}
@@ -453,7 +376,6 @@ function UsersPage() {
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Trạng thái</InputLabel>
             <Select
-              className="bg-white"
               value={filters.status}
               label="Trạng thái"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, status: e.target.value }))}
@@ -465,23 +387,8 @@ function UsersPage() {
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Vai trò</InputLabel>
-            <Select
-              className="bg-white"
-              value={filters.role}
-              label="Vai trò"
-              onChange={(e) => setFilters((prev: any) => ({ ...prev, role: e.target.value }))}
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="user">Người dùng</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="shop">Người bán</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Có shop</InputLabel>
             <Select
-              className="bg-white"
               value={filters.hasShop}
               label="Có shop"
               onChange={(e) => setFilters((prev: any) => ({ ...prev, hasShop: e.target.value }))}
@@ -492,6 +399,7 @@ function UsersPage() {
             </Select>
           </FormControl>
         </Box>
+
         <DataTable
           columns={columns}
           data={filteredUsers}
@@ -536,7 +444,7 @@ function UsersPage() {
           <Button
             variant="outlined"
             onClick={handleDeleteConfirm}
-            className="text-white transition-colors !bg-red-500 !border-red-500"
+            className="text-white transition-colors !bg-red-500"
             disabled={deleteUserMutation.isPending}
           >
             {deleteUserMutation.isPending ?
@@ -590,7 +498,7 @@ function UsersPage() {
           <Button
             variant="outlined"
             onClick={handleBalanceUpdate}
-            className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
+            className="text-white transition-colors !bg-main-golden-orange"
             disabled={updateUserMutation.isPending}
           >
             {updateUserMutation.isPending ? (
@@ -599,7 +507,7 @@ function UsersPage() {
                 Đang xử lý...
               </div>
             ) : (
-              balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
+              balanceActionType === 'deposit' ? 'Nạp tiền' : 'Rút tiền'
             )}
           </Button>
         </DialogActions>
