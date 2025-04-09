@@ -5,6 +5,7 @@ const nextConfig = {
     domains: process.env.NEXT_PUBLIC_API_URL
       ? [process.env.NEXT_PUBLIC_API_URL, "example.com", "picsum.photos", "m.media-amazon.com"]
       : ["amz.dunghaysai.site", "example.com", "picsum.photos", "m.media-amazon.com"],
+    unoptimized: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
