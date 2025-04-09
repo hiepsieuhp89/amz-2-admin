@@ -69,7 +69,7 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
             color: "white"
           }}
         >
-          <IconMenu2 width="24" height="24" color='#ffffff' className=' text-white' />
+          <IconMenu2 width="24" height="24" color='#ffffff' className='text-white ' />
         </IconButton>
 
 
@@ -83,7 +83,7 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
             <IconTrash size={18} />
             Xoá Cache
           </button>
-          <Link href={'https://xosodinh.net/'} target='_blank' className='flex items-center !bg-[#0876d7] text-white px-2 py-[4px] rounded-[4px]'>
+          <Link href={'https://amazon-cms-zi2z.vercel.app/'} target='_blank' className='flex items-center !bg-[#0876d7] text-white px-2 py-[4px] rounded-[4px]'>
             <IconExternalLink size={18} />
             Xem website
           </Link>
@@ -112,28 +112,28 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
             </IconButton>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded shadow-lg z-50">
+              <div className="absolute right-0 z-50 mt-2 bg-white rounded shadow-lg w-80">
                 <div className="p-4 border-b">
                   <h3 className="font-semibold">Thông báo</h3>
                 </div>
-                <div className="max-h-96 overflow-y-auto">
+                <div className="overflow-y-auto max-h-96">
                   {notifications?.length > 0 ? (
                     notifications.map((notification: any) => (
                       <div key={notification.id} className={`p-4 border-b last:border-b-0 hover:bg-gray-50 ${!notification.isRead ? 'bg-gray-100' : ''}`}>
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                           <p>{notification.message}</p>
                           <div className="flex gap-2">
                             {!notification.isRead && (
                               <button
                                 onClick={() => handleMarkAsRead(notification.id)}
-                                className="text-blue-500 hover:text-blue-700 text-sm"
+                                className="text-sm text-blue-500 hover:text-blue-700"
                               >
                                 Đã đọc
                               </button>
                             )}
                             <button
                               onClick={() => handleDeleteNotification(notification.id)}
-                              className="text-red-500 hover:text-red-700 text-sm"
+                              className="text-sm text-red-500 hover:text-red-700"
                             >
                               Xóa
                             </button>

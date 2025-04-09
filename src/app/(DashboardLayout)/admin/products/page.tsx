@@ -14,7 +14,6 @@ import {
   InputAdornment,
   InputLabel,
   MenuItem,
-  Menu,
   Select,
   Switch,
   TableCell,
@@ -30,8 +29,7 @@ import {
   IconTable,
   IconTrash,
   IconMoodSadDizzy,
-  IconArchive,
-  IconDotsVertical
+  IconArchive
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -56,8 +54,6 @@ function ProductsPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [currentImage, setCurrentImage] = useState("")
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuProductId, setMenuProductId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     order: 'DESC',
     isNew: '',
@@ -122,16 +118,6 @@ function ProductsPage() {
     setCurrentImage(imageUrl)
     setLightboxOpen(true)
   }
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, productId: string) => {
-    setAnchorEl(event.currentTarget);
-    setMenuProductId(productId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuProductId(null);
-  };
 
   const handleToggleHot = async (id: string, isHot: boolean) => {
     try {
@@ -306,41 +292,21 @@ function ProductsPage() {
       </TableCell>
       <TableCell>{product.category?.name || '-'}</TableCell>
       <TableCell>
-        <Box className="flex items-center justify-center gap-4">
-          <IconButton 
-            onClick={(e) => handleMenuOpen(e, product.id)}
+        <Box className="flex items-center gap-2">
+          <IconButton
+            onClick={() => handleView(product.id)}
             size="medium"
+            className="!bg-blue-100"
           >
-            <IconDotsVertical size={18} />
+            <IconEye size={18} className="text-blue-400" />
           </IconButton>
-          
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl) && menuProductId === product.id}
-            onClose={handleMenuClose}
-            PaperProps={{
-              className: "!rounded-[6px] shadow-xl",
-            }}
+          <IconButton
+            onClick={() => openDeleteDialog(product.id)}
+            size="medium"
+            className="!bg-red-100"
           >
-            <MenuItem onClick={() => {
-              handleView(product.id);
-              handleMenuClose();
-            }}>
-              <Box className="flex items-center gap-2">
-                <IconEye size={16} className="text-blue-400" />
-                <span>Xem chi tiết</span>
-              </Box>
-            </MenuItem>
-            <MenuItem onClick={() => {
-              openDeleteDialog(product.id);
-              handleMenuClose();
-            }}>
-              <Box className="flex items-center gap-2">
-                <IconTrash size={16} className="text-red-400" />
-                <span>Xóa</span>
-              </Box>
-            </MenuItem>
-          </Menu>
+            <IconTrash size={18} className="text-red-400" />
+          </IconButton>
         </Box>
       </TableCell>
     </TableRow>

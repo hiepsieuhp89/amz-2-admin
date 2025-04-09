@@ -24,7 +24,7 @@ import {
     FormControl,
     InputLabel
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore, IconStairsUp } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -32,6 +32,7 @@ import { useState } from "react"
 import ChatDialog from "@/components/ChatDialog"
 import { useGetShopOrders, useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
 import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
+import { useGetDeliveryStages, useUpdateDeliveryStage } from "@/hooks/order"
 
 function ShopsPage() {
     const router = useRouter()
@@ -79,6 +80,7 @@ function ShopsPage() {
     const { data: ordersData, isLoading: isOrdersLoading } = useGetShopOrders(orderParams)
     const [isEditingOrder, setIsEditingOrder] = useState(false)
     const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<any>(null)
+    const [previousOrdersDialogState, setPreviousOrdersDialogState] = useState(false)
     const updateOrderMutation = useUpdateFakeOrder()
     const deleteOrderMutation = useDeleteFakeOrder()
     const [editOrderForm, setEditOrderForm] = useState({
@@ -100,7 +102,13 @@ function ShopsPage() {
     const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
     const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
     const [amount, setAmount] = useState('');
-
+    const [orderAnchorEl, setOrderAnchorEl] = useState<null | HTMLElement>(null);
+    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+    const { data: deliveryStages } = useGetDeliveryStages("SHIPPING")
+    const [isUpdatingStage, setIsUpdatingStage] = useState(false)
+    const [selectedStage, setSelectedStage] = useState<number | null>(null)
+    const updateDeliveryStageMutation = useUpdateDeliveryStage()
+    console.log(deliveryStages)
     const handleCreateNew = () => {
         router.push("/admin/users/create-new")
     }
@@ -152,6 +160,8 @@ function ShopsPage() {
     }
 
     const handleEditOrder = (order: any) => {
+        setPreviousOrdersDialogState(ordersDialogOpen);
+        setOrdersDialogOpen(false);
         setSelectedOrderForEdit(order);
         setEditOrderForm({
             email: order.email || order.user?.email || '',
@@ -167,6 +177,12 @@ function ShopsPage() {
             paidAt: order.paidAt ? formatDateTimeLocal(order.paidAt) : ''
         });
         setIsEditingOrder(true);
+    }
+
+    const handleCloseEditOrder = () => {
+        setIsEditingOrder(false);
+        setSelectedOrderForEdit(null);
+        setOrdersDialogOpen(previousOrdersDialogState);
     }
 
     const formatDateTimeLocal = (dateString: string) => {
@@ -310,9 +326,20 @@ function ShopsPage() {
         }
     };
 
+    const handleOrderMenuOpen = (event: React.MouseEvent<HTMLElement>, orderId: string) => {
+        setOrderAnchorEl(event.currentTarget);
+        setSelectedOrderId(orderId);
+    };
+
+    const handleOrderMenuClose = () => {
+        setOrderAnchorEl(null);
+        setSelectedOrderId(null);
+    };
+
     const renderOrderFilters = () => (
         <Box className="grid grid-cols-2 gap-4 p-4">
             <TextField
+                size="small"
                 select
                 label="Sắp xếp"
                 value={orderParams.order}
@@ -323,12 +350,14 @@ function ShopsPage() {
             </TextField>
 
             <TextField
+                size="small"
                 label="Tìm kiếm"
                 value={orderParams.search}
                 onChange={(e) => handleOrderParamChange('search', e.target.value)}
             />
 
             <TextField
+                size="small"
                 select
                 label="Trạng thái delay"
                 value={orderParams.delayStatus}
@@ -341,16 +370,17 @@ function ShopsPage() {
             </TextField>
 
             <TextField
+                size="small"
                 select
                 label="Trạng thái đơn hàng"
                 value={orderParams.status}
                 onChange={(e) => handleOrderParamChange('status', e.target.value)}
             >
-                <MenuItem value="PENDING">PENDING</MenuItem>
-                <MenuItem value="CONFIRMED">CONFIRMED</MenuItem>
-                <MenuItem value="SHIPPING">SHIPPING</MenuItem>
-                <MenuItem value="DELIVERED">DELIVERED</MenuItem>
-                <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                <MenuItem value="PENDING" className="!text-orange-500">Chờ xử lý</MenuItem>
+                <MenuItem value="CONFIRMED" className="!text-blue-500">Đã xác nhận</MenuItem>
+                <MenuItem value="SHIPPING" className="!text-purple-500">Đang giao hàng</MenuItem>
+                <MenuItem value="DELIVERED" className="!text-green-500">Đã giao hàng</MenuItem>
+                <MenuItem value="CANCELLED" className="!text-red-500">Đã hủy</MenuItem>
             </TextField>
         </Box>
     )
@@ -380,21 +410,51 @@ function ShopsPage() {
                     {order.totalAmount?.toLocaleString()} USD
                 </TableCell>
                 <TableCell>
-                    <Box display="flex" gap={1}>
+                    <Box className="flex items-center justify-center">
                         <IconButton
-                            onClick={() => handleEditOrder(order)}
-                            size="small"
-                            className="!bg-blue-100"
+                            onClick={(e) => handleOrderMenuOpen(e, order.id)}
+                            size="medium"
                         >
-                            <IconEdit size={16} className="text-blue-500" />
+                            <IconDotsVertical size={18} />
                         </IconButton>
-                        <IconButton
-                            onClick={() => handleDeleteOrder(order.id)}
-                            size="small"
-                            className="!bg-red-100"
+
+                        <Menu
+                            anchorEl={orderAnchorEl}
+                            open={Boolean(orderAnchorEl) && selectedOrderId === order.id}
+                            onClose={handleOrderMenuClose}
+                            PaperProps={{
+                                className: "!rounded-[6px] shadow-xl",
+                            }}
                         >
-                            <IconTrash size={16} className="text-red-500" />
-                        </IconButton>
+                            <MenuItem onClick={() => {
+                                handleEditOrder(order);
+                                handleOrderMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconEdit size={16} className="text-blue-400" />
+                                    <span>Sửa đơn hàng</span>
+                                </Box>
+                            </MenuItem>
+                            <MenuItem onClick={() => {
+                                setIsUpdatingStage(true)
+                                setSelectedOrderForEdit(order)
+                                handleOrderMenuClose()
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconStairsUp size={16} className="text-purple-400" />
+                                    <span>Cập nhật giai đoạn</span>
+                                </Box>
+                            </MenuItem>
+                            <MenuItem onClick={() => {
+                                handleDeleteOrder(order.id);
+                                handleOrderMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconTrash size={16} className="text-red-400" />
+                                    <span>Xóa đơn hàng</span>
+                                </Box>
+                            </MenuItem>
+                        </Menu>
                     </Box>
                 </TableCell>
             </TableRow>
@@ -616,7 +676,7 @@ function ShopsPage() {
                 </Box>
             </Box>
             <Box className="flex flex-col flex-1 w-full bg-[#F5F5F5]">
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0}}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: 3, paddingTop: 0, paddingBottom: 0 }}>
                     <TextField
                         size="small"
                         placeholder="Tìm kiếm cửa hàng..."
@@ -718,14 +778,11 @@ function ShopsPage() {
 
             <Dialog
                 open={isEditingOrder}
-                onClose={() => setIsEditingOrder(false)}
+                onClose={handleCloseEditOrder}
                 maxWidth="md"
                 fullWidth
-                PaperProps={{
-                    className: "!rounded-lg shadow-xl"
-                }}
             >
-                <DialogTitle className="!text-xl !font-semibold !pb-4">
+                <DialogTitle>
                     Sửa đơn hàng #{selectedOrderForEdit?.id}
                 </DialogTitle>
                 <DialogContent>
@@ -869,7 +926,7 @@ function ShopsPage() {
                 <DialogActions className="!p-4 !pt-2">
                     <Button
                         variant="outlined"
-                        onClick={() => setIsEditingOrder(false)}
+                        onClick={handleCloseEditOrder}
                         className="!normal-case"
                     >
                         Hủy bỏ
@@ -935,6 +992,116 @@ function ShopsPage() {
                         ) : (
                             balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
                         )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={isUpdatingStage}
+                onClose={() => {
+                    setIsUpdatingStage(false)
+                    setSelectedStage(null)
+                }}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>
+                    Cập nhật giai đoạn đơn hàng #{selectedOrderForEdit?.id}
+                </DialogTitle>
+                <DialogContent>
+                    <Box className="mt-2 space-y-4">
+                        {/* Thông tin đơn hàng */}
+                        <Box className="p-4 border !rounded-[4px] bg-gray-50">
+                            <Typography variant="subtitle2" className="mb-2 font-medium">
+                                Thông tin đơn hàng
+                            </Typography>
+                            <Box className="grid grid-cols-2 gap-4">
+                                <Box>
+                                    <Typography variant="caption" className="text-gray-500">
+                                        Email
+                                    </Typography>
+                                    <Typography>
+                                        {selectedOrderForEdit?.email || selectedOrderForEdit?.user?.email || "N/A"}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" className="text-gray-500">
+                                        Số điện thoại
+                                    </Typography>
+                                    <Typography>
+                                        {selectedOrderForEdit?.phone || selectedOrderForEdit?.user?.phone || "N/A"}
+                                    </Typography>
+                                </Box>
+                                <Box className="col-span-2">
+                                    <Typography variant="caption" className="text-gray-500">
+                                        Địa chỉ
+                                    </Typography>
+                                    <Typography>
+                                        {selectedOrderForEdit?.address || selectedOrderForEdit?.user?.address || "N/A"}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* Select giai đoạn */}
+                        <FormControl fullWidth size="small">
+                            <TextField
+                                select
+                                fullWidth
+                                label="Giai đoạn"
+                                value={selectedStage || ''}
+                                onChange={(e) => setSelectedStage(Number(e.target.value))}
+                                size="small"
+                            >
+                                {deliveryStages?.data?.map((stage) => (
+                                    <MenuItem key={(stage as any).stage} value={(stage as any).stage}>
+                                        {(stage as any).description}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
+                    </Box>
+                </DialogContent>
+                <DialogActions className="!p-4 !pt-2">
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            setIsUpdatingStage(false)
+                            setSelectedStage(null)
+                        }}
+                        className="!normal-case"
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            if (!selectedOrderForEdit?.id || !selectedStage) return
+                            updateDeliveryStageMutation.mutate({
+                                id: selectedOrderForEdit.id,
+                                payload: {
+                                    stage: selectedStage
+                                }
+                            }, {
+                                onSuccess: () => {
+                                    message.success("Cập nhật giai đoạn thành công!")
+                                    setIsUpdatingStage(false)
+                                    setSelectedStage(null)
+                                },
+                                onError: () => {
+                                    message.error("Cập nhật giai đoạn thất bại!")
+                                }
+                            })
+                        }}
+                        disabled={updateDeliveryStageMutation.isPending || !selectedStage}
+                        className="!normal-case !hover:!bg-blue-600"
+                    >
+                        {updateDeliveryStageMutation.isPending ? (
+                            <Box className="flex items-center gap-2">
+                                <CircularProgress size={16} className="!text-white" />
+                                Đang cập nhật...
+                            </Box>
+                        ) : 'Cập nhật giai đoạn'}
                     </Button>
                 </DialogActions>
             </Dialog>

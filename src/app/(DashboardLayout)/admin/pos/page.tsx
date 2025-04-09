@@ -527,12 +527,7 @@ const AdminPosPage = () => {
                       />
                     )}
                     renderOption={(props, option) => (
-                      <MenuItem 
-                        key={option.id} 
-                        onClick={props.onClick}
-                        onTouchStart={props.onTouchStart}
-                        className={props.className}
-                      >
+                      <Box component="li" {...props}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box
                             sx={{
@@ -559,7 +554,7 @@ const AdminPosPage = () => {
                             </Typography>
                           </Box>
                         </Box>
-                      </MenuItem>
+                      </Box>
                     )}
                   />
                 </FormControl>
@@ -1034,12 +1029,7 @@ const AdminPosPage = () => {
                       />
                     )}
                     renderOption={(props, option) => (
-                      <MenuItem 
-                        key={option.id} 
-                        onClick={props.onClick}
-                        onTouchStart={props.onTouchStart}
-                        className={props.className}
-                      >
+                      <Box component="li" {...props}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box
                             sx={{
@@ -1066,7 +1056,7 @@ const AdminPosPage = () => {
                             </Typography>
                           </Box>
                         </Box>
-                      </MenuItem>
+                      </Box>
                     )}
                   />
                 </FormControl>

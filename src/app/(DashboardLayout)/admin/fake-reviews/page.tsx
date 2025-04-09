@@ -23,10 +23,8 @@ import {
   InputLabel,
   OutlinedInput,
   InputAdornment,
-  Menu,
-  MenuItem
 } from "@mui/material"
-import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy, IconDotsVertical, IconPencilStar } from "@tabler/icons-react"
+import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import React, { useState } from "react"
@@ -48,8 +46,6 @@ function FakeReviewsPage() {
   const [rating, setRating] = useState(5)
   const [content, setContent] = useState("")
   const [images, setImages] = useState<string[]>([])
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuUserId, setMenuUserId] = useState<string | null>(null);
 
   const { data: userData, isLoading, error } = useGetAllUsers({
     page,
@@ -98,28 +94,16 @@ function FakeReviewsPage() {
       <TableCell>{[user.address, user.ward, user.district, user.city].filter(Boolean).join(', ')}</TableCell>
       <TableCell>
         <Box className="flex items-center justify-center gap-4">
-          <IconButton
-            onClick={(e) => handleMenuOpen(e, user.id)}
-            size="medium"
+          <IconButton 
+            onClick={() => {
+              setSelectedUserId(user.id)
+              setOrdersDialogOpen(true)
+            }} 
+            size="medium" 
+            className="!bg-blue-100"
           >
-            <IconDotsVertical size={18} />
+            <IconEye size={18} className="text-blue-400" />
           </IconButton>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl) && menuUserId === user.id}
-            onClose={handleMenuClose}
-            PaperProps={{
-              className: "!rounded-[6px] shadow-xl",
-            }}
-          >
-            <MenuItem onClick={() => handleViewOrders(user.id)}>
-              <Box className="flex items-center gap-2">
-                <IconEye size={16} className="text-blue-400" />
-                <span>Xem đơn hàng</span>
-              </Box>
-            </MenuItem>
-          </Menu>
         </Box>
       </TableCell>
     </TableRow>
@@ -144,9 +128,9 @@ function FakeReviewsPage() {
       <Box sx={{ pl: 4, pt: 2 }}>
         {items.map((item, index) => (
           <Box key={index} display="flex" alignItems="center" gap={2} mb={2}>
-            <img
-              src={item.productImage}
-              alt={item.productName}
+            <img 
+              src={item.productImage} 
+              alt={item.productName} 
               style={{ width: 50, height: 50, objectFit: 'cover' }}
             />
             <Box>
@@ -192,9 +176,9 @@ function FakeReviewsPage() {
           <Typography variant="body2" color="textSecondary">
             Chọn đơn hàng để tạo review
           </Typography>
-
+          
           <Box>
-            <select
+            <select 
               value={orderStatus}
               onChange={handleOrderStatusChange}
               style={{
@@ -333,22 +317,6 @@ function FakeReviewsPage() {
     })
   }
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, userId: string) => {
-    setAnchorEl(event.currentTarget);
-    setMenuUserId(userId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuUserId(null);
-  };
-
-  const handleViewOrders = (userId: string) => {
-    setSelectedUserId(userId);
-    setOrdersDialogOpen(true);
-    handleMenuClose();
-  };
-
   if (error) {
     return (
       <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
@@ -363,18 +331,6 @@ function FakeReviewsPage() {
 
   return (
     <>
-      <Box className="relative flex flex-col items-center justify-center py-8">
-        <Box className="absolute" />
-        <Box className="relative flex flex-col items-center gap-2">
-          <Box className="p-4 mb-3 rounded-full shadow-lg bg-gradient-to-r from-amber-100 to-orange-100">
-            <IconPencilStar size={36} className="text-main-golden-orange" />
-          </Box>
-          <Typography variant="h3" className="font-semibold tracking-wide text-center uppercase text-main-charcoal-blue">
-            Quản lý đánh giá
-          </Typography>
-        </Box>
-      </Box>
-
       <Box sx={{ width: '100%' }}>
         <DataTable
           columns={columns}
