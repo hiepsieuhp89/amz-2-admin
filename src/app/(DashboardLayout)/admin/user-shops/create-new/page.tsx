@@ -265,7 +265,7 @@ export default function CreateUserPage() {
                   onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
-                  <MenuItem value="seller">Người bán</MenuItem>
+                  <MenuItem value="shop">Người bán</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>

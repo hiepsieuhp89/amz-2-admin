@@ -180,9 +180,19 @@ function ShopsPage() {
         if (!selectedOrderForEdit) return;
 
         try {
+            // Xử lý định dạng ngày tháng
+            const payload = {
+                ...editOrderForm,
+                orderTime: editOrderForm.orderTime ? new Date(editOrderForm.orderTime).toISOString() : undefined,
+                confirmedAt: editOrderForm.confirmedAt ? new Date(editOrderForm.confirmedAt).toISOString() : undefined,
+                deliveredAt: editOrderForm.deliveredAt ? new Date(editOrderForm.deliveredAt).toISOString() : undefined,
+                cancelledAt: editOrderForm.cancelledAt ? new Date(editOrderForm.cancelledAt).toISOString() : undefined,
+                paidAt: editOrderForm.paidAt ? new Date(editOrderForm.paidAt).toISOString() : undefined,
+            };
+
             await updateOrderMutation.mutateAsync({
                 orderId: selectedOrderForEdit.id,
-                payload: editOrderForm
+                payload
             });
             message.success("Đơn hàng đã được cập nhật thành công!");
             setIsEditingOrder(false);

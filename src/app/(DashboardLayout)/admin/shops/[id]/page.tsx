@@ -367,7 +367,7 @@ function UserDetailPage() {
                   }
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
-                  <MenuItem value="seller">Người bán</MenuItem>
+                  <MenuItem value="shop">Người bán</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>

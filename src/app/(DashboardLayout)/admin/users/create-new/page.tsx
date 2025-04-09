@@ -272,7 +272,7 @@ export default function CreateUserPage() {
                   onChange={(e) => handleChange(e as React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>)}
                 >
                   <MenuItem value="user">Người dùng</MenuItem>
-                  <MenuItem value="seller">Người bán</MenuItem>
+                  <MenuItem value="shop">Người bán</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                     <MenuItem value="admin2">Xuất nhập khoản</MenuItem>
                 </Select>
@@ -315,7 +315,7 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {formData.role === "seller" && (
+          {formData.role === "shop" && (
             <>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>

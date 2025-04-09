@@ -169,7 +169,6 @@ const AdminPosPage = () => {
     return `http://localhost:3000${imageUrl}`;
   };
 
-  // Function to get the first image from an array or return placeholder
   const getFirstImage = (imageUrls: string[] | undefined): string => {
     if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
       return 'https://placehold.co/400x400/png';
