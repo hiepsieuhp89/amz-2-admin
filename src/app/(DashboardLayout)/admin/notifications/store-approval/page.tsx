@@ -28,8 +28,9 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import ChatDialog from "@/components/ChatDialog"
-import { useGetShopOrders, useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
+import {useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
 import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
+import { useGetShopOrders } from "@/hooks/order"
 
 function ShopsPage() {
     const router = useRouter()

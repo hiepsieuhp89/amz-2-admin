@@ -95,7 +95,6 @@ function UserDetailPage() {
   const [imageFileFront, setImageFileFront] = useState<File | null>(null);
   const [imageFileBack, setImageFileBack] = useState<File | null>(null);
   const { data: userData, isLoading, error } = useGetUserById(id);
-  console.log(userData?.data);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
   const { data: sellerPackageData } = useGetAllSellerPackages();

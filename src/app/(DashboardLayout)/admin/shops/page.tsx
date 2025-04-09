@@ -30,9 +30,9 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import ChatDialog from "@/components/ChatDialog"
-import { useGetShopOrders, useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
+import {useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
 import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
-import { useGetDeliveryStages, useUpdateDeliveryStage } from "@/hooks/order"
+import { useGetDeliveryStages, useGetOrderDetail, useUpdateDeliveryStage, useGetShopOrders } from "@/hooks/order"
 
 function ShopsPage() {
     const router = useRouter()
@@ -108,11 +108,7 @@ function ShopsPage() {
     const [isUpdatingStage, setIsUpdatingStage] = useState(false)
     const [selectedStage, setSelectedStage] = useState<number | null>(null)
     const updateDeliveryStageMutation = useUpdateDeliveryStage()
-    console.log(deliveryStages)
-    const handleCreateNew = () => {
-        router.push("/admin/users/create-new")
-    }
-
+    const { data: orderDetail } = useGetOrderDetail(selectedOrderId || "")
     const handleView = (id: string) => {
         router.push(`/admin/users/${id}`)
     }
@@ -1053,12 +1049,38 @@ function ShopsPage() {
                                 onChange={(e) => setSelectedStage(Number(e.target.value))}
                                 size="small"
                             >
-                                {deliveryStages?.data?.map((stage) => (
-                                    <MenuItem key={(stage as any).stage} value={(stage as any).stage}>
-                                        {(stage as any).description}
-                                    </MenuItem>
-                                ))}
+                                {(() => {
+                                    // Lấy stage hiện tại từ selectedOrderForEdit
+                                    const currentStage = selectedOrderForEdit?.stageDelivery || 0;
+
+                                    // Lọc và hiển thị các stage lớn hơn stage hiện tại
+                                    return deliveryStages?.data?.filter(stage => 
+                                        (stage as any).stage > currentStage
+                                    ).map((stage) => (
+                                        <MenuItem key={(stage as any).stage} value={(stage as any).stage}>
+                                            {(stage as any).description}
+                                        </MenuItem>
+                                    ));
+                                })()}
                             </TextField>
+                            {(() => {
+                                const currentStage = (orderDetail?.data as any)?.statusHistory?.length > 0 
+                                    ? (orderDetail?.data as any).statusHistory[(orderDetail?.data as any).statusHistory.length - 1].stageDelivery 
+                                    : 0;
+
+                                const hasNextStages = deliveryStages?.data?.some(stage => 
+                                    (stage as any).stage > currentStage
+                                );
+
+                                if (!hasNextStages) {
+                                    return (
+                                        <Typography variant="caption" color="error" className="mt-2">
+                                            Không có giai đoạn tiếp theo có sẵn
+                                        </Typography>
+                                    );
+                                }
+                                return null;
+                            })()}
                         </FormControl>
                     </Box>
                 </DialogContent>

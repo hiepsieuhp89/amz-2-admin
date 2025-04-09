@@ -57,16 +57,7 @@ export const useDeliverFakeOrder = (): UseMutationResult<
   });
 };
 
-// Get shop orders
-export const useGetShopOrders = (
-  params: IShopOrderParams
-): UseQueryResult<IShopOrderResponse> => {
-  return useQuery({
-    queryKey: [SHOP_ORDERS_KEY, params],
-    queryFn: () => getShopOrders(params),
-    enabled: !!params.shopId,
-  });
-};
+
 
 // Update fake order
 export const useUpdateFakeOrder = (): UseMutationResult<
