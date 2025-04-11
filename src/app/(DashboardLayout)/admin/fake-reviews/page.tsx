@@ -157,24 +157,22 @@ function FakeReviewsPage() {
     })
   }
 
+  const orderStatusMap: { [key: string]: string } = {
+    PENDING: "Chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
+    SHIPPING: "Đang giao hàng",
+    DELIVERED: "Đã giao",
+    CANCELLED: "Đã hủy",
+  };
+
   const renderOrdersDialogContent = () => {
     if (!selectedUserId) return null
-
-    if (isOrdersLoading) {
-      return <Box display="flex" justifyContent="center" py={4}>
-        <CircularProgress />
-      </Box>
-    }
-
-    if (!orders?.data?.length) {
-      return <Typography>Không có đơn hàng nào</Typography>
-    }
 
     return (
       <Box>
         <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="body2" color="textSecondary">
-            Chọn đơn hàng để tạo review
+            Lọc đơn hàng theo trạng thái
           </Typography>
           
           <Box>
@@ -189,79 +187,86 @@ function FakeReviewsPage() {
                 cursor: 'pointer'
               }}
             >
-              {/* <option value="">Tất cả</option> */}
-              <option value="PENDING">PENDING</option>
-              <option value="CONFIRMED">CONFIRMED</option>
-              <option value="SHIPPING">SHIPPING</option>
-              <option value="DELIVERED">DELIVERED</option>
-              <option value="CANCELLED">CANCELLED</option>
+              {Object.entries(orderStatusMap).map(([key, value]) => (
+                <option key={key} value={key}>{value}</option>
+              ))}
             </select>
           </Box>
         </Box>
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Mã đơn hàng</TableCell>
-                <TableCell>Tổng tiền</TableCell>
-                <TableCell>Ngày đặt hàng</TableCell>
-                <TableCell>Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {orders.data.map((order: any) => (
-                <React.Fragment key={order.id}>
-                  <TableRow>
-                    <TableCell>{order.id}</TableCell>
-                    <TableCell>${order.totalAmount}</TableCell>
-                    <TableCell>
-                      {new Date(order.orderDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" gap={1}>
-                        <Button
-                          variant="contained"
-                          onClick={() => handleCreateReview(order.id)}
-                          disabled={order.hasReview}
-                        >
-                          {order.hasReview ? 'Đã đánh giá' : 'Tạo review'}
-                        </Button>
-                        {order.hasReview && (
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => handleDeleteReview(order.id)}
-                            disabled={isDeletingReview}
-                          >
-                            {isDeletingReview ? 'Đang xóa...' : 'Xóa review'}
-                          </Button>
-                        )}
-                        <IconButton
-                          size="small"
-                          onClick={() => toggleExpandOrder(order.id)}
-                        >
-                          {expandedOrderId === order.id ? (
-                            <IconChevronUp size={18} />
-                          ) : (
-                            <IconChevronDown size={18} />
-                          )}
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                  {expandedOrderId === order.id && (
+        {isOrdersLoading ? (
+          <Box display="flex" justifyContent="center" py={4}>
+            <CircularProgress />
+          </Box>
+        ) : !orders?.data?.length ? (
+          <Typography>Không có đơn hàng nào với trạng thái &quot;{orderStatusMap[orderStatus]}&quot;</Typography>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Mã đơn hàng</TableCell>
+                  <TableCell>Tổng tiền</TableCell>
+                  <TableCell>Ngày đặt hàng</TableCell>
+                  <TableCell>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {orders.data.map((order: any) => (
+                  <React.Fragment key={order.id}>
                     <TableRow>
-                      <TableCell colSpan={4}>
-                        {renderOrderItems(order.items)}
+                      <TableCell>{order.id}</TableCell>
+                      <TableCell>${order.totalAmount}</TableCell>
+                      <TableCell>
+                        {new Date(order.orderDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Box display="flex" gap={1}>
+                          {orderStatus === 'DELIVERED' && (
+                            <Button
+                              variant="contained"
+                              onClick={() => handleCreateReview(order.id)}
+                              disabled={order.hasReview}
+                            >
+                              {order.hasReview ? 'Đã đánh giá' : 'Tạo review'}
+                            </Button>
+                          )}
+                          {order.hasReview && (
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              onClick={() => handleDeleteReview(order.id)}
+                              disabled={isDeletingReview}
+                            >
+                              {isDeletingReview ? 'Đang xóa...' : 'Xóa review'}
+                            </Button>
+                          )}
+                          <IconButton
+                            size="small"
+                            onClick={() => toggleExpandOrder(order.id)}
+                          >
+                            {expandedOrderId === order.id ? (
+                              <IconChevronUp size={18} />
+                            ) : (
+                              <IconChevronDown size={18} />
+                            )}
+                          </IconButton>
+                        </Box>
                       </TableCell>
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                    {expandedOrderId === order.id && (
+                      <TableRow>
+                        <TableCell colSpan={4}>
+                          {renderOrderItems(order.items)}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Box>
     )
   }
@@ -398,7 +403,7 @@ function FakeReviewsPage() {
               <FormControl fullWidth variant="outlined">
                 <OutlinedInput
                   type="file"
-                  inputProps={{ multiple: true }}
+                  inputProps={{ multiple: true, accept: 'image/*' }}
                   onChange={handleImageUpload}
                   startAdornment={
                     <InputAdornment position="start">

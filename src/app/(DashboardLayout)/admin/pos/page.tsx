@@ -1450,6 +1450,8 @@ const AdminPosPage = () => {
                       value={orderDateTime}
                       onChange={(newValue: any) => setOrderDateTime(newValue)}
                       slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                      views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                      format="dd/MM/yyyy HH:mm:ss"
                       sx={{ ml: 1 }}
                     />
                   </LocalizationProvider>
