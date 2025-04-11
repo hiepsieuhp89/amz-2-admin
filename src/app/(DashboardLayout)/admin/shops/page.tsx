@@ -103,6 +103,7 @@ function ShopsPage() {
     const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
     const [fedexBalanceDialogOpen, setFedexBalanceDialogOpen] = useState(false);
     const [fedexBalanceActionType, setFedexBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
+    const [verifyShopDialogOpen, setVerifyShopDialogOpen] = useState(false);
     const [amount, setAmount] = useState('');
     const [orderAnchorEl, setOrderAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -130,7 +131,6 @@ function ShopsPage() {
             setUserToDelete(null)
         } catch (error) {
             message.error("Không thể xóa người dùng. Vui lòng thử lại.")
-            console.error(error)
         }
     }
 
@@ -274,6 +274,41 @@ function ShopsPage() {
             handleMenuClose();
         } catch (error) {
             message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
+            console.error(error);
+        }
+    };
+
+    const handleVerifyShopDialogOpen = (userId: string) => {
+        setSelectedUserId(userId);
+        setVerifyShopDialogOpen(true);
+    };
+
+    const handleVerifyShopDialogClose = () => {
+        setVerifyShopDialogOpen(false);
+        setSelectedUserId(null);
+    };
+
+    const handleVerifyShop = async () => {
+        if (!selectedUserId) return;
+
+        try {
+            const user = filteredUsers.find(user => user.id === selectedUserId);
+            if (!user) {
+                message.error('Không tìm thấy thông tin người dùng');
+                return;
+            }
+
+            await updateUserMutation.mutateAsync({
+                id: selectedUserId,
+                payload: {
+                    isVerified: true
+                }
+            });
+
+            message.success('Xác minh cửa hàng thành công!');
+            handleVerifyShopDialogClose();
+        } catch (error) {
+            message.error('Không thể xác minh cửa hàng. Vui lòng thử lại.');
             console.error(error);
         }
     };
@@ -659,6 +694,17 @@ function ShopsPage() {
                                 <Box className="flex items-center gap-2">
                                     <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
                                     <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
+                                </Box>
+                            </MenuItem>
+                        )}
+                        {user.role === "shop" && !user.isVerified && (
+                            <MenuItem onClick={() => {
+                                handleVerifyShopDialogOpen(user.id);
+                                handleMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconBuildingStore size={16} className="text-green-400" />
+                                    <span>Xác minh cửa hàng</span>
                                 </Box>
                             </MenuItem>
                         )}
@@ -1103,6 +1149,46 @@ function ShopsPage() {
                             </div>
                         ) : (
                             fedexBalanceActionType === 'deposit' ? <span className="text-white">Nạp tiền Fedex</span> : <span className="text-white">Rút tiền Fedex</span>
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={verifyShopDialogOpen}
+                onClose={handleVerifyShopDialogClose}
+                PaperProps={{
+                    className: "!rounded-[6px] shadow-xl",
+                }}
+            >
+                <DialogTitle fontSize={18}>
+                    Xác minh cửa hàng
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText className="text-gray-500 mt-2">
+                        Bạn có chắc chắn muốn xác minh cửa hàng này không? Sau khi xác minh, cửa hàng sẽ được đánh dấu là đã xác minh và có thể tiếp tục hoạt động.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions className="!p-4 !pb-6">
+                    <Button
+                        variant="outlined"
+                        onClick={handleVerifyShopDialogClose}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={handleVerifyShop}
+                        className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
+                        disabled={updateUserMutation.isPending}
+                    >
+                        {updateUserMutation.isPending ? (
+                            <div className="flex items-center gap-2 text-white">
+                                <CircularProgress size={16} className="text-white" />
+                                Đang xử lý...
+                            </div>
+                        ) : (
+                            <span className="text-white">Xác minh</span>
                         )}
                     </Button>
                 </DialogActions>
