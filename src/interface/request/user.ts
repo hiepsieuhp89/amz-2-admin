@@ -60,6 +60,7 @@ export interface IUpdateUser {
     status?: UserStatus
     balance?: string
     fedexBalance?: string
+    isHaveLogTransaction?: boolean
     bankName?: string | null
     bankAccountNumber?: string | null
     bankAccountName?: string | null

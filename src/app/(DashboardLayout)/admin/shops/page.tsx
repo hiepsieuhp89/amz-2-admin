@@ -101,6 +101,8 @@ function ShopsPage() {
     const updateUserMutation = useUpdateUser();
     const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
     const [balanceActionType, setBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
+    const [fedexBalanceDialogOpen, setFedexBalanceDialogOpen] = useState(false);
+    const [fedexBalanceActionType, setFedexBalanceActionType] = useState<'deposit' | 'withdraw'>('deposit');
     const [amount, setAmount] = useState('');
     const [orderAnchorEl, setOrderAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -318,6 +320,53 @@ function ShopsPage() {
             handleBalanceDialogClose();
         } catch (error) {
             message.error(`Không thể ${balanceActionType === 'deposit' ? 'nạp' : 'rút'} tiền. Vui lòng thử lại.`);
+            console.error(error);
+        }
+    };
+
+    const handleFedexBalanceDialogOpen = (userId: string, type: 'deposit' | 'withdraw') => {
+        setSelectedUserId(userId);
+        setFedexBalanceActionType(type);
+        setFedexBalanceDialogOpen(true);
+    };
+
+    const handleFedexBalanceDialogClose = () => {
+        setFedexBalanceDialogOpen(false);
+        setAmount('');
+        setSelectedUserId(null);
+    };
+
+    const handleFedexBalanceUpdate = async () => {
+        if (!selectedUserId || !amount || isNaN(Number(amount))) {
+            message.error('Số tiền không hợp lệ');
+            return;
+        }
+
+        try {
+            const currentUser = filteredUsers.find(user => user.id === selectedUserId);
+            if (!currentUser) {
+                message.error('Không tìm thấy thông tin người dùng');
+                return;
+            }
+
+            const currentBalance = Number(currentUser.fedexBalance);
+            const amountNumber = Number(amount);
+            const newBalance = fedexBalanceActionType === 'deposit'
+                ? currentBalance + amountNumber
+                : currentBalance - amountNumber;
+
+            await updateUserMutation.mutateAsync({
+                id: selectedUserId,
+                payload: {
+                    fedexBalance: newBalance.toString(),
+                    isHaveLogTransaction: true
+                }
+            });
+
+            message.success(`${fedexBalanceActionType === 'deposit' ? 'Nạp' : 'Rút'} tiền Fedex thành công!`);
+            handleFedexBalanceDialogClose();
+        } catch (error) {
+            message.error(`Không thể ${fedexBalanceActionType === 'deposit' ? 'nạp' : 'rút'} tiền Fedex. Vui lòng thử lại.`);
             console.error(error);
         }
     };
@@ -629,6 +678,24 @@ function ShopsPage() {
                             <Box className="flex items-center gap-2">
                                 <IconWallet size={16} className="text-orange-400" />
                                 <span>Rút tiền</span>
+                            </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            handleFedexBalanceDialogOpen(user.id, 'deposit');
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconWallet size={16} className="text-blue-400" />
+                                <span>Nạp tiền Fedex</span>
+                            </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            handleFedexBalanceDialogOpen(user.id, 'withdraw');
+                            handleMenuClose();
+                        }}>
+                            <Box className="flex items-center gap-2">
+                                <IconWallet size={16} className="text-purple-400" />
+                                <span>Rút tiền Fedex</span>
                             </Box>
                         </MenuItem>
                         <MenuItem onClick={() => {
@@ -987,6 +1054,55 @@ function ShopsPage() {
                             </div>
                         ) : (
                             balanceActionType === 'deposit' ? <span className="text-white">Nạp tiền</span> : <span className="text-white">Rút tiền</span>
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={fedexBalanceDialogOpen}
+                onClose={handleFedexBalanceDialogClose}
+                PaperProps={{
+                    className: "!rounded-[6px] shadow-xl",
+                }}
+            >
+                <DialogTitle fontSize={18}>
+                    {fedexBalanceActionType === 'deposit' ? 'Nạp tiền Fedex' : 'Rút tiền Fedex'}
+                </DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        label="Số tiền"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        sx={{ mt: 2 }}
+                        InputProps={{
+                            endAdornment: <InputAdornment position="end">USD</InputAdornment>,
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions className="!p-4 !pb-6">
+                    <Button
+                        variant="outlined"
+                        onClick={handleFedexBalanceDialogClose}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={handleFedexBalanceUpdate}
+                        className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
+                        disabled={updateUserMutation.isPending}
+                    >
+                        {updateUserMutation.isPending ? (
+                            <div className="flex items-center gap-2 text-white">
+                                <CircularProgress size={16} className="text-white" />
+                                Đang xử lý...
+                            </div>
+                        ) : (
+                            fedexBalanceActionType === 'deposit' ? <span className="text-white">Nạp tiền Fedex</span> : <span className="text-white">Rút tiền Fedex</span>
                         )}
                     </Button>
                 </DialogActions>
