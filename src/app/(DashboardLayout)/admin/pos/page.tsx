@@ -1187,7 +1187,7 @@ const AdminPosPage = () => {
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                           <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                            Thuế (8%):
+                            Thuế:
                           </Typography>
                           <span className="font-normal text-gray-400">
                             $0.00
