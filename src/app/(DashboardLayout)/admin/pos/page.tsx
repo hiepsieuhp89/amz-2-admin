@@ -1190,20 +1190,20 @@ const AdminPosPage = () => {
                             Thuế (8%):
                           </Typography>
                           <span className="font-normal text-gray-400">
-                            $
-                            {(
+                            $0.00
+                            {/* {(
                               selectedProducts.reduce(
                                 (sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1),
                                 0,
                               ) * 0.08
-                            )}
+                            )} */}
                           </span>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                           <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
                             Đang chuyển hàng:
                           </Typography>
-                          <span className="font-normal text-gray-400">$5.00</span>
+                          <span className="font-normal text-gray-400">$0.00</span>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                           <Typography fontSize="14px" sx={{ fontWeight: 600, color: "#2c3e50" }}>
