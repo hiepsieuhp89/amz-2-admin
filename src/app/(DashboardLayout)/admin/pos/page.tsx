@@ -1227,9 +1227,7 @@ const AdminPosPage = () => {
                           <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
                             ${" "}
                             {(
-                              selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) *
-                              1.08 +
-                              5
+                              selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
                             )}
                           </Box>
                         </Box>
