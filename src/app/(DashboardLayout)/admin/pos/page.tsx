@@ -1443,16 +1443,34 @@ const AdminPosPage = () => {
                 <Typography sx={{ display: "flex", alignItems: "center" }}>
                   <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
                   <span className="mr-1 font-bold">Thời gian đặt hàng:</span>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker
-                      value={orderDateTime}
-                      onChange={(newValue: any) => setOrderDateTime(newValue)}
-                      slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                      views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                      format="dd/MM/yyyy HH:mm:ss"
-                      sx={{ ml: 1 }}
-                    />
-                  </LocalizationProvider>
+                  <TextField
+                    type="datetime-local"
+                    size="small"
+                    value={orderDateTime ? orderDateTime.toISOString().slice(0, 16) : ''}
+                    onChange={(e) => {
+                      const newDate = new Date(e.target.value);
+                      setOrderDateTime(newDate);
+                    }}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    sx={{ ml: 1, width: '220px' }}
+                  />
+                  <TextField
+                    type="number"
+                    size="small"
+                    label="Giây"
+                    value={orderDateTime ? orderDateTime.getSeconds() : 0}
+                    onChange={(e) => {
+                      if (orderDateTime) {
+                        const newDate = new Date(orderDateTime);
+                        newDate.setSeconds(parseInt(e.target.value, 10));
+                        setOrderDateTime(newDate);
+                      }
+                    }}
+                    inputProps={{ min: 0, max: 59, step: 1 }}
+                    sx={{ ml: 1, width: '80px' }}
+                  />
                 </Typography>
               </Box>
             </Paper>
@@ -1527,8 +1545,7 @@ const AdminPosPage = () => {
               </Typography>
               <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none w-fit">
                 ${(
-                  selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0) * 1.08 +
-                  5
+                  selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
                 )}
               </Box>
             </Box>
