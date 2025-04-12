@@ -423,9 +423,9 @@ function TransactionHistoryPage() {
               labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
             />
           </Paper>
-          <WithdrawalTable />
         </>
       )}
+      <WithdrawalTable />
     </div>
     </>
   )
