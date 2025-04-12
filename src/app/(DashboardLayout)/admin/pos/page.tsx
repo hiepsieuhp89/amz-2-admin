@@ -1440,39 +1440,78 @@ const AdminPosPage = () => {
                   <span className="mr-1 font-bold">Địa chỉ:</span>
                   <span>{selectedUser?.address}</span>
                 </Typography>
-                <Typography sx={{ display: "flex", alignItems: "center" }}>
+                <Typography sx={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
                   <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
                   <span className="mr-1 font-bold">Thời gian đặt hàng:</span>
-                  <TextField
-                    type="datetime-local"
-                    size="small"
-                    value={orderDateTime ? new Date(orderDateTime.getTime() - orderDateTime.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
-                    onChange={(e) => {
-                      const localDate = new Date(e.target.value);
-                      // Điều chỉnh lại múi giờ
-                      const utcDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
-                      setOrderDateTime(utcDate);
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    sx={{ ml: 1, width: '220px' }}
-                  />
-                  <TextField
-                    type="number"
-                    size="small"
-                    label="Giây"
-                    value={orderDateTime ? orderDateTime.getSeconds() : 0}
-                    onChange={(e) => {
-                      if (orderDateTime) {
-                        const newDate = new Date(orderDateTime);
-                        newDate.setSeconds(parseInt(e.target.value, 10));
-                        setOrderDateTime(newDate);
-                      }
-                    }}
-                    inputProps={{ min: 0, max: 59, step: 1 }}
-                    sx={{ ml: 1, width: '80px' }}
-                  />
+                  
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, width: "100%" }}>
+                    <TextField
+                      type="date"
+                      size="small"
+                      label="Ngày"
+                      value={orderDateTime ? orderDateTime.toISOString().split('T')[0] : ''}
+                      onChange={(e) => {
+                        if (orderDateTime) {
+                          const newDate = new Date(orderDateTime);
+                          const [year, month, day] = e.target.value.split('-');
+                          newDate.setFullYear(parseInt(year));
+                          newDate.setMonth(parseInt(month) - 1);
+                          newDate.setDate(parseInt(day));
+                          setOrderDateTime(newDate);
+                        }
+                      }}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ width: '150px' }}
+                    />
+                    
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="Giờ"
+                      value={orderDateTime ? orderDateTime.getHours() : 0}
+                      onChange={(e) => {
+                        if (orderDateTime) {
+                          const newDate = new Date(orderDateTime);
+                          newDate.setHours(parseInt(e.target.value));
+                          setOrderDateTime(newDate);
+                        }
+                      }}
+                      inputProps={{ min: 0, max: 23 }}
+                      sx={{ width: '80px' }}
+                    />
+                    
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="Phút"
+                      value={orderDateTime ? orderDateTime.getMinutes() : 0}
+                      onChange={(e) => {
+                        if (orderDateTime) {
+                          const newDate = new Date(orderDateTime);
+                          newDate.setMinutes(parseInt(e.target.value));
+                          setOrderDateTime(newDate);
+                        }
+                      }}
+                      inputProps={{ min: 0, max: 59 }}
+                      sx={{ width: '80px' }}
+                    />
+                    
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="Giây"
+                      value={orderDateTime ? orderDateTime.getSeconds() : 0}
+                      onChange={(e) => {
+                        if (orderDateTime) {
+                          const newDate = new Date(orderDateTime);
+                          newDate.setSeconds(parseInt(e.target.value));
+                          setOrderDateTime(newDate);
+                        }
+                      }}
+                      inputProps={{ min: 0, max: 59 }}
+                      sx={{ width: '80px' }}
+                    />
+                  </Box>
                 </Typography>
               </Box>
             </Paper>
