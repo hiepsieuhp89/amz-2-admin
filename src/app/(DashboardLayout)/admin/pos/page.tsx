@@ -1446,10 +1446,12 @@ const AdminPosPage = () => {
                   <TextField
                     type="datetime-local"
                     size="small"
-                    value={orderDateTime ? orderDateTime.toISOString().slice(0, 16) : ''}
+                    value={orderDateTime ? new Date(orderDateTime.getTime() - orderDateTime.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                     onChange={(e) => {
-                      const newDate = new Date(e.target.value);
-                      setOrderDateTime(newDate);
+                      const localDate = new Date(e.target.value);
+                      // Điều chỉnh lại múi giờ
+                      const utcDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+                      setOrderDateTime(utcDate);
                     }}
                     InputLabelProps={{
                       shrink: true,
