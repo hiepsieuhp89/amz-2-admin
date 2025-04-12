@@ -171,7 +171,7 @@ function WithdrawalTable() {
                   {withdrawal.status?.toLowerCase() === TransactionStatus.PENDING && (
                     <>
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         color="success"
                         onClick={() => handleApprove(withdrawal.id)}
                         sx={{ marginRight: 1 }}
@@ -179,7 +179,7 @@ function WithdrawalTable() {
                     Phê duyệt
                   </Button>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     color="error"
                     onClick={() => handleReject(withdrawal.id)}
                   >
