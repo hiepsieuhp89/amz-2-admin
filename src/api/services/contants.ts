@@ -142,3 +142,10 @@ export const ConfigSettingsEndPoint = {
   GET_SETTINGS: "/admin/settings",
   UPDATE_SETTINGS: "/admin/settings",
 };
+
+export const ConfigEndPoint = {
+  BASE: "/config",
+  GET_BY_KEY: (key: string) => `/config/${key}`,
+  UPDATE: (key: string) => `/config/${key}`,
+  DELETE: (key: string) => `/config/${key}`,
+};

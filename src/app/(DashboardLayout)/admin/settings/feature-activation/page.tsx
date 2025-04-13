@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Box, Typography, Paper, Switch, Alert, Link, useTheme, alpha } from "@mui/material"
+import { Box, Typography, Paper, Switch, Alert, Link, useTheme, alpha, Button } from "@mui/material"
 import {
   IconShieldLock,
   IconTools,
@@ -27,6 +27,7 @@ import {
   IconBrandTwitter,
   IconBrandApple,
   IconNews,
+  IconSettings,
 } from "@tabler/icons-react"
 import { useGetMaintenanceMode, useUpdateMaintenanceMode } from "@/hooks/config"
 
@@ -282,204 +283,79 @@ const FeatureActivationPage = () => {
           settingKey="disable_image_optimization"
           icon={<IconPhoto size={20} />}
         />
-      </Box>
-
-      {/* Business Related Settings */}
-      <SectionHeader title="Liên quan đến Doanh nghiệp" />
-
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 3,
-          "& > *": {
-            width: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-          },
-        }}
-      >
-        <SettingCard
-          title="Kích hoạt hệ thống nhà cung cấp"
-          settingKey="vendor_system_activation"
-          defaultChecked={true}
-          icon={<IconUsers size={20} />}
-        />
-
-        <SettingCard
-          title="Sản phẩm được phân loại"
-          settingKey="classified_product"
-          defaultChecked={true}
-          icon={<IconTags size={20} />}
-        />
-
-        <SettingCard
-          title="Kích hoạt hệ thống ví"
-          settingKey="wallet_system"
-          defaultChecked={true}
-          icon={<IconWallet size={20} />}
-        />
-
-        <SettingCard
-          title="Kích hoạt hệ thống phiếu thưởng"
-          settingKey="coupon_system"
-          icon={<IconTicket size={20} />}
-        />
-
-        <SettingCard
-          title="Kích hoạt điểm đón"
-          settingKey="pickup_point"
-          defaultChecked={true}
-          icon={<IconMapPin size={20} />}
-        />
-
-        <SettingCard
-          title="Kích hoạt cuộc trò chuyện"
-          settingKey="conversation_system"
-          defaultChecked={true}
-          icon={<IconMessage size={20} />}
-        />
-
-        <SettingCard
-          title="Seller Product Manage By Admin"
-          settingKey="product_manage_by_admin"
-          icon={<IconPackage size={20} />}
-          alertMessage="After activate this option Cash On Delivery of Seller product will be managed by Admin."
-        />
-
-        <SettingCard
-          title="Admin Approval On Seller Product"
-          settingKey="product_approve_by_admin"
-          defaultChecked={true}
-          icon={<IconClipboardCheck size={20} />}
-          alertMessage="After activate this option, Admin approval need to seller product."
-        />
-
-        <SettingCard
-          title="Email xác thực"
-          settingKey="email_verification"
-          icon={<IconMail size={20} />}
-          alertMessage="You need to configure SMTP correctly to enable this feature."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/smtp-settings",
+        
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            border: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+            height: "100%",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              boxShadow: "0 4px 20px 0 rgba(0,0,0,0.1)",
+              transform: "translateY(-2px)",
+            },
           }}
-        />
-
-        <SettingCard
-          title="Product Query Activation"
-          settingKey="product_query_activation"
-          icon={<IconSearch size={20} />}
-        />
-
-        <SettingCard
-          title="Product External Link for Seller"
-          settingKey="product_external_link_for_seller"
-          defaultChecked={true}
-          icon={<IconExternalLink size={20} />}
-        />
-
-        <SettingCard
-          title="Use Floating Buttons In Website"
-          settingKey="use_floating_buttons"
-          defaultChecked={true}
-          icon={<IconFloatLeft size={20} />}
-        />
-
-        <SettingCard
-          title="Last Viewed Products Activation"
-          settingKey="last_viewed_product_activation"
-          defaultChecked={true}
-          icon={<IconHistory size={20} />}
-        />
-
-        <SettingCard
-          title="Newsletter Activation"
-          settingKey="newsletter_activation"
-          icon={<IconNews size={20} />}
-        />
-
-        <SettingCard
-          title="Kích hoạt thanh toán của khách"
-          settingKey="guest_checkout_activation"
-          defaultChecked={true}
-          icon={<IconCreditCard size={20} />}
-          alertMessage="You need to configure SMTP correctly to enable this feature."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/smtp-settings",
-          }}
-        />
-
-        <SettingCard
-          title="Seller Registration Verification"
-          settingKey="seller_registration_verify"
-          defaultChecked={true}
-          icon={<IconUserCheck size={20} />}
-        />
-
-        <SettingCard
-          title="Customer Registration Verification"
-          settingKey="customer_registration_verify"
-          defaultChecked={true}
-          icon={<IconUserCheck size={20} />}
-        />
-      </Box>
-
-      {/* Social Login Settings */}
-      <SectionHeader title="Đăng nhập mạng xã hội" />
-
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 3,
-          "& > *": {
-            width: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-          },
-        }}
-      >
-        <SettingCard
-          title="đăng nhập Facebook"
-          settingKey="facebook_login"
-          icon={<IconBrandFacebook size={20} />}
-          alertMessage="Bạn cần định cấu hình Facebook Client chính xác để bật tính năng này."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/social-login",
-          }}
-        />
-
-        <SettingCard
-          title="Đăng nhập Google"
-          settingKey="google_login"
-          icon={<IconBrandGoogle size={20} />}
-          alertMessage="Bạn cần định cấu hình Google Client chính xác để bật tính năng này."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/social-login",
-          }}
-        />
-
-        <SettingCard
-          title="Đăng nhập Twitter"
-          settingKey="twitter_login"
-          icon={<IconBrandTwitter size={20} />}
-          alertMessage="Bạn cần định cấu hình Ứng dụng khách Twitter một cách chính xác để bật tính năng này."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/social-login",
-          }}
-        />
-
-        <SettingCard
-          title="Apple login"
-          settingKey="apple_login"
-          icon={<IconBrandApple size={20} />}
-          alertMessage="You need to configure Apple Client correctly to enable this feature."
-          alertLink={{
-            text: "Định cấu hình ngay",
-            url: "https://amazonworld.cc/admin/social-login",
-          }}
-        />
+        >
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+            }}
+          >
+            <Box sx={{ color: theme.palette.primary.main, display: "flex", alignItems: "center" }}>
+              <IconSettings size={20} />
+            </Box>
+            <Typography
+              variant="subtitle1"
+              component="h3"
+              sx={{
+                fontWeight: 600,
+                textAlign: "center",
+                fontSize: "0.9rem",
+              }}
+            >
+              Cấu hình hệ thống
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              p: 3,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Button 
+              component="a" 
+              href="/admin/settings/system-config" 
+              variant="contained" 
+              color="primary" 
+              size="small"
+            >
+              Quản lý
+            </Button>
+            <Alert
+              severity="info"
+              sx={{
+                mt: 2,
+                fontSize: "0.8rem",
+                width: "100%",
+                "& .MuiAlert-message": {
+                  width: "100%",
+                },
+              }}
+            >
+              Quản lý các cấu hình hệ thống như: kích thước tệp tối đa, URL, email, vv.
+            </Alert>
+          </Box>
+        </Paper>
       </Box>
     </Box>
   )
