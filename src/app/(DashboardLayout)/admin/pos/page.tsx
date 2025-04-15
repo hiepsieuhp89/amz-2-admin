@@ -57,10 +57,11 @@ import {
 import { Empty, message } from "antd"
 import Image from "next/image"
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import styles from "./storehouse.module.scss"
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
+import { debounce } from 'lodash';
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -127,6 +128,22 @@ const AdminPosPage = () => {
   const { data: cities } = useGetCities({ stateId: selectedState, take: 9999999999 })
   const { mutate: createUser } = useCreateUser()
   const [isCopied, setIsCopied] = useState(false)
+
+  // Add debounced search function for optimized backend search
+  const debouncedShopSearch = useCallback(
+    debounce((value: string) => {
+      setSearchShop(value);
+    }, 500),
+    []
+  );
+  
+  // Add debounced user search function
+  const debouncedUserSearch = useCallback(
+    debounce((value: string) => {
+      setSearchUser(value);
+    }, 500),
+    []
+  );
 
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     const customer = event.currentTarget.dataset.customer
@@ -282,13 +299,13 @@ const AdminPosPage = () => {
   }
 
   const handleSearchShop = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchShop(e.target.value)
-    setShowShops(true)
+    debouncedShopSearch(e.target.value);
+    setShowShops(true);
   }
 
   const handleSearchUser = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = e.target.value;
-    setSearchUser(searchValue);
+    debouncedUserSearch(searchValue);
   }
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
@@ -493,9 +510,10 @@ const AdminPosPage = () => {
                       }
                     }}
                     onInputChange={(event, newInputValue) => {
-                      setSearchShop(newInputValue);
+                      debouncedShopSearch(newInputValue);
                     }}
                     loading={isLoadingShops}
+                    filterOptions={(x) => x} // Disable client-side filtering as we're using backend search
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -503,10 +521,6 @@ const AdminPosPage = () => {
                         variant="outlined"
                         size="small"
                         className="bg-white"
-                        value={selectedCustomer ?
-                          `${selectedCustomer.shopName} - ${selectedCustomer.email} - ${selectedCustomer.phone}`
-                          : ''
-                        }
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
@@ -995,9 +1009,10 @@ const AdminPosPage = () => {
                       if (newValue) handleSelectUser(newValue);
                     }}
                     onInputChange={(event, newInputValue) => {
-                      setSearchUser(newInputValue);
+                      debouncedUserSearch(newInputValue);
                     }}
                     loading={isLoadingValidUsers}
+                    filterOptions={(x) => x} // Disable client-side filtering as we're using backend search
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -1005,10 +1020,6 @@ const AdminPosPage = () => {
                         variant="outlined"
                         size="small"
                         className="bg-white"
-                        value={selectedUser ?
-                          `${selectedUser.fullName} - ${selectedUser.address || 'Chưa có địa chỉ'} - ${selectedUser.email} - ${selectedUser.phone || 'Chưa có số điện thoại'}`
-                          : ''
-                        }
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
@@ -1021,7 +1032,7 @@ const AdminPosPage = () => {
                           ),
                           endAdornment: (
                             <>
-                              {isLoadingValidUsers ? <CircularProgress color="inherit" size={20} /> : null}
+                              {isLoadingValidUsers ? <CircularProgress color="inherit" size={20} /> : null}s
                               {params.InputProps.endAdornment}
                             </>
                           ),
