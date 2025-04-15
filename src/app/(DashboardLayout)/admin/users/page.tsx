@@ -174,7 +174,7 @@ function UsersPage() {
       const user = filteredUsers.find(u => u.id === userId);
       if (!user) return;
 
-      const newStatus = user.shopStatus === "SUSPEND" ? "ACTIVE" : "SUSPEND";
+      const newStatus = user.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
 
       await updateUserMutation.mutateAsync({
         id: userId,
@@ -183,7 +183,7 @@ function UsersPage() {
         }
       });
 
-      message.success(newStatus === "SUSPEND"
+      message.success(newStatus === "SUSPENDED"
         ? "Đã đóng băng shop thành công!"
         : "Đã bỏ đóng băng shop thành công!");
 
@@ -289,7 +289,7 @@ function UsersPage() {
             label={
               user.shopStatus === "PENDING"
                 ? "Chờ duyệt"
-                : user.shopStatus === "SUSPEND"
+                : user.shopStatus === "SUSPENDED"
                   ? "Đã đóng băng"
                   : user.isActive
                     ? "Đang hoạt động"
@@ -298,7 +298,7 @@ function UsersPage() {
             color={
               user.shopStatus === "PENDING"
                 ? "warning"
-                : user.shopStatus === "SUSPEND"
+                : user.shopStatus === "SUSPENDED"
                   ? "error"
                   : user.isActive
                     ? "success"
@@ -376,8 +376,8 @@ function UsersPage() {
                 handleToggleFreeze(user.id);
               }}>
                 <Box className="flex items-center gap-2">
-                  <IconWallet size={16} className={user.shopStatus === "SUSPEND" ? "text-green-400" : "text-red-400"} />
-                  <span>{user.shopStatus === "SUSPEND" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
+                  <IconWallet size={16} className={user.shopStatus === "SUSPENDED" ? "text-green-400" : "text-red-400"} />
+                  <span>{user.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}</span>
                 </Box>
               </MenuItem>
             )}

@@ -68,6 +68,10 @@ export const ConfigUserEndPoint = {
   DELETE: (id: string) => `/admin/users/${id}`,
 };
 
+export const ConfigUserIpHistoryEndPoint = {
+  BASE: "/admin/user-ip-history",
+};
+
 export const ConfigTransactionEndPoint = {
   BASE: "/transaction",
   HISTORY: "/transaction/admin/history",

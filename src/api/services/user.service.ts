@@ -1,6 +1,6 @@
 /* eslint-disable import/no-anonymous-default-export */
 import { sendDelete, sendGet, sendPatch, sendPost } from "../apiClient"
-import { ConfigUserEndPoint } from "./contants"
+import { ConfigUserEndPoint, ConfigUserIpHistoryEndPoint } from "./contants"
 import type { ICreateUser, IUpdateUser } from "@/interface/request/user"
 import type { IUserListResponse, IUserResponse } from "@/interface/response/user"
 
@@ -49,6 +49,30 @@ export const updateUser = async (id: string, payload: IUpdateUser): Promise<IUse
 // Delete user
 export const deleteUser = async (id: string): Promise<{ success: boolean }> => {
   const res = await sendDelete(ConfigUserEndPoint.DELETE(id), { withCredentials: true })
+  return res
+}
+
+// Get user IP history
+export const getUserIpHistory = async (params: {
+  userId: string;
+  page?: number;
+  take?: number;
+  order?: "ASC" | "DESC";
+  search?: string;
+  status?: string;
+  ip?: string;
+  action?: string;
+}): Promise<any> => {
+  const res = await sendGet(ConfigUserIpHistoryEndPoint.BASE, {
+    userId: params.userId,
+    page: params?.page,
+    take: params?.take,
+    order: params?.order,
+    search: params?.search && params.search.length > 0 ? params.search : undefined,
+    status: params?.status && params.status.length > 0 ? params.status : undefined,
+    ip: params?.ip && params.ip.length > 0 ? params.ip : undefined,
+    action: params?.action && params.action.length > 0 ? params.action : undefined,
+  })
   return res
 }
 

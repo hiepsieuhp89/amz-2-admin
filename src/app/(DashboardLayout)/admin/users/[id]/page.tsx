@@ -20,6 +20,17 @@ import {
   IconButton,
   InputAdornment,
   Switch,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Tooltip,
+  Chip,
 } from "@mui/material";
 import { IconArrowLeft, IconEdit, IconTrash, IconMessage, IconUpload, IconX, IconStar, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { message } from "antd";
@@ -30,9 +41,36 @@ import { useEffect, useState } from "react";
 import { useUploadImage } from "@/hooks/image";
 import { useGetAllSellerPackages } from "@/hooks/seller-package";
 import { useGetAllSpreadPackages } from "@/hooks/spread-package";
-import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user";
+import { useDeleteUser, useGetUserById, useUpdateUser, useGetUserIpHistory } from "@/hooks/user";
 import { ISellerPackage } from "@/interface/response/seller-package";
 import { ISpreadPackage } from "@/interface/response/spread-package";
+
+// Tab interface
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`user-tabpanel-${index}`}
+      aria-labelledby={`user-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
 
 function UserDetailPage() {
   const router = useRouter();
@@ -44,6 +82,16 @@ function UserDetailPage() {
   const [showTransactionPassword, setShowTransactionPassword] = useState(false);
   const [showWalletPassword, setShowWalletPassword] = useState(false);
   const [showWithdrawPassword, setShowWithdrawPassword] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [shopStatusDialogOpen, setShopStatusDialogOpen] = useState(false);
+  const [verifyShopDialogOpen, setVerifyShopDialogOpen] = useState(false);
+  
+  // IP History state
+  const [ipHistoryPage, setIpHistoryPage] = useState(0);
+  const [ipHistoryRowsPerPage, setIpHistoryRowsPerPage] = useState(10);
+  const [ipFilter, setIpFilter] = useState("");
+  const [actionFilter, setActionFilter] = useState("");
+  
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -100,6 +148,16 @@ function UserDetailPage() {
   const { data: sellerPackageData } = useGetAllSellerPackages();
   const { data: spreadPackageData } = useGetAllSpreadPackages();
   const uploadImageMutation = useUploadImage();
+  
+  // Fetch IP history
+  const { data: ipHistoryData, isLoading: ipHistoryLoading } = useGetUserIpHistory({
+    userId: id,
+    page: ipHistoryPage + 1,
+    take: ipHistoryRowsPerPage,
+    ip: ipFilter || undefined,
+    action: actionFilter || undefined,
+  });
+
   useEffect(() => {
     if (userData?.data) {
       setFormData({
@@ -357,6 +415,170 @@ function UserDetailPage() {
     );
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+  
+  const handleIpHistoryPageChange = (event: unknown, newPage: number) => {
+    setIpHistoryPage(newPage);
+  };
+
+  const handleIpHistoryRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIpHistoryRowsPerPage(parseInt(event.target.value, 10));
+    setIpHistoryPage(0);
+  };
+  
+  const handleIpFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIpFilter(e.target.value);
+  };
+  
+  const handleActionFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setActionFilter(e.target.value);
+  };
+
+  // Handle toggling shop freeze status
+  const handleToggleFreeze = async () => {
+    try {
+      if (!userData?.data) return;
+      
+      const newStatus = userData.data.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+      
+      await updateUserMutation.mutateAsync({
+        id,
+        payload: {
+          shopStatus: newStatus
+        }
+      });
+      
+      message.success(newStatus === "SUSPENDED" 
+        ? "Đã đóng băng shop thành công!" 
+        : "Đã bỏ đóng băng shop thành công!");
+      
+      setShopStatusDialogOpen(false);
+    } catch (error) {
+      message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
+      console.error(error);
+    }
+  };
+
+  // Handle shop verification
+  const handleVerifyShop = async () => {
+    try {
+      if (!userData?.data) return;
+      
+      await updateUserMutation.mutateAsync({
+        id,
+        payload: {
+          isVerified: true
+        }
+      });
+      
+      message.success("Đã xác minh cửa hàng thành công!");
+      setVerifyShopDialogOpen(false);
+    } catch (error) {
+      message.error("Không thể xác minh cửa hàng. Vui lòng thử lại.");
+      console.error(error);
+    }
+  };
+
+  // Parse user agent to extract readable device info
+  const parseUserAgent = (userAgent: string): string => {
+    try {
+      let deviceInfo = "";
+      
+      // Extract mobile info
+      if (userAgent.includes("Mobile")) {
+        if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
+          deviceInfo = "iOS";
+        } else if (userAgent.includes("Android")) {
+          deviceInfo = "Android";
+          // Try to extract Android version
+          const androidMatch = userAgent.match(/Android\s([0-9.]+)/);
+          if (androidMatch && androidMatch[1]) {
+            deviceInfo += ` ${androidMatch[1]}`;
+          }
+        } else {
+          deviceInfo = "Mobile";
+        }
+      } else {
+        // Desktop info
+        if (userAgent.includes("Windows")) {
+          deviceInfo = "Windows";
+        } else if (userAgent.includes("Mac")) {
+          deviceInfo = "Mac";
+        } else if (userAgent.includes("Linux")) {
+          deviceInfo = "Linux";
+        } else {
+          deviceInfo = "Desktop";
+        }
+      }
+      
+      // Extract browser info
+      if (userAgent.includes("Chrome") && !userAgent.includes("Chromium")) {
+        deviceInfo += " - Chrome";
+      } else if (userAgent.includes("Firefox")) {
+        deviceInfo += " - Firefox";
+      } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+        deviceInfo += " - Safari";
+      } else if (userAgent.includes("Edge")) {
+        deviceInfo += " - Edge";
+      } else if (userAgent.includes("MSIE") || userAgent.includes("Trident")) {
+        deviceInfo += " - IE";
+      }
+      
+      return deviceInfo || userAgent.substring(0, 50) + "...";
+    } catch (e) {
+      return userAgent.substring(0, 50) + "...";
+    }
+  };
+
+  // Format action for display
+  const formatAction = (action: string): JSX.Element => {
+    let color = "default";
+    let label = action;
+    
+    switch (action) {
+      case "LOGIN":
+        color = "success";
+        label = "Đăng nhập";
+        break;
+      case "REGISTER":
+      case "REGISTER_SELLER":
+        color = "primary";
+        label = action === "REGISTER" ? "Đăng ký" : "Đăng ký cửa hàng";
+        break;
+      case "LOGOUT":
+        color = "warning";
+        label = "Đăng xuất";
+        break;
+      case "RESET_PASSWORD":
+      case "CHANGE_PASSWORD":
+        color = "info";
+        label = action === "RESET_PASSWORD" ? "Đặt lại mật khẩu" : "Đổi mật khẩu";
+        break;
+      case "WITHDRAW":
+        color = "error";
+        label = "Rút tiền";
+        break;
+      case "DEPOSIT":
+        color = "success";
+        label = "Nạp tiền";
+        break;
+      default:
+        color = "default";
+    }
+    
+    return (
+      <Chip 
+        label={label} 
+        color={color as any} 
+        size="small" 
+        variant="filled" 
+        className="min-w-[100px] text-center"
+      />
+    );
+  };
+
   if (isLoading) {
     return (
       <Box className="flex items-center justify-center p-6 py-12">
@@ -408,599 +630,736 @@ function UserDetailPage() {
       </Box>
 
       <Paper className="p-6 border">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Thông tin cơ bản */}
-          <Typography variant="h6" className="font-medium">Thông tin cơ bản</Typography>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-              error={!!errors.email}
-              helperText={errors.email}
-            />
-            <TextField
-              size="small"
-              label="Số điện thoại"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-              error={!!errors.phone}
-              helperText={errors.phone}
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Địa chỉ"
-              name="address"
-              value={formData.address || formData.shopAddress}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-            <FormControl fullWidth size="small" disabled={!isEditing}>
-              <InputLabel>Vai trò</InputLabel>
-              <Select
-                name="role"
-                value={formData.role}
-                label="Vai trò"
-                onChange={(e) => handleChange(e as any)}
-              >
-                <MenuItem value="user">Người dùng</MenuItem>
-                <MenuItem value="shop">Cửa hàng</MenuItem>
-                <MenuItem value="admin">Quản trị viên</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-
-          {/* Thông tin người dùng (chỉ hiển thị cho user và admin) */}
-          {(userData?.data.role === "user" || userData?.data.role === "admin") && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <TextField
-                size="small"
-                label="Tên người dùng"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-              <TextField
-                size="small"
-                label="Tên đầy đủ"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </div>
-          )}
-
-          {/* Thông tin cửa hàng */}
-          {userData?.data.role === "shop" &&
-            <div className="flex items-center justify-between">
-              <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>
-              <div className="flex items-center gap-2">
-                <Typography variant="body2" color={formData.shopStatus === "PENDING" ? "error" : "primary"}>
-                  {formData.shopStatus === "PENDING" ? "Chờ duyệt" : "Đã duyệt"}
-                </Typography>
-                <Switch
-                  checked={formData.shopStatus === "ACTIVE"}
-                  onChange={(e) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      shopStatus: e.target.checked ? "ACTIVE" : "PENDING"
-                    }))
-                  }}
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={tabValue} onChange={handleTabChange} aria-label="user detail tabs">
+              <Tab label="Thông tin người dùng" id="user-tab-0" aria-controls="user-tabpanel-0" />
+              <Tab label="Lịch sử IP" id="user-tab-1" aria-controls="user-tabpanel-1" />
+            </Tabs>
+          </Box>
+          
+          <TabPanel value={tabValue} index={0}>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Thông tin cơ bản */}
+              <Typography variant="h6" className="font-medium">Thông tin cơ bản</Typography>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
                   disabled={!isEditing}
+                  error={!!errors.email}
+                  helperText={errors.email}
+                />
+                <TextField
+                  size="small"
+                  label="Số điện thoại"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                  error={!!errors.phone}
+                  helperText={errors.phone}
                 />
               </div>
-            </div>
-          }
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label={userData?.data.role === "shop" ? "Tên cửa hàng" : "Tên người dùng"}
-              name="shopName"
-              value={formData.shopName}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-            <TextField
-              size="small"
-              label="Lượt xem"
-              name="view"
-              type="number"
-              value={formData.view}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-          </div>}
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormControl fullWidth size="small" disabled={!isEditing}>
-              <InputLabel>Đánh giá sao</InputLabel>
-              <Select
-                name="stars"
-                value={formData.stars}
-                label="Đánh giá sao"
-                onChange={(e) => handleChange(e as any)}
-              >
-                <MenuItem value={0}>{generateRating(0)}</MenuItem>
-                <MenuItem value={1}>{generateRating(1)}</MenuItem>
-                <MenuItem value={2}>{generateRating(2)}</MenuItem>
-                <MenuItem value={3}>{generateRating(3)}</MenuItem>
-                <MenuItem value={4}>{generateRating(4)}</MenuItem>
-                <MenuItem value={5}>{generateRating(5)}</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              size="small"
-              label="Điểm uy tín"
-              name="reputationPoints"
-              type="number"
-              value={formData.reputationPoints}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-          </div>}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Địa chỉ"
+                  name="address"
+                  value={formData.address || formData.shopAddress}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <FormControl fullWidth size="small" disabled={!isEditing}>
+                  <InputLabel>Vai trò</InputLabel>
+                  <Select
+                    name="role"
+                    value={formData.role}
+                    label="Vai trò"
+                    onChange={(e) => handleChange(e as any)}
+                  >
+                    <MenuItem value="user">Người dùng</MenuItem>
+                    <MenuItem value="shop">Cửa hàng</MenuItem>
+                    <MenuItem value="admin">Quản trị viên</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
 
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div>
-              <TextField
+              {/* Thông tin người dùng (chỉ hiển thị cho user và admin) */}
+              {(userData?.data.role === "user" || userData?.data.role === "admin") && (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <TextField
+                    size="small"
+                    label="Tên người dùng"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                  <TextField
+                    size="small"
+                    label="Tên đầy đủ"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                </div>
+              )}
+
+              {/* Thông tin cửa hàng */}
+              {userData?.data.role === "shop" &&
+                <div className="flex items-center justify-between">
+                  <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>
+                  <div className="flex items-center gap-4 px-4 py-2 border rounded-md bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <Typography variant="body2" color={formData.shopStatus === "PENDING" ? "error" : "primary"}>
+                        {formData.shopStatus === "PENDING" ? "Chờ duyệt" : "Đã duyệt"}
+                      </Typography>
+                      <Switch
+                        checked={formData.shopStatus === "ACTIVE"}
+                        onChange={(e) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            shopStatus: e.target.checked ? "ACTIVE" : "PENDING"
+                          }))
+                        }}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    
+                    <div className="h-6 border-l border-gray-300"></div>
+                    
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color={userData.data.shopStatus === "SUSPENDED" ? "success" : "error"}
+                      onClick={() => setShopStatusDialogOpen(true)}
+                      className={userData.data.shopStatus === "SUSPENDED" ? "!text-green-600 !border-green-600" : "!text-red-600 !border-red-600"}
+                      disabled={isEditing}
+                    >
+                      {userData.data.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}
+                    </Button>
+                    
+                    {!userData.data.isVerified && (
+                      <>
+                        <div className="h-6 border-l border-gray-300"></div>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="success"
+                          onClick={() => setVerifyShopDialogOpen(true)}
+                          className="!text-green-600 !border-green-600"
+                          disabled={isEditing}
+                        >
+                          Xác minh cửa hàng
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              }
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label={userData?.data.role === "shop" ? "Tên cửa hàng" : "Tên người dùng"}
+                  name="shopName"
+                  value={formData.shopName}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Lượt xem"
+                  name="view"
+                  type="number"
+                  value={formData.view}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <FormControl fullWidth size="small" disabled={!isEditing}>
+                  <InputLabel>Đánh giá sao</InputLabel>
+                  <Select
+                    name="stars"
+                    value={formData.stars}
+                    label="Đánh giá sao"
+                    onChange={(e) => handleChange(e as any)}
+                  >
+                    <MenuItem value={0}>{generateRating(0)}</MenuItem>
+                    <MenuItem value={1}>{generateRating(1)}</MenuItem>
+                    <MenuItem value={2}>{generateRating(2)}</MenuItem>
+                    <MenuItem value={3}>{generateRating(3)}</MenuItem>
+                    <MenuItem value={4}>{generateRating(4)}</MenuItem>
+                    <MenuItem value={5}>{generateRating(5)}</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  size="small"
+                  label="Điểm uy tín"
+                  name="reputationPoints"
+                  type="number"
+                  value={formData.reputationPoints}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div>
+                  <TextField
+                    size="small"
+                    label="Số lượng sản phẩm"
+                    name="numberProduct"
+                    type="number"
+                    value={formData.numberProduct}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={true}
+                  />
+                </div>
+                <div>
+                  <TextField
+                    size="small"
+                    label="Tổng lợi nhuận"
+                    name="totalProfit"
+                    type="number"
+                    value={formData.totalProfit}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={true}
+                  />
+                </div>
+              </div>}
+              {userData?.data.role === "shop" && (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <Typography variant="subtitle1" className="mb-2">Logo cửa hàng</Typography>
+                    {formData.logoUrl ? (
+                      <div className="relative w-32 h-32">
+                        <Image
+                          src={formData.logoUrl}
+                          alt="Logo cửa hàng"
+                          fill
+                          sizes="(max-width: 128px) 100vw, 128px"
+                          className="object-contain rounded"
+                        />
+                      </div>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Chưa có logo
+                      </Typography>
+                    )}
+                  </div>
+                </div>
+              )}
+              {/* Thông tin tài chính */}
+              {userData?.data.role === "shop" && <Typography variant="h6" className="mt-6 font-medium">Thông tin tài chính</Typography>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Số dư ví cửa hàng"
+                  name="balance"
+                  type="number"
+                  value={formData.balance}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Số dư ví Fedex"
+                  name="fedexBalance"
+                  type="number"
+                  value={formData.fedexBalance}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Số tiền đã rút"
+                  name="totalWithdrawn"
+                  type="number"
+                  value={formData.totalWithdrawn}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Tổng lợi nhuận"
+                  name="totalProfit"
+                  type="number"
+                  value={formData.totalProfit}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tổng tiền hàng đang giao"
+                  name="totalShippingOrders"
+                  type="number"
+                  value={formData.totalShippingOrders}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Tổng tiền hàng đã giao"
+                  name="totalDeliveredOrders"
+                  type="number"
+                  value={formData.totalDeliveredOrders}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+              {userData?.data.role === "shop" && <TextField
                 size="small"
                 label="Số lượng sản phẩm"
                 name="numberProduct"
                 type="number"
                 value={formData.numberProduct}
-                InputProps={{
-                  readOnly: true,
-                }}
+                onChange={handleChange}
                 fullWidth
                 variant="outlined"
                 className="rounded"
-                disabled={true}
-              />
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Tổng lợi nhuận"
-                name="totalProfit"
-                type="number"
-                value={formData.totalProfit}
-                InputProps={{
-                  readOnly: true,
-                }}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={true}
-              />
-            </div>
-          </div>}
-          {userData?.data.role === "shop" && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <Typography variant="subtitle1" className="mb-2">Logo cửa hàng</Typography>
-                {formData.logoUrl ? (
-                  <div className="relative w-32 h-32">
-                    <Image
-                      src={formData.logoUrl}
-                      alt="Logo cửa hàng"
-                      fill
-                      sizes="(max-width: 128px) 100vw, 128px"
-                      className="object-contain rounded"
+                disabled={!isEditing}
+              />}
+
+              {/* Thông tin ngân hàng (chỉ hiển thị cho user và admin) */}
+              {(userData?.data.role === "user" || userData?.data.role === "admin") && (
+                <>
+                  <Typography variant="h6" className="mt-6 font-medium">Thông tin ngân hàng</Typography>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <TextField
+                      size="small"
+                      label="Tên ngân hàng"
+                      name="bankName"
+                      value={formData.bankName}
+                      onChange={handleChange}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                      disabled={!isEditing}
+                    />
+                    <TextField
+                      size="small"
+                      label="Số tài khoản"
+                      name="bankAccountNumber"
+                      value={formData.bankAccountNumber}
+                      onChange={handleChange}
+                      fullWidth
+                      variant="outlined"
+                      className="rounded"
+                      disabled={!isEditing}
                     />
                   </div>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    Chưa có logo
-                  </Typography>
-                )}
-              </div>
-            </div>
-          )}
-          {/* Thông tin tài chính */}
-          {userData?.data.role === "shop" && <Typography variant="h6" className="mt-6 font-medium">Thông tin tài chính</Typography>}
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Số dư ví cửa hàng"
-              name="balance"
-              type="number"
-              value={formData.balance}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-            <TextField
-              size="small"
-              label="Số dư ví Fedex"
-              name="fedexBalance"
-              type="number"
-              value={formData.fedexBalance}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-          </div>}
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Số tiền đã rút"
-              name="totalWithdrawn"
-              type="number"
-              value={formData.totalWithdrawn}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-            <TextField
-              size="small"
-              label="Tổng lợi nhuận"
-              name="totalProfit"
-              type="number"
-              value={formData.totalProfit}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-          </div>}
-          {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Tổng tiền hàng đang giao"
-              name="totalShippingOrders"
-              type="number"
-              value={formData.totalShippingOrders}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-            <TextField
-              size="small"
-              label="Tổng tiền hàng đã giao"
-              name="totalDeliveredOrders"
-              type="number"
-              value={formData.totalDeliveredOrders}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-            />
-          </div>}
-          {userData?.data.role === "shop" && <TextField
-            size="small"
-            label="Số lượng sản phẩm"
-            name="numberProduct"
-            type="number"
-            value={formData.numberProduct}
-            onChange={handleChange}
-            fullWidth
-            variant="outlined"
-            className="rounded"
-            disabled={!isEditing}
-          />}
+                  <TextField
+                    size="small"
+                    label="Tên tài khoản"
+                    name="bankAccountName"
+                    value={formData.bankAccountName}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                </>
+              )}
 
-          {/* Thông tin ngân hàng (chỉ hiển thị cho user và admin) */}
-          {(userData?.data.role === "user" || userData?.data.role === "admin") && (
-            <>
-              <Typography variant="h6" className="mt-6 font-medium">Thông tin ngân hàng</Typography>
+              {/* Thông tin mật khẩu */}
+              <Typography variant="h6" className="mt-6 font-medium">Thông tin mật khẩu</Typography>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <TextField
                   size="small"
-                  label="Tên ngân hàng"
-                  name="bankName"
-                  value={formData.bankName}
+                  label="Mật khẩu đăng nhập"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
                   onChange={handleChange}
                   fullWidth
                   variant="outlined"
                   className="rounded"
                   disabled={!isEditing}
+                  InputProps={formData.password ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  } : undefined}
                 />
                 <TextField
                   size="small"
-                  label="Số tài khoản"
-                  name="bankAccountNumber"
-                  value={formData.bankAccountNumber}
+                  label="Mật khẩu giao dịch cửa hàng"
+                  name="withdrawPassword"
+                  type={showWithdrawPassword ? "text" : "password"}
+                  value={formData.withdrawPassword}
                   onChange={handleChange}
                   fullWidth
                   variant="outlined"
                   className="rounded"
                   disabled={!isEditing}
+                  InputProps={formData.withdrawPassword ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowWithdrawPassword(!showWithdrawPassword)}
+                          edge="end"
+                        >
+                          {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  } : undefined}
                 />
               </div>
               <TextField
                 size="small"
-                label="Tên tài khoản"
-                name="bankAccountName"
-                value={formData.bankAccountName}
+                label="Mật khẩu giao dịch ví"
+                name="walletPassword"
+                type={showWalletPassword ? "text" : "password"}
+                value={formData.walletPassword}
                 onChange={handleChange}
                 fullWidth
                 variant="outlined"
                 className="rounded"
                 disabled={!isEditing}
+                InputProps={formData.walletPassword ? {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowWalletPassword(!showWalletPassword)}
+                        edge="end"
+                      >
+                        {showWalletPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                } : undefined}
               />
-            </>
-          )}
 
-          {/* Thông tin mật khẩu */}
-          <Typography variant="h6" className="mt-6 font-medium">Thông tin mật khẩu</Typography>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <TextField
-              size="small"
-              label="Mật khẩu đăng nhập"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-              InputProps={formData.password ? {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              } : undefined}
-            />
-            <TextField
-              size="small"
-              label="Mật khẩu giao dịch cửa hàng"
-              name="withdrawPassword"
-              type={showWithdrawPassword ? "text" : "password"}
-              value={formData.withdrawPassword}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              className="rounded"
-              disabled={!isEditing}
-              InputProps={formData.withdrawPassword ? {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowWithdrawPassword(!showWithdrawPassword)}
-                      edge="end"
-                    >
-                      {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              } : undefined}
-            />
-          </div>
-          <TextField
-            size="small"
-            label="Mật khẩu giao dịch ví"
-            name="walletPassword"
-            type={showWalletPassword ? "text" : "password"}
-            value={formData.walletPassword}
-            onChange={handleChange}
-            fullWidth
-            variant="outlined"
-            className="rounded"
-            disabled={!isEditing}
-            InputProps={formData.walletPassword ? {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowWalletPassword(!showWalletPassword)}
-                    edge="end"
+
+              {/* Thông tin xác thực */}
+              <Typography variant="h6" className="mt-6 font-medium">Thông tin xác thực</Typography>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <TextField
+                    size="small"
+                    label="Loại giấy tờ"
+                    name="idCardType"
+                    value={formData.idCardType}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <TextField
+                    size="small"
+                    label="Số giấy tờ"
+                    name="idCardNumber"
+                    value={formData.idCardNumber}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                  <Typography variant="subtitle1" className="!mb-2">Ảnh mặt sau</Typography>
+                  {imagePreviewBack || formData.idCardBackImage ? (
+                    <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                      <img
+                        src={imagePreviewBack || formData.idCardBackImage}
+                        alt="Ảnh mặt sau"
+                        className="object-cover w-full h-full"
+                      />
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage('back')}
+                          className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                        >
+                          <IconX size={16} color="white" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    isEditing ? (
+                      <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                        <div className="flex flex-col items-center justify-center py-4">
+                          <IconUpload size={24} className="mb-2 text-gray-400" />
+                          <p className="text-sm text-gray-400">Upload ảnh mặt sau</p>
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'back')} />
+                      </label>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Chưa có ảnh
+                      </Typography>
+                    )
+                  )}
+                </div>
+                <div>
+                  <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
+                  {imagePreviewFront || formData.idCardFrontImage ? (
+                    <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                      <img
+                        src={imagePreviewFront || formData.idCardFrontImage}
+                        alt="Ảnh mặt trước"
+                        className="object-cover w-full h-full"
+                      />
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage('front')}
+                          className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                        >
+                          <IconX size={16} color="white" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    isEditing ? (
+                      <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                        <div className="flex flex-col items-center justify-center py-4">
+                          <IconUpload size={24} className="mb-2 text-gray-400" />
+                          <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
+                      </label>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Chưa có ảnh
+                      </Typography>
+                    )
+                  )}
+                </div>
+              </div>
+              {isEditing && (
+                <Box className="flex justify-end gap-4">
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    onClick={() => setIsEditing(false)}
                   >
-                    {showWalletPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } : undefined}
-          />
-
-
-          {/* Thông tin xác thực */}
-          <Typography variant="h6" className="mt-6 font-medium">Thông tin xác thực</Typography>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <TextField
-                size="small"
-                label="Loại giấy tờ"
-                name="idCardType"
-                value={formData.idCardType}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <TextField
-                size="small"
-                label="Số giấy tờ"
-                name="idCardNumber"
-                value={formData.idCardNumber}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <Typography variant="subtitle1" className="!mb-2">Ảnh mặt sau</Typography>
-              {imagePreviewBack || formData.idCardBackImage ? (
-                <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreviewBack || formData.idCardBackImage}
-                    alt="Ảnh mặt sau"
-                    className="object-cover w-full h-full"
-                  />
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => removeImage('back')}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                isEditing ? (
-                  <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <IconUpload size={24} className="mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-400">Upload ảnh mặt sau</p>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'back')} />
-                  </label>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    Chưa có ảnh
-                  </Typography>
-                )
+                    Hủy bỏ
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={updateUserMutation.isPending}
+                    className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                  >
+                    {updateUserMutation.isPending ? (
+                      <CircularProgress size={16} className="text-white" />
+                    ) : (
+                      "Cập nhật"
+                    )}
+                  </Button>
+                </Box>
               )}
-            </div>
-            <div>
-              <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
-              {imagePreviewFront || formData.idCardFrontImage ? (
-                <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
-                  <img
-                    src={imagePreviewFront || formData.idCardFrontImage}
-                    alt="Ảnh mặt trước"
-                    className="object-cover w-full h-full"
-                  />
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => removeImage('front')}
-                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                    >
-                      <IconX size={16} color="white" />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                isEditing ? (
-                  <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <IconUpload size={24} className="mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
-                  </label>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    Chưa có ảnh
-                  </Typography>
-                )
-              )}
-            </div>
-          </div>
-          {isEditing && (
-            <Box className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outlined"
-                onClick={() => setIsEditing(false)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={updateUserMutation.isPending}
-                className="text-black !bg-main-golden-orange hover:bg-amber-600"
-              >
-                {updateUserMutation.isPending ? (
-                  <CircularProgress size={16} className="text-white" />
-                ) : (
-                  "Cập nhật"
-                )}
-              </Button>
+            </form>
+            <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
+              {!isEditing ? (
+                <>
+                  <Button
+                    variant="contained"
+                    startIcon={<IconMessage size={18} />}
+                    onClick={() => {
+                      router.push(`/admin/users?chat=${id}`)
+                    }}
+                    className="!bg-blue-500 !text-white"
+                  >
+                    Chat
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<IconTrash size={18} />}
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="!bg-red-500 !text-white"
+                  >
+                    Xóa
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<IconEdit size={18} />}
+                    onClick={() => setIsEditing(true)}
+                    className="!normal-case !bg-main-golden-orange"
+                  >
+                    Cập nhật
+                  </Button>
+                </>
+              ) : null}
             </Box>
-          )}
-        </form>
-        <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
-          {!isEditing ? (
-            <>
-              <Button
-                variant="contained"
-                startIcon={<IconMessage size={18} />}
-                onClick={() => {
-                  router.push(`/admin/users?chat=${id}`)
-                }}
-                className="!bg-blue-500 !text-white"
-              >
-                Chat
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<IconTrash size={18} />}
-                onClick={() => setDeleteDialogOpen(true)}
-                className="!bg-red-500 !text-white"
-              >
-                Xóa
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<IconEdit size={18} />}
-                onClick={() => setIsEditing(true)}
-                className="!normal-case !bg-main-golden-orange"
-              >
-                Cập nhật
-              </Button>
-            </>
-          ) : null}
+          </TabPanel>
+          
+          <TabPanel value={tabValue} index={1}>
+            <Box className="mb-4">
+              <Typography variant="h6" className="mb-4 font-medium">Lịch sử IP người dùng</Typography>
+              <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Lọc theo IP"
+                  value={ipFilter}
+                  onChange={handleIpFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Ví dụ: 192.168.1.1"
+                  className="rounded"
+                />
+                <TextField
+                  size="small"
+                  label="Lọc theo hành động"
+                  value={actionFilter}
+                  onChange={handleActionFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Ví dụ: LOGIN"
+                  className="rounded"
+                />
+              </div>
+            </Box>
+            
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>IP</TableCell>
+                    <TableCell>Hành động</TableCell>
+                    <TableCell>Thời gian</TableCell>
+                    <TableCell>Thiết bị</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {ipHistoryLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        <CircularProgress size={24} className="py-4 my-4 text-main-golden-orange" />
+                      </TableCell>
+                    </TableRow>
+                  ) : ipHistoryData?.data?.data && ipHistoryData.data.data.length > 0 ? (
+                    ipHistoryData.data.data.map((item: any) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Chip
+                            label={item.ip}
+                            variant="outlined"
+                            size="small"
+                            color="default"
+                            className="font-mono"
+                          />
+                        </TableCell>
+                        <TableCell>{formatAction(item.action)}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" className="whitespace-nowrap">
+                            {new Date(item.createdAt).toLocaleString('vi-VN')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip title={item.userAgent} arrow placement="top">
+                            <span>{parseUserAgent(item.userAgent)}</span>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        Không có dữ liệu
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {ipHistoryData?.data?.meta && (
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={ipHistoryData.data.meta.itemCount || 0}
+                rowsPerPage={ipHistoryRowsPerPage}
+                page={ipHistoryPage}
+                onPageChange={handleIpHistoryPageChange}
+                onRowsPerPageChange={handleIpHistoryRowsPerPageChange}
+                labelRowsPerPage="Số dòng mỗi trang:"
+                labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong ${count}`}
+              />
+            )}
+          </TabPanel>
         </Box>
       </Paper>
 
@@ -1038,6 +1397,89 @@ function UserDetailPage() {
               </div>
             ) : (
               <span className="!text-white">Xóa</span>
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Shop Status Dialog */}
+      <Dialog
+        open={shopStatusDialogOpen}
+        onClose={() => setShopStatusDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle fontSize={18}>
+          {userData?.data?.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            {userData?.data?.shopStatus === "SUSPENDED" 
+              ? "Bạn có chắc chắn muốn bỏ đóng băng shop này? Shop sẽ có thể tiếp tục hoạt động bình thường."
+              : "Bạn có chắc chắn muốn đóng băng shop này? Shop sẽ không thể hoạt động cho đến khi được bỏ đóng băng."}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button variant="outlined" onClick={() => setShopStatusDialogOpen(false)}>
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleToggleFreeze}
+            className={userData?.data?.shopStatus === "SUSPENDED" 
+              ? "text-white transition-colors !bg-green-500" 
+              : "text-white transition-colors !bg-red-500"
+            }
+            disabled={updateUserMutation.isPending}
+          >
+            {updateUserMutation.isPending ? (
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xử lý...
+              </div>
+            ) : (
+              <span className="!text-white">
+                {userData?.data?.shopStatus === "SUSPENDED" ? "Bỏ đóng băng" : "Đóng băng"}
+              </span>
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Shop Verification Dialog */}
+      <Dialog
+        open={verifyShopDialogOpen}
+        onClose={() => setVerifyShopDialogOpen(false)}
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle fontSize={18}>
+          Xác minh cửa hàng
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className="text-gray-400">
+            Bạn có chắc chắn muốn xác minh cửa hàng này? Sau khi xác minh, cửa hàng sẽ được đánh dấu là đã xác minh và có thể tiếp tục hoạt động.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="!p-4 !pb-6">
+          <Button variant="outlined" onClick={() => setVerifyShopDialogOpen(false)}>
+            Hủy bỏ
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleVerifyShop}
+            className="text-white transition-colors !bg-green-500"
+            disabled={updateUserMutation.isPending}
+          >
+            {updateUserMutation.isPending ? (
+              <div className="flex items-center gap-2 text-white">
+                <CircularProgress size={16} className="text-white" />
+                Đang xử lý...
+              </div>
+            ) : (
+              <span className="!text-white">Xác minh</span>
             )}
           </Button>
         </DialogActions>

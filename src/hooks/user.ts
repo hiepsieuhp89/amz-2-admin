@@ -1,4 +1,4 @@
-import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "@/api/services/user.service"
+import { createUser, deleteUser, getAllUsers, getUserById, updateUser, getUserIpHistory } from "@/api/services/user.service"
 import type { ICreateUser, IUpdateUser } from "@/interface/request/user"
 import type { IUserListResponse, IUserResponse } from "@/interface/response/user"
 import {
@@ -78,6 +78,24 @@ export const useDeleteUser = (): UseMutationResult<{ success: boolean }, Error, 
         queryKey: [USERS_KEY],
       })
     },
+  })
+}
+
+// Get user IP history
+export const useGetUserIpHistory = (params: {
+  userId: string;
+  page?: number;
+  take?: number;
+  order?: "ASC" | "DESC";
+  search?: string;
+  status?: string;
+  ip?: string;
+  action?: string;
+}): UseQueryResult<any> => {
+  return useQuery({
+    queryKey: ["userIpHistory", params],
+    queryFn: () => getUserIpHistory(params),
+    enabled: !!params.userId,
   })
 }
 
