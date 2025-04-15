@@ -66,7 +66,7 @@ function UserDetailPage() {
     totalShippingOrders: 0,
     totalDeliveredOrders: 0,
     totalProfit: 0,
-    totalProducts: 0,
+    numberProduct: 0,
     // Thông tin ngân hàng
     bankName: "",
     bankAccountNumber: "",
@@ -121,7 +121,7 @@ function UserDetailPage() {
         totalShippingOrders: Number(userData.data.totalShippingOrders || 0),
         totalDeliveredOrders: Number(userData.data.totalDeliveredOrders || 0),
         totalProfit: Number(userData.data.totalProfit),
-        totalProducts: Number(userData.data.totalProducts || 0),
+        numberProduct: Number(userData.data.numberProduct || 0),
         bankName: userData.data.bankName || "",
         bankAccountNumber: userData.data.bankAccountNumber || "",
         bankAccountName: userData.data.bankAccountName || "",
@@ -498,25 +498,25 @@ function UserDetailPage() {
           )}
 
           {/* Thông tin cửa hàng */}
-          {userData?.data.role === "shop" && 
-          <div className="flex items-center justify-between">
-            <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>
-            <div className="flex items-center gap-2">
-              <Typography variant="body2" color={formData.shopStatus === "PENDING" ? "error" : "primary"}>
-                {formData.shopStatus === "PENDING" ? "Chờ duyệt" : "Đã duyệt"}
-              </Typography>
-              <Switch
-                checked={formData.shopStatus === "ACTIVE"}
-                onChange={(e) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    shopStatus: e.target.checked ? "ACTIVE" : "PENDING"
-                  }))
-                }}
-                disabled={!isEditing}
-              />
+          {userData?.data.role === "shop" &&
+            <div className="flex items-center justify-between">
+              <Typography variant="h6" className="mt-6 font-medium">Thông tin cửa hàng</Typography>
+              <div className="flex items-center gap-2">
+                <Typography variant="body2" color={formData.shopStatus === "PENDING" ? "error" : "primary"}>
+                  {formData.shopStatus === "PENDING" ? "Chờ duyệt" : "Đã duyệt"}
+                </Typography>
+                <Switch
+                  checked={formData.shopStatus === "ACTIVE"}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      shopStatus: e.target.checked ? "ACTIVE" : "PENDING"
+                    }))
+                  }}
+                  disabled={!isEditing}
+                />
+              </div>
             </div>
-          </div>
           }
           {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <TextField
@@ -579,9 +579,9 @@ function UserDetailPage() {
               <TextField
                 size="small"
                 label="Số lượng sản phẩm"
-                name="totalProducts"
+                name="numberProduct"
                 type="number"
-                value={formData.totalProducts}
+                value={formData.numberProduct}
                 InputProps={{
                   readOnly: true,
                 }}
@@ -713,9 +713,9 @@ function UserDetailPage() {
           {userData?.data.role === "shop" && <TextField
             size="small"
             label="Số lượng sản phẩm"
-            name="totalProducts"
+            name="numberProduct"
             type="number"
-            value={formData.totalProducts}
+            value={formData.numberProduct}
             onChange={handleChange}
             fullWidth
             variant="outlined"
@@ -795,22 +795,22 @@ function UserDetailPage() {
             <TextField
               size="small"
               label="Mật khẩu giao dịch cửa hàng"
-              name="transactionPassword"
-              type={showTransactionPassword ? "text" : "password"}
-              value={formData.transactionPassword}
+              name="withdrawPassword"
+              type={showWithdrawPassword ? "text" : "password"}
+              value={formData.withdrawPassword}
               onChange={handleChange}
               fullWidth
               variant="outlined"
               className="rounded"
               disabled={!isEditing}
-              InputProps={formData.transactionPassword ? {
+              InputProps={formData.withdrawPassword ? {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowTransactionPassword(!showTransactionPassword)}
+                      onClick={() => setShowWithdrawPassword(!showWithdrawPassword)}
                       edge="end"
                     >
-                      {showTransactionPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                      {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -841,30 +841,7 @@ function UserDetailPage() {
               ),
             } : undefined}
           />
-          <TextField
-            size="small"
-            label="Mật khẩu rút tiền"
-            name="withdrawPassword"
-            type={showWithdrawPassword ? "text" : "password"}
-            value={formData.withdrawPassword}
-            onChange={handleChange}
-            fullWidth
-            variant="outlined"
-            className="rounded"
-            disabled={!isEditing}
-            InputProps={formData.withdrawPassword ? {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowWithdrawPassword(!showWithdrawPassword)}
-                    edge="end"
-                  >
-                    {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } : undefined}
-          />
+
 
           {/* Thông tin xác thực */}
           <Typography variant="h6" className="mt-6 font-medium">Thông tin xác thực</Typography>
@@ -934,40 +911,40 @@ function UserDetailPage() {
               )}
             </div>
             <div>
-            <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
-            {imagePreviewFront || formData.idCardFrontImage ? (
-              <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
-                <img
-                  src={imagePreviewFront || formData.idCardFrontImage}
-                  alt="Ảnh mặt trước"
-                  className="object-cover w-full h-full"
-                />
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={() => removeImage('front')}
-                    className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
-                  >
-                    <IconX size={16} color="white" />
-                  </button>
-                )}
-              </div>
-            ) : (
-              isEditing ? (
-                <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <IconUpload size={24} className="mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
-                </label>
+              <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
+              {imagePreviewFront || formData.idCardFrontImage ? (
+                <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                  <img
+                    src={imagePreviewFront || formData.idCardFrontImage}
+                    alt="Ảnh mặt trước"
+                    className="object-cover w-full h-full"
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => removeImage('front')}
+                      className="absolute p-1 transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600"
+                    >
+                      <IconX size={16} color="white" />
+                    </button>
+                  )}
+                </div>
               ) : (
-                <Typography variant="body2" color="textSecondary">
-                  Chưa có ảnh
-                </Typography>
-              )
-            )}
-          </div>
+                isEditing ? (
+                  <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                    <div className="flex flex-col items-center justify-center py-4">
+                      <IconUpload size={24} className="mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
+                    </div>
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'front')} />
+                  </label>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    Chưa có ảnh
+                  </Typography>
+                )
+              )}
+            </div>
           </div>
           {isEditing && (
             <Box className="flex justify-end gap-4">
