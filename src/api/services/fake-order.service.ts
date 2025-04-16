@@ -137,9 +137,31 @@ export interface IUpdateFakeOrderPayload {
   paidAt?: string;
 }
 
+export interface IOrderParams {
+  order?: string
+  page?: number
+  take?: number
+  search?: string
+  status?: string
+}
+
+export interface IOrderResponse {
+  status: boolean;
+  message: string;
+  data: any;
+  errors: any;
+  timestamp: string;
+}
+
 // Get valid users for fake order
 export const getValidUsers = async (params: IValidUserParams) => {
   const res = await sendGet(ConfigFakeOrderEndPoint.VALID_USERS, params)
+  return res
+}
+
+// Get all orders
+export const getOrders = async (params: IOrderParams): Promise<IOrderResponse> => {
+  const res = await sendGet("/admin/orders", params)
   return res
 }
 

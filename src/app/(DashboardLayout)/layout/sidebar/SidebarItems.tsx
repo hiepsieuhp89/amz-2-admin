@@ -16,6 +16,7 @@ import {
   IconArchive,
   IconBell,
   IconSettings,
+  IconShoppingCart,
 } from "@tabler/icons-react"
 import { useGetProfileData } from "@/hooks/authentication";
 
@@ -59,6 +60,12 @@ const Menuitems = [
     title: "Quản lý cửa hàng",
     icon: IconBuildingWarehouse,
     href: "/admin/shops",
+  },
+  {
+    id: generateUniqueId(),
+    title: "Quản lý đơn hàng",
+    icon: IconShoppingCart,
+    href: "/admin/orders",
   },
   {
     id: generateUniqueId(),

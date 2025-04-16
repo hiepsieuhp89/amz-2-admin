@@ -4,6 +4,8 @@ import type {
   IShopOrderResponse,
   IUpdateFakeOrderPayload,
   IValidUserParams,
+  IOrderParams,
+  IOrderResponse
 } from "@/api/services/fake-order.service";
 import {
   createFakeOrder,
@@ -12,6 +14,7 @@ import {
   getShopOrders,
   getValidUsers,
   updateFakeOrder,
+  getOrders
 } from "@/api/services/fake-order.service";
 import { IValidUserListResponse } from "@/interface/response/fake-order";
 import {
@@ -24,6 +27,7 @@ import {
 
 const VALID_USERS_KEY = "validUsers";
 const SHOP_ORDERS_KEY = "shopOrders";
+const ORDERS_KEY = "orders";
 
 // Get valid users
 export const useGetValidUsers = (
@@ -32,6 +36,16 @@ export const useGetValidUsers = (
   return useQuery({
     queryKey: [VALID_USERS_KEY, params],
     queryFn: () => getValidUsers(params)
+  });
+};
+
+// Get all orders
+export const useGetOrders = (
+  params: IOrderParams
+): UseQueryResult<IOrderResponse> => {
+  return useQuery({
+    queryKey: [ORDERS_KEY, params],
+    queryFn: () => getOrders(params)
   });
 };
 
@@ -56,8 +70,6 @@ export const useDeliverFakeOrder = (): UseMutationResult<
     mutationFn: (id: string) => deliverFakeOrder(id),
   });
 };
-
-
 
 // Update fake order
 export const useUpdateFakeOrder = (): UseMutationResult<
