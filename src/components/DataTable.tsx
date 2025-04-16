@@ -103,7 +103,7 @@ export default function DataTable({
               borderRadius: 0
             }}>
               <TableContainer sx={{ 
-                maxHeight: 440, 
+                maxHeight: 'calc(100vh - 480px)', 
                 overflowX: 'auto',
                 width: '100%'
               }}>

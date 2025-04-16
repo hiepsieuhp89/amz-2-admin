@@ -29,7 +29,8 @@ import {
   IconTable,
   IconTrash,
   IconMoodSadDizzy,
-  IconArchive
+  IconArchive,
+  IconStar
 } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
@@ -80,6 +81,10 @@ function ProductsPage() {
 
   const handleView = (id: string) => {
     router.push(`/admin/products/${id}`)
+  }
+
+  const handleViewReviews = (id: string) => {
+    router.push(`/admin/products/${id}/reviews`)
   }
 
   const openDeleteDialog = (id: string) => {
@@ -299,6 +304,13 @@ function ProductsPage() {
             className="!bg-blue-100"
           >
             <IconEye size={18} className="text-blue-400" />
+          </IconButton>
+          <IconButton
+            onClick={() => handleViewReviews(product.id)}
+            size="medium"
+            className="!bg-amber-100"
+          >
+            <IconStar size={18} className="text-amber-400" />
           </IconButton>
           <IconButton
             onClick={() => openDeleteDialog(product.id)}
@@ -541,6 +553,15 @@ function ProductsPage() {
                         startIcon={<IconEye size={16} />}
                       >
                         Xem
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="warning"
+                        onClick={() => handleViewReviews(product.id)}
+                        startIcon={<IconStar size={16} />}
+                      >
+                        Đánh giá
                       </Button>
                       <Button
                         variant="outlined"

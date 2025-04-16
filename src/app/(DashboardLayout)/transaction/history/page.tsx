@@ -128,7 +128,7 @@ function WithdrawalTable() {
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0", marginTop: 2 }}>
       <Typography variant="h4" className="p-4">Danh sách yêu cầu rút tiền</Typography>
-      <TableContainer sx={{ maxHeight: 440 }}>
+      <TableContainer>
         <Table stickyHeader sx={{ minWidth: 650 }} aria-label="withdrawal table">
           <TableHead>
             <TableRow>
@@ -331,7 +331,7 @@ function TransactionHistoryPage() {
         <>
           <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0" }}>
             <Typography variant="h4" className="p-4">Danh sách giao dịch</Typography>
-            <TableContainer sx={{ maxHeight: 440 }}>
+            <TableContainer>
               <Table stickyHeader sx={{ minWidth: 650 }} aria-label="transaction table">
                 <TableHead>
                   <TableRow>

@@ -147,6 +147,12 @@ export const ConfigSettingsEndPoint = {
   UPDATE_SETTINGS: "/admin/settings",
 };
 
+export const ConfigProductReviewEndPoint = {
+  BASE: "/product-reviews",
+  GET_BY_ID: (id: string) => `/product-reviews/${id}`,
+  DELETE: (id: string) => `/product-reviews/${id}`,
+};
+
 export const ConfigEndPoint = {
   BASE: "/config",
   GET_BY_KEY: (key: string) => `/config/${key}`,

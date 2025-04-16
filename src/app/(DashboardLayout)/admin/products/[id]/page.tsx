@@ -240,6 +240,10 @@ function ProductDetailPage() {
     router.push("/admin/products")
   }
 
+  const handleViewReviews = () => {
+    router.push(`/admin/products/${id}/reviews`)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -578,52 +582,57 @@ function ProductDetailPage() {
             </Box>
           </Box>
 
-          {isEditing && (
-            <Box className="flex justify-end gap-4">
-              <Button
-                className="!normal-case"
-                type="button"
-                variant="outlined"
-                onClick={() => setIsEditing(false)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={updateProductMutation.isPending}
-                className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
-              >
-                {updateProductMutation.isPending ? (
-                  <CircularProgress size={24} className="text-gray-800" />
-                ) : (
-                  "Cập nhật sản phẩm"
-                )}
-              </Button>
-            </Box>
-          )}
-        </form>
-
-        {!isEditing && (
-          <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
-            <Button
-              variant="contained"
-              startIcon={<IconTrash size={18} />}
-              onClick={() => setDeleteDialogOpen(true)}
-              className="!bg-red-500 !text-white !normal-case"
-            >
-              Xóa
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<IconEdit size={18} />}
-              onClick={() => setIsEditing(true)}
-              className="!normal-case !bg-main-golden-orange"
-            >
-              Chỉnh sửa
-            </Button>
+          <Box className="flex gap-2 mt-4">
+            {isEditing ? (
+              <>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                  disabled={updateProductMutation.isPending}
+                >
+                  {updateProductMutation.isPending ? (
+                    <CircularProgress size={24} className="text-gray-800" />
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Hủy
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                  startIcon={<IconEdit size={18} />}
+                  onClick={() => setIsEditing(true)}
+                >
+                  Chỉnh sửa
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleViewReviews}
+                >
+                  Xem đánh giá
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<IconTrash size={18} />}
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  Xóa sản phẩm
+                </Button>
+              </>
+            )}
           </Box>
-        )}
+        </form>
       </Paper>
 
       <Dialog
