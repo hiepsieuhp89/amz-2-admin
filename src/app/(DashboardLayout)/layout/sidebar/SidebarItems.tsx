@@ -17,6 +17,7 @@ import {
   IconBell,
   IconSettings,
   IconShoppingCart,
+  IconTicket,
 } from "@tabler/icons-react"
 import { useGetProfileData } from "@/hooks/authentication";
 
@@ -102,6 +103,12 @@ const Menuitems = [
     title: "Quản lý nạp/rút",
     icon: IconTransactionDollar,
     href: "/transaction/history",
+  },
+  {
+    id: generateUniqueId(),
+    title: "Quản lý mã mời",
+    icon: IconTicket,
+    href: "/admin/invitation-codes",
   },
   {
     id: generateUniqueId(),
