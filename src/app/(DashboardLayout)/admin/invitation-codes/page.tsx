@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateInvitationCodes, useDeleteInvitationCode, useGetAllInvitationCodes } from "@/hooks/invitation";
+import { useGetUserById } from "@/hooks/user";
 import {
   Box,
   Button,
@@ -22,9 +23,15 @@ import {
   TextField,
   Tooltip,
   Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Avatar,
 } from "@mui/material";
-import { IconCopy, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";import { toast } from "react-toastify";
+import { IconCopy, IconTrash, IconUser, IconInfoCircle } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 const InvitationCodesPage = () => {
   const [open, setOpen] = useState(false);
@@ -32,9 +39,14 @@ const InvitationCodesPage = () => {
   const [expirationMinutes, setExpirationMinutes] = useState(15);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Get all invitation codes
   const { data, isLoading, refetch } = useGetAllInvitationCodes({ page, limit });
+  
+  // Get user details when selectedUserId is available
+  const { data: userData, isLoading: isLoadingUser } = useGetUserById(selectedUserId || "");
   
   // Create invitation codes mutation
   const createInvitationCodesMutation = useCreateInvitationCodes();
@@ -49,6 +61,17 @@ const InvitationCodesPage = () => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  // Handle user dialog open/close
+  const handleUserDialogOpen = (userId: string) => {
+    setSelectedUserId(userId);
+    setUserDialogOpen(true);
+  };
+
+  const handleUserDialogClose = () => {
+    setUserDialogOpen(false);
+    setSelectedUserId(null);
   };
 
   // Handle create invitation codes
@@ -135,6 +158,7 @@ const InvitationCodesPage = () => {
                   <TableCell>Ngày tạo</TableCell>
                   <TableCell>Ngày hết hạn</TableCell>
                   <TableCell>Ngày sử dụng</TableCell>
+                  <TableCell>Người dùng</TableCell>
                   <TableCell>Thao tác</TableCell>
                 </TableRow>
               </TableHead>
@@ -162,6 +186,20 @@ const InvitationCodesPage = () => {
                     </TableCell>
                     <TableCell>
                       {code.usedAt ? formatDate(code.usedAt) : "Chưa sử dụng"}
+                    </TableCell>
+                    <TableCell>
+                      {code.usedById ? (
+                        <Tooltip title="Xem thông tin người dùng">
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleUserDialogOpen(code.usedById)}
+                          >
+                            <IconUser size={18} />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        "Chưa sử dụng"
+                      )}
                     </TableCell>
                     <TableCell>
                       <Tooltip title="Xóa mã mời">
@@ -219,6 +257,204 @@ const InvitationCodesPage = () => {
           >
             {createInvitationCodesMutation.isPending ? "Đang tạo..." : "Tạo mã mời"}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* User Details Dialog */}
+      <Dialog 
+        open={userDialogOpen} 
+        onClose={handleUserDialogClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconInfoCircle size={24} style={{ marginRight: 8 }} />
+            Thông tin người dùng
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {isLoadingUser ? (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : userData?.data ? (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar 
+                  sx={{ width: 64, height: 64, mr: 2 }}
+                  src={userData.data.logoUrl || ""}
+                >
+                  {userData.data.fullName?.[0] || userData.data.email?.[0] || "U"}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6">{userData.data.fullName || "Không có tên"}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {userData.data.email}
+                  </Typography>
+                  {userData.data.shopName && (
+                    <Chip 
+                      label={`${userData.data.shopName}`} 
+                      size="small" 
+                      color="primary" 
+                      sx={{ mt: 0.5 }}
+                    />
+                  )}
+                </Box>
+              </Box>
+              
+              <Divider sx={{ my: 2 }} />
+              
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Thông tin cơ bản
+                  </Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemText 
+                        primary="ID người dùng"
+                        secondary={userData.data.id}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Tên đăng nhập"
+                        secondary={userData.data.username || "Không có"}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Số điện thoại"
+                        secondary={userData.data.phone || "Không có"}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Vai trò"
+                        secondary={
+                          userData.data.role === "shop" ? "Người bán" :
+                          userData.data.role === "admin" ? "Quản trị viên" :
+                          userData.data.role === "supper_admin" ? "Quản trị viên cấp cao" : "Người dùng"
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Trạng thái"
+                        secondary={
+                          <Chip 
+                            label={userData.data.isActive ? "Đang hoạt động" : "Đã khóa"} 
+                            color={userData.data.isActive ? "success" : "error"}
+                            size="small"
+                          />
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Xác thực email"
+                        secondary={
+                          <Chip 
+                            label={userData.data.isVerified ? "Đã xác thực" : "Chưa xác thực"} 
+                            color={userData.data.isVerified ? "success" : "warning"}
+                            size="small"
+                          />
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Ngày tạo"
+                        secondary={formatDate(userData.data.createdAt)}
+                      />
+                    </ListItem>
+                  </List>
+                </Grid>
+                
+                {userData.data.role === "shop" && (
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      Thông tin cửa hàng
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Tên cửa hàng"
+                          secondary={userData.data.shopName || "Chưa có"}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Địa chỉ cửa hàng"
+                          secondary={userData.data.shopAddress || "Chưa có"}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Trạng thái cửa hàng"
+                          secondary={
+                            <Chip 
+                              label={
+                                userData.data.shopStatus === "APPROVED" ? "Đã duyệt" :
+                                userData.data.shopStatus === "PENDING" ? "Đang chờ duyệt" :
+                                userData.data.shopStatus === "REJECTED" ? "Đã từ chối" : "Không xác định"
+                              } 
+                              color={
+                                userData.data.shopStatus === "APPROVED" ? "success" :
+                                userData.data.shopStatus === "PENDING" ? "warning" :
+                                userData.data.shopStatus === "REJECTED" ? "error" : "default"
+                              }
+                              size="small"
+                            />
+                          }
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Đánh giá"
+                          secondary={`${userData.data.stars || 0} sao (${userData.data.reputationPoints || 0} điểm)`}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Gói bán hàng"
+                          secondary={userData.data.sellerPackage?.name || "Không có"}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Hạn gói bán hàng"
+                          secondary={userData.data.sellerPackageExpiry ? formatDate(userData.data.sellerPackageExpiry) : "Không có"}
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemText 
+                          primary="Số dư tài khoản"
+                          secondary={userData.data.balance ? `${Number(userData.data.balance).toLocaleString('vi-VN')} đ` : "0 đ"}
+                        />
+                      </ListItem>
+                    </List>
+                  </Grid>
+                )}
+              </Grid>
+            </>
+          ) : (
+            <Typography>Không thể tải thông tin người dùng</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUserDialogClose}>Đóng</Button>
+          {userData?.data && (
+            <Button 
+              variant="contained" 
+              color="primary"
+              href={`/admin/users/${userData.data.id}`}
+              target="_blank"
+            >
+              Xem chi tiết
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>
