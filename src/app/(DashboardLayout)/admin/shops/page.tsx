@@ -347,7 +347,8 @@ function ShopsPage() {
             await updateUserMutation.mutateAsync({
                 id: selectedUserId,
                 payload: {
-                    balance: newBalance.toString()
+                    balance: newBalance.toString(),
+                    isHaveLogTransaction: true
                 }
             });
 
