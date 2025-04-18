@@ -124,6 +124,7 @@ function WithdrawalTable() {
       </Box>
     )
   }
+  console.log(withdrawals)
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0", marginTop: 2 }}>
@@ -133,6 +134,7 @@ function WithdrawalTable() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>ID</TableCell>
+              <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Email người dùng</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày tạo</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số tiền</TableCell>
               <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Trạng thái</TableCell>
@@ -153,6 +155,7 @@ function WithdrawalTable() {
                 }}
               >
                 <TableCell>{withdrawal.id}</TableCell>
+                <TableCell>{withdrawal.user?.email}</TableCell>
                 <TableCell>{formatDate(withdrawal.createdAt)}</TableCell>
                 <TableCell>{formatMoney(withdrawal.amount)}</TableCell>
                 <TableCell>
@@ -256,6 +259,7 @@ function TransactionHistoryPage() {
     )
   }
 
+  console.log("filteredTransactions", filteredTransactions)
   return (
     <>
      <Box className="relative flex flex-col items-center justify-center py-8">
