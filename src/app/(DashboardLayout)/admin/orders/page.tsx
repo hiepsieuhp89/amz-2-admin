@@ -166,7 +166,7 @@ const OrdersPage = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {ordersResponse?.data?.data?.map((order: any) => (
+                      {ordersResponse?.data?.map((order: any) => (
                         <TableRow key={order.id}>
                           <TableCell>
                             <Typography variant="body2" fontWeight="medium">

@@ -3,7 +3,8 @@ import {
   getMyInvitationCodes, 
   getInvitationCodeById, 
   getAllInvitationCodes, 
-  deleteInvitationCode 
+  deleteInvitationCode,
+  deactivateInvitationCode
 } from "@/api/services/invitation.service"
 import {
   useMutation,
@@ -66,6 +67,23 @@ export const useDeleteInvitationCode = (): UseMutationResult<any, Error, string>
 
   return useMutation<any, Error, string>({
     mutationFn: (id: string) => deleteInvitationCode(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [ADMIN_INVITATION_CODES_KEY],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [MY_INVITATION_CODES_KEY],
+      })
+    },
+  })
+}
+
+// Hủy kích hoạt mã mời
+export const useDeactivateInvitationCode = (): UseMutationResult<any, Error, string> => {
+  const queryClient = useQueryClient()
+
+  return useMutation<any, Error, string>({
+    mutationFn: (code: string) => deactivateInvitationCode(code),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [ADMIN_INVITATION_CODES_KEY],
