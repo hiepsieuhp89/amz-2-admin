@@ -20,11 +20,18 @@ import {
   Stack,
   Tooltip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useGetOrders } from "@/hooks/fake-order";
+import { useAddDelayMessage } from "@/hooks/order";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { IconSearch, IconEye } from "@tabler/icons-react";
+import { IconSearch, IconEye, IconClock } from "@tabler/icons-react";
 
 const OrdersPage = () => {
   const [searchParams, setSearchParams] = useState({
@@ -32,8 +39,21 @@ const OrdersPage = () => {
     take: 10,
     search: "",
   });
+  const [delayDialogOpen, setDelayDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [delayMessage, setDelayMessage] = useState("");
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const { data: ordersResponse, isLoading } = useGetOrders(searchParams);
+  const addDelayMessageMutation = useAddDelayMessage();
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -48,6 +68,52 @@ const OrdersPage = () => {
 
   const handleSearch = () => {
     setSearchParams((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const openDelayDialog = (order: any) => {
+    setSelectedOrder(order);
+    setDelayMessage("");
+    setDelayDialogOpen(true);
+  };
+
+  const closeDelayDialog = () => {
+    setDelayDialogOpen(false);
+    setSelectedOrder(null);
+  };
+
+  const handleSubmitDelay = async () => {
+    if (!delayMessage.trim()) {
+      setSnackbar({
+        open: true,
+        message: "Vui lòng nhập thông báo delay!",
+        severity: "error",
+      });
+      return;
+    }
+
+    try {
+      await addDelayMessageMutation.mutateAsync({
+        orderId: selectedOrder.id,
+        payload: { message: delayMessage },
+      });
+      
+      setSnackbar({
+        open: true,
+        message: "Đã thêm thông báo delay thành công!",
+        severity: "success",
+      });
+      closeDelayDialog();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Không thể thêm thông báo delay. Vui lòng thử lại!",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const getStatusColor = (status: string) => {
@@ -224,15 +290,26 @@ const OrdersPage = () => {
                             </Tooltip>
                           </TableCell>
                           <TableCell align="center">
-                            <Tooltip title="Xem chi tiết">
-                              <IconButton
-                                size="small"
-                                color="primary"
-                                href={`/admin/orders/${order.id}`}
-                              >
-                                <IconEye size={18} />
-                              </IconButton>
-                            </Tooltip>
+                            <Stack direction="row" spacing={1} justifyContent="center">
+                              <Tooltip title="Xem chi tiết">
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  href={`/admin/orders/${order.id}`}
+                                >
+                                  <IconEye size={18} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Thông báo delay">
+                                <IconButton
+                                  size="small"
+                                  color="warning"
+                                  onClick={() => openDelayDialog(order)}
+                                >
+                                  <IconClock size={18} />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -273,6 +350,61 @@ const OrdersPage = () => {
           )}
         </Box>
       </DashboardCard>
+
+      {/* Delay Message Dialog */}
+      <Dialog 
+        open={delayDialogOpen} 
+        onClose={closeDelayDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Thông báo delay đơn hàng</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <TextField
+              autoFocus
+              label="Lý do delay"
+              fullWidth
+              multiline
+              rows={3}
+              value={delayMessage}
+              onChange={(e) => setDelayMessage(e.target.value)}
+              placeholder="Nhập lý do delay đơn hàng..."
+              variant="outlined"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDelayDialog} color="inherit">
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleSubmitDelay} 
+            variant="contained" 
+            color="primary"
+            disabled={addDelayMessageMutation.isPending}
+          >
+            {addDelayMessageMutation.isPending ? "Đang xử lý..." : "Xác nhận"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </PageContainer>
   );
 };
