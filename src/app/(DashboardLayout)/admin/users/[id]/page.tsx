@@ -983,18 +983,152 @@ function UserDetailPage() {
                   disabled={!isEditing}
                 />
               </div>}
-              {userData?.data.role === "shop" && <TextField
-                size="small"
-                label="Số lượng sản phẩm"
-                name="numberProduct"
-                type="number"
-                value={formData.numberProduct}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-              />}
+              
+              {/* Thêm thông tin thống kê */}
+              {userData?.data.role === "shop" && <Typography variant="subtitle1" className="mt-4 font-medium">Thống kê đơn hàng</Typography>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <TextField
+                  size="small"
+                  label="Tổng số đơn hàng"
+                  type="text"
+                  value={userData.data.totalOrders || 0}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Tổng doanh thu"
+                  type="text"
+                  value={userData.data.totalRevenue || "0"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Số lượng sản phẩm"
+                  name="numberProduct"
+                  type="number"
+                  value={formData.numberProduct}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>}
+              
+              {userData?.data.role === "shop" && <Typography variant="subtitle1" className="mt-4 font-medium">Thống kê hôm nay</Typography>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <TextField
+                  size="small"
+                  label="Đơn hàng hôm nay"
+                  type="text"
+                  value={userData.data.todayOrders || 0}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Doanh thu hôm nay"
+                  type="text"
+                  value={userData.data.todayRevenue || "0"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Lợi nhuận hôm nay"
+                  type="text"
+                  value={userData.data.todayProfit || "0"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+              </div>}
+              
+              {userData?.data.role === "shop" && <Typography variant="subtitle1" className="mt-4 font-medium">Đơn hàng đang chờ</Typography>}
+              {userData?.data.role === "shop" && <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <TextField
+                  size="small"
+                  label="Tổng đơn hàng đang chờ"
+                  type="text"
+                  value={userData.data.totalPendingOrder || 0}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Tổng tiền đơn hàng đang chờ"
+                  type="text"
+                  value={userData.data.totalPendingOrderAmount || "0"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+                <TextField
+                  size="small"
+                  label="Lợi nhuận từ đơn hàng đang chờ"
+                  type="text"
+                  value={userData.data.totalPendingProfit || "0"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={true}
+                />
+              </div>}
+              
+              {userData?.data.role === "shop" && (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <TextField
+                    size="small"
+                    label="Số lượng sản phẩm"
+                    name="numberProduct"
+                    type="number"
+                    value={formData.numberProduct}
+                    onChange={handleChange}
+                    fullWidth
+                    variant="outlined"
+                    className="rounded"
+                    disabled={!isEditing}
+                  />
+                </div>
+              )}
 
               {/* Thông tin ngân hàng (chỉ hiển thị cho user và admin) */}
               {(userData?.data.role === "user" || userData?.data.role === "admin") && (
