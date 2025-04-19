@@ -108,6 +108,7 @@ const OrdersPage = () => {
       return "N/A";
     }
   };
+  console.log("ordersResponse", ordersResponse)
 
   return (
     <PageContainer

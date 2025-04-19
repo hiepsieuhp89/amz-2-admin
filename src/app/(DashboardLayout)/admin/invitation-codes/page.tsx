@@ -261,8 +261,8 @@ const InvitationCodesPage = () => {
       </Dialog>
 
       {/* User Details Dialog */}
-      <Dialog 
-        open={userDialogOpen} 
+      <Dialog
+        open={userDialogOpen}
         onClose={handleUserDialogClose}
         maxWidth="md"
         fullWidth
