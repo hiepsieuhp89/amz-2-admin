@@ -1,6 +1,6 @@
 "use client";
 
-import { useCreateInvitationCodes, useDeleteInvitationCode, useGetAllInvitationCodes } from "@/hooks/invitation";
+import { useCreateInvitationCodes, useDeleteInvitationCode, useGetAllInvitationCodes, useDeactivateInvitationCode } from "@/hooks/invitation";
 import { useGetUserById } from "@/hooks/user";
 import {
   Box,
@@ -28,9 +28,16 @@ import {
   ListItemText,
   Divider,
   Avatar,
+  Pagination,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  InputAdornment,
+  OutlinedInput,
 } from "@mui/material";
-import { IconCopy, IconTrash, IconUser, IconInfoCircle } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconCopy, IconTrash, IconUser, IconInfoCircle, IconBan, IconSearch } from "@tabler/icons-react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 const InvitationCodesPage = () => {
@@ -38,13 +45,31 @@ const InvitationCodesPage = () => {
   const [count, setCount] = useState(5);
   const [expirationMinutes, setExpirationMinutes] = useState(15);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [take, setTake] = useState(10);
+  const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
+  const [search, setSearch] = useState("");
   const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [selectedCode, setSelectedCode] = useState<string>("");
+  const [totalPages, setTotalPages] = useState(1);
 
   // Get all invitation codes
-  const { data, isLoading, refetch } = useGetAllInvitationCodes({ page, limit });
+  const { data, isLoading, refetch } = useGetAllInvitationCodes({ 
+    page, 
+    take, 
+    order,
+    search: search.trim() ? search : undefined 
+  });
+  console.log(data);
   
+  useEffect(() => {
+    if (data?.data?.total) {
+      const calculatedTotalPages = Math.ceil(data.data.total / take);
+      setTotalPages(calculatedTotalPages);
+    }
+  }, [data, take]);
+
   // Get user details when selectedUserId is available
   const { data: userData, isLoading: isLoadingUser } = useGetUserById(selectedUserId || "");
   
@@ -53,6 +78,9 @@ const InvitationCodesPage = () => {
   
   // Delete invitation code mutation
   const deleteInvitationCodeMutation = useDeleteInvitationCode();
+
+  // Deactivate invitation code mutation
+  const deactivateInvitationCodeMutation = useDeactivateInvitationCode();
 
   // Handle dialog open/close
   const handleClickOpen = () => {
@@ -72,6 +100,49 @@ const InvitationCodesPage = () => {
   const handleUserDialogClose = () => {
     setUserDialogOpen(false);
     setSelectedUserId(null);
+  };
+
+  // Handle deactivate dialog open/close
+  const handleDeactivateDialogOpen = (code: string) => {
+    setSelectedCode(code);
+    setDeactivateDialogOpen(true);
+  };
+
+  const handleDeactivateDialogClose = () => {
+    setDeactivateDialogOpen(false);
+    setSelectedCode("");
+  };
+
+  // Handle pagination change
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
+  // Handle items per page change
+  const handleTakeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setTake(event.target.value as number);
+    setPage(1); // Reset to first page when changing items per page
+  };
+
+  // Handle order change
+  const handleOrderChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setOrder(event.target.value as "ASC" | "DESC");
+  };
+
+  // Handle search
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  };
+
+  const handleSearch = () => {
+    setPage(1); // Reset to first page when searching
+    refetch();
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   // Handle create invitation codes
@@ -100,6 +171,18 @@ const InvitationCodesPage = () => {
     }
   };
 
+  // Handle deactivate invitation code
+  const handleDeactivateInvitationCode = async () => {
+    try {
+      await deactivateInvitationCodeMutation.mutateAsync(selectedCode);
+      toast.success("Hủy kích hoạt mã mời thành công!");
+      handleDeactivateDialogClose();
+      refetch();
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi hủy kích hoạt mã mời!");
+    }
+  };
+
   // Handle copy to clipboard
   const handleCopyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -121,10 +204,12 @@ const InvitationCodesPage = () => {
 
   // Get status chip
   const getStatusChip = (code: any) => {
-    if (code.status === "used" || code.usedById) {
+    if (code.status === "deactivated") {
+      return <Chip label="Đã hủy kích hoạt" color="error" size="small" />;
+    } else if (code.status === "used" || code.usedById) {
       return <Chip label="Đã sử dụng" color="success" size="small" />;
     } else if (code.status === "expired" || (code.expiresAt && new Date(code.expiresAt) < new Date())) {
-      return <Chip label="Hết hạn" color="error" size="small" />;
+      return <Chip label="Hết hạn" color="warning" size="small" />;
     } else {
       return <Chip label="Khả dụng" color="primary" size="small" />;
     }
@@ -143,80 +228,161 @@ const InvitationCodesPage = () => {
         </Button>
       </Box>
 
+      {/* Filter & Search Section */}
+      <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth variant="outlined" size="small">
+              <OutlinedInput
+                placeholder="Tìm kiếm mã mời..."
+                value={search}
+                onChange={handleSearchChange}
+                onKeyPress={handleKeyPress}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleSearch} edge="end">
+                      <IconSearch size={20} />
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Sắp xếp</InputLabel>
+              <Select
+                value={order}
+                label="Sắp xếp"
+                onChange={handleOrderChange as any}
+              >
+                <MenuItem value="DESC">Mới nhất</MenuItem>
+                <MenuItem value="ASC">Cũ nhất</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Số lượng hiển thị</InputLabel>
+              <Select
+                value={take}
+                label="Số lượng hiển thị"
+                onChange={handleTakeChange as any}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Paper>
+
       <Paper elevation={3} sx={{ p: 2 }}>
         {isLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Mã mời</TableCell>
-                  <TableCell>Trạng thái</TableCell>
-                  <TableCell>Ngày tạo</TableCell>
-                  <TableCell>Ngày hết hạn</TableCell>
-                  <TableCell>Ngày sử dụng</TableCell>
-                  <TableCell>Người dùng</TableCell>
-                  <TableCell>Thao tác</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data?.data?.map((code: any) => (
-                  <TableRow key={code.id}>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        {code.code}
-                        <IconButton
-                          size="small"
-                          onClick={() => handleCopyToClipboard(code.code)}
-                          sx={{ ml: 1 }}
-                        >
-                          <IconCopy size={18} />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusChip(code)}
-                    </TableCell>
-                    <TableCell>{formatDate(code.createdAt)}</TableCell>
-                    <TableCell>
-                      {code.expiresAt ? formatDate(code.expiresAt) : "Không hết hạn"}
-                    </TableCell>
-                    <TableCell>
-                      {code.usedAt ? formatDate(code.usedAt) : "Chưa sử dụng"}
-                    </TableCell>
-                    <TableCell>
-                      {code.usedById ? (
-                        <Tooltip title="Xem thông tin người dùng">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleUserDialogOpen(code.usedById)}
-                          >
-                            <IconUser size={18} />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        "Chưa sử dụng"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title="Xóa mã mời">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDeleteInvitationCode(code.id)}
-                          disabled={code.status === "used" || !!code.usedById}
-                        >
-                          <IconTrash size={18} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Mã mời</TableCell>
+                    <TableCell>Trạng thái</TableCell>
+                    <TableCell>Ngày tạo</TableCell>
+                    <TableCell>Ngày hết hạn</TableCell>
+                    <TableCell>Ngày sử dụng</TableCell>
+                    <TableCell>Người dùng</TableCell>
+                    <TableCell>Thao tác</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {data?.data?.data?.map((code: any) => (
+                    <TableRow key={code.id}>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          {code.code}
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopyToClipboard(code.code)}
+                            sx={{ ml: 1 }}
+                          >
+                            <IconCopy size={18} />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusChip(code)}
+                      </TableCell>
+                      <TableCell>{formatDate(code.createdAt)}</TableCell>
+                      <TableCell>
+                        {code.expiresAt ? formatDate(code.expiresAt) : "Không hết hạn"}
+                      </TableCell>
+                      <TableCell>
+                        {code.usedAt ? formatDate(code.usedAt) : "Chưa sử dụng"}
+                      </TableCell>
+                      <TableCell>
+                        {code.usedById ? (
+                          <Tooltip title="Xem thông tin người dùng">
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleUserDialogOpen(code.usedById)}
+                            >
+                              <IconUser size={18} />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          "Chưa sử dụng"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex" }}>
+                          {/* Deactivate button */}
+                          {code.status !== "deactivated" && code.status !== "used" && !code.usedById && (
+                            <Tooltip title="Hủy kích hoạt mã mời">
+                              <IconButton
+                                color="warning"
+                                onClick={() => handleDeactivateDialogOpen(code.code)}
+                                sx={{ mr: 1 }}
+                              >
+                                <IconBan size={18} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          
+                          {/* Delete button */}
+                          <Tooltip title="Xóa mã mời">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteInvitationCode(code.id)}
+                              disabled={code.status === "used" || !!code.usedById}
+                            >
+                              <IconTrash size={18} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* Pagination */}
+            <Box sx={{ display: "flex", justifyContent: "center", pt: 3 }}>
+              <Pagination 
+                count={totalPages} 
+                page={page} 
+                onChange={handlePageChange}
+                color="primary"
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+          </>
         )}
       </Paper>
 
@@ -256,6 +422,30 @@ const InvitationCodesPage = () => {
             disabled={createInvitationCodesMutation.isPending}
           >
             {createInvitationCodesMutation.isPending ? "Đang tạo..." : "Tạo mã mời"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Deactivate Invitation Code Dialog */}
+      <Dialog open={deactivateDialogOpen} onClose={handleDeactivateDialogClose}>
+        <DialogTitle>Xác nhận hủy kích hoạt</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn hủy kích hoạt mã mời <strong>{selectedCode}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Chỉ admin và super admin có thể hủy kích hoạt mã mời. Super admin có thể hủy mã mời của bất kỳ ai, admin chỉ có thể hủy mã mời do chính mình tạo ra.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeactivateDialogClose}>Hủy</Button>
+          <Button
+            onClick={handleDeactivateInvitationCode}
+            variant="contained"
+            color="warning"
+            disabled={deactivateInvitationCodeMutation.isPending}
+          >
+            {deactivateInvitationCodeMutation.isPending ? "Đang xử lý..." : "Xác nhận hủy kích hoạt"}
           </Button>
         </DialogActions>
       </Dialog>

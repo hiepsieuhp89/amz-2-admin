@@ -173,4 +173,5 @@ export const ConfigInvitationCodeEndPoint = {
   CREATE: "/invitation-codes",
   MY_CODES: "/invitation-codes/my-codes",
   GET_BY_ID: (id: string) => `/invitation-codes/${id}`,
+  DEACTIVATE: "/invitation-codes/deactivate",
 };

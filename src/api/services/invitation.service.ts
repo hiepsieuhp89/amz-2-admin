@@ -1,4 +1,4 @@
-import { sendGet, sendPost, sendPut, sendDelete } from "../apiClient"
+import { sendGet, sendPost, sendPut, sendDelete, sendPatch } from "../apiClient"
 import { ConfigInvitationCodeEndPoint } from "./contants"
 
 // Tạo mã mời mới (chỉ dành cho admin và super admin)
@@ -28,5 +28,11 @@ export const getAllInvitationCodes = async (params?: any): Promise<any> => {
 // Xóa mã mời
 export const deleteInvitationCode = async (id: string): Promise<any> => {
   const res = await sendDelete(ConfigInvitationCodeEndPoint.GET_BY_ID(id))
+  return res
+}
+
+// Hủy kích hoạt mã mời
+export const deactivateInvitationCode = async (code: string): Promise<any> => {
+  const res = await sendPatch(ConfigInvitationCodeEndPoint.DEACTIVATE, { code })
   return res
 } 

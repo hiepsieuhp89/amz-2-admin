@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import {
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -10,38 +12,37 @@ import {
   DialogContentText,
   DialogTitle,
   FormControl,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   SelectChangeEvent,
-  TextField,
-  Typography,
-  IconButton,
-  InputAdornment,
   Switch,
   Tab,
-  Tabs,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
+  TableRow,
+  Tabs,
+  TextField,
   Tooltip,
-  Chip,
+  Typography,
 } from "@mui/material";
-import { IconArrowLeft, IconEdit, IconTrash, IconMessage, IconUpload, IconX, IconStar, IconEye, IconEyeOff } from "@tabler/icons-react";
+import { IconArrowLeft, IconEdit, IconEye, IconEyeOff, IconMessage, IconStar, IconTrash, IconUpload, IconX, IconZoomIn } from "@tabler/icons-react";
 import { message } from "antd";
-import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useUploadImage } from "@/hooks/image";
 import { useGetAllSellerPackages } from "@/hooks/seller-package";
 import { useGetAllSpreadPackages } from "@/hooks/spread-package";
-import { useDeleteUser, useGetUserById, useUpdateUser, useGetUserIpHistory } from "@/hooks/user";
+import { useDeleteUser, useGetUserById, useGetUserIpHistory, useUpdateUser } from "@/hooks/user";
 import { ISellerPackage } from "@/interface/response/seller-package";
 import { ISpreadPackage } from "@/interface/response/spread-package";
 
@@ -85,13 +86,16 @@ function UserDetailPage() {
   const [tabValue, setTabValue] = useState(0);
   const [shopStatusDialogOpen, setShopStatusDialogOpen] = useState(false);
   const [verifyShopDialogOpen, setVerifyShopDialogOpen] = useState(false);
-  
+  const [imagePreviewDialogOpen, setImagePreviewDialogOpen] = useState(false);
+  const [previewImageSrc, setPreviewImageSrc] = useState("");
+  const [previewImageTitle, setPreviewImageTitle] = useState("");
+
   // IP History state
   const [ipHistoryPage, setIpHistoryPage] = useState(0);
   const [ipHistoryRowsPerPage, setIpHistoryRowsPerPage] = useState(10);
   const [ipFilter, setIpFilter] = useState("");
   const [actionFilter, setActionFilter] = useState("");
-  
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -148,7 +152,7 @@ function UserDetailPage() {
   const { data: sellerPackageData } = useGetAllSellerPackages();
   const { data: spreadPackageData } = useGetAllSpreadPackages();
   const uploadImageMutation = useUploadImage();
-  
+
   // Fetch IP history
   const { data: ipHistoryData, isLoading: ipHistoryLoading } = useGetUserIpHistory({
     userId: id,
@@ -418,7 +422,7 @@ function UserDetailPage() {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  
+
   const handleIpHistoryPageChange = (event: unknown, newPage: number) => {
     setIpHistoryPage(newPage);
   };
@@ -427,11 +431,11 @@ function UserDetailPage() {
     setIpHistoryRowsPerPage(parseInt(event.target.value, 10));
     setIpHistoryPage(0);
   };
-  
+
   const handleIpFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIpFilter(e.target.value);
   };
-  
+
   const handleActionFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setActionFilter(e.target.value);
   };
@@ -440,20 +444,20 @@ function UserDetailPage() {
   const handleToggleFreeze = async () => {
     try {
       if (!userData?.data) return;
-      
+
       const newStatus = userData.data.shopStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
-      
+
       await updateUserMutation.mutateAsync({
         id,
         payload: {
           shopStatus: newStatus
         }
       });
-      
-      message.success(newStatus === "SUSPENDED" 
-        ? "Đã đóng băng shop thành công!" 
+
+      message.success(newStatus === "SUSPENDED"
+        ? "Đã đóng băng shop thành công!"
         : "Đã bỏ đóng băng shop thành công!");
-      
+
       setShopStatusDialogOpen(false);
     } catch (error) {
       message.error("Không thể thay đổi trạng thái shop. Vui lòng thử lại.");
@@ -465,14 +469,14 @@ function UserDetailPage() {
   const handleVerifyShop = async () => {
     try {
       if (!userData?.data) return;
-      
+
       await updateUserMutation.mutateAsync({
         id,
         payload: {
           isVerified: true
         }
       });
-      
+
       message.success("Đã xác minh cửa hàng thành công!");
       setVerifyShopDialogOpen(false);
     } catch (error) {
@@ -485,7 +489,7 @@ function UserDetailPage() {
   const parseUserAgent = (userAgent: string): string => {
     try {
       let deviceInfo = "";
-      
+
       // Extract mobile info
       if (userAgent.includes("Mobile")) {
         if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
@@ -512,7 +516,7 @@ function UserDetailPage() {
           deviceInfo = "Desktop";
         }
       }
-      
+
       // Extract browser info
       if (userAgent.includes("Chrome") && !userAgent.includes("Chromium")) {
         deviceInfo += " - Chrome";
@@ -525,7 +529,7 @@ function UserDetailPage() {
       } else if (userAgent.includes("MSIE") || userAgent.includes("Trident")) {
         deviceInfo += " - IE";
       }
-      
+
       return deviceInfo || userAgent.substring(0, 50) + "...";
     } catch (e) {
       return userAgent.substring(0, 50) + "...";
@@ -536,7 +540,7 @@ function UserDetailPage() {
   const formatAction = (action: string): JSX.Element => {
     let color = "default";
     let label = action;
-    
+
     switch (action) {
       case "LOGIN":
         color = "success";
@@ -567,16 +571,23 @@ function UserDetailPage() {
       default:
         color = "default";
     }
-    
+
     return (
-      <Chip 
-        label={label} 
-        color={color as any} 
-        size="small" 
-        variant="filled" 
+      <Chip
+        label={label}
+        color={color as any}
+        size="small"
+        variant="filled"
         className="min-w-[100px] text-center"
       />
     );
+  };
+
+  // Open image preview dialog
+  const handleOpenImagePreview = (imageSrc: string, title: string) => {
+    setPreviewImageSrc(imageSrc);
+    setPreviewImageTitle(title);
+    setImagePreviewDialogOpen(true);
   };
 
   if (isLoading) {
@@ -637,7 +648,7 @@ function UserDetailPage() {
               <Tab label="Lịch sử IP" id="user-tab-1" aria-controls="user-tabpanel-1" />
             </Tabs>
           </Box>
-          
+
           <TabPanel value={tabValue} index={0}>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Thông tin cơ bản */}
@@ -748,9 +759,9 @@ function UserDetailPage() {
                         disabled={!isEditing}
                       />
                     </div>
-                    
+
                     <div className="h-6 border-l border-gray-300"></div>
-                    
+
                     <Button
                       size="small"
                       variant="outlined"
@@ -761,7 +772,7 @@ function UserDetailPage() {
                     >
                       {userData.data.shopStatus === "SUSPENDED" ? "Bỏ đóng băng shop" : "Đóng băng shop"}
                     </Button>
-                    
+
                     {!userData.data.isVerified && (
                       <>
                         <div className="h-6 border-l border-gray-300"></div>
@@ -1140,12 +1151,20 @@ function UserDetailPage() {
                 <div>
                   <Typography variant="subtitle1" className="!mb-2">Ảnh mặt sau</Typography>
                   {imagePreviewBack || formData.idCardBackImage ? (
-                    <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                    <div className="relative flex-1 w-full overflow-hidden border border-gray-600 rounded">
                       <img
                         src={imagePreviewBack || formData.idCardBackImage}
                         alt="Ảnh mặt sau"
-                        className="object-cover w-full h-full"
+                        className="object-cover w-full h-full cursor-pointer"
+                        onClick={() => handleOpenImagePreview(imagePreviewBack || formData.idCardBackImage, "Ảnh mặt sau CCCD")}
                       />
+                      <IconButton
+                        className="absolute z-10 bg-white/80 hover:bg-white bottom-2 right-2"
+                        size="small"
+                        onClick={() => handleOpenImagePreview(imagePreviewBack || formData.idCardBackImage, "Ảnh mặt sau CCCD")}
+                      >
+                        <IconZoomIn size={18} />
+                      </IconButton>
                       {isEditing && (
                         <button
                           type="button"
@@ -1158,8 +1177,8 @@ function UserDetailPage() {
                     </div>
                   ) : (
                     isEditing ? (
-                      <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                        <div className="flex flex-col items-center justify-center py-4">
+                      <label className="flex flex-col items-center justify-center w-full transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                        <div className="flex flex-col items-center justify-center py-4">8
                           <IconUpload size={24} className="mb-2 text-gray-400" />
                           <p className="text-sm text-gray-400">Upload ảnh mặt sau</p>
                         </div>
@@ -1175,12 +1194,20 @@ function UserDetailPage() {
                 <div>
                   <Typography variant="subtitle1" className="!mb-2">Ảnh mặt trước</Typography>
                   {imagePreviewFront || formData.idCardFrontImage ? (
-                    <div className="relative flex-1 w-full h-48 overflow-hidden border border-gray-600 rounded">
+                    <div className="relative flex-1 w-full overflow-hidden border border-gray-600 rounded">
                       <img
                         src={imagePreviewFront || formData.idCardFrontImage}
                         alt="Ảnh mặt trước"
-                        className="object-cover w-full h-full"
+                        className="object-cover w-full h-full cursor-pointer"
+                        onClick={() => handleOpenImagePreview(imagePreviewFront || formData.idCardFrontImage, "Ảnh mặt trước CCCD")}
                       />
+                      <IconButton
+                        className="absolute z-10 bg-white/80 hover:bg-white bottom-2 right-2"
+                        size="small"
+                        onClick={() => handleOpenImagePreview(imagePreviewFront || formData.idCardFrontImage, "Ảnh mặt trước CCCD")}
+                      >
+                        <IconZoomIn size={18} />
+                      </IconButton>
                       {isEditing && (
                         <button
                           type="button"
@@ -1193,7 +1220,7 @@ function UserDetailPage() {
                     </div>
                   ) : (
                     isEditing ? (
-                      <label className="flex flex-col items-center justify-center w-full h-48 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
+                      <label className="flex flex-col items-center justify-center w-full transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
                         <div className="flex flex-col items-center justify-center py-4">
                           <IconUpload size={24} className="mb-2 text-gray-400" />
                           <p className="text-sm text-gray-400">Upload ảnh mặt trước</p>
@@ -1265,7 +1292,7 @@ function UserDetailPage() {
               ) : null}
             </Box>
           </TabPanel>
-          
+
           <TabPanel value={tabValue} index={1}>
             <Box className="mb-4">
               <Typography variant="h6" className="mb-4 font-medium">Lịch sử IP người dùng</Typography>
@@ -1292,7 +1319,7 @@ function UserDetailPage() {
                 />
               </div>
             </Box>
-            
+
             <TableContainer>
               <Table size="small">
                 <TableHead>
@@ -1345,7 +1372,7 @@ function UserDetailPage() {
                 </TableBody>
               </Table>
             </TableContainer>
-            
+
             {ipHistoryData?.data?.meta && (
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
@@ -1415,7 +1442,7 @@ function UserDetailPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText className="text-gray-400">
-            {userData?.data?.shopStatus === "SUSPENDED" 
+            {userData?.data?.shopStatus === "SUSPENDED"
               ? "Bạn có chắc chắn muốn bỏ đóng băng shop này? Shop sẽ có thể tiếp tục hoạt động bình thường."
               : "Bạn có chắc chắn muốn đóng băng shop này? Shop sẽ không thể hoạt động cho đến khi được bỏ đóng băng."}
           </DialogContentText>
@@ -1427,8 +1454,8 @@ function UserDetailPage() {
           <Button
             variant="outlined"
             onClick={handleToggleFreeze}
-            className={userData?.data?.shopStatus === "SUSPENDED" 
-              ? "text-white transition-colors !bg-green-500" 
+            className={userData?.data?.shopStatus === "SUSPENDED"
+              ? "text-white transition-colors !bg-green-500"
               : "text-white transition-colors !bg-red-500"
             }
             disabled={updateUserMutation.isPending}
@@ -1483,6 +1510,32 @@ function UserDetailPage() {
             )}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Image Preview Dialog */}
+      <Dialog
+        open={imagePreviewDialogOpen}
+        onClose={() => setImagePreviewDialogOpen(false)}
+        maxWidth="lg"
+        PaperProps={{
+          className: "!rounded-[6px] shadow-xl",
+        }}
+      >
+        <DialogTitle fontSize={18} className="flex justify-between items-center">
+          {previewImageTitle}
+          <IconButton onClick={() => setImagePreviewDialogOpen(false)} size="small">
+            <IconX size={18} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className="min-w-[300px] sm:min-w-[500px] lg:min-w-[800px]">
+          <div className="w-full flex justify-center">
+            <img
+              src={previewImageSrc}
+              alt={previewImageTitle}
+              className="max-w-full max-h-[80vh] object-contain"
+            />
+          </div>
+        </DialogContent>
       </Dialog>
     </div>
   );
