@@ -28,7 +28,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useGetOrders } from "@/hooks/fake-order";
-import { useAddDelayMessage } from "@/hooks/order";
+import { useAddDelayMessage, useGetDeliveryStages } from "@/hooks/order";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { IconSearch, IconEye, IconClock } from "@tabler/icons-react";
@@ -54,6 +54,7 @@ const OrdersPage = () => {
 
   const { data: ordersResponse, isLoading } = useGetOrders(searchParams);
   const addDelayMessageMutation = useAddDelayMessage();
+  const { data: deliveryStagesData, isLoading: isLoadingStages } = useGetDeliveryStages('SHIPPING');
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -141,6 +142,8 @@ const OrdersPage = () => {
         return "Trễ 24h";
       case "DELAY_48H":
         return "Trễ 48h";
+      case "DELAY_72H":
+        return "Trễ 72h";
       default:
         return delayStatus;
     }
@@ -174,6 +177,31 @@ const OrdersPage = () => {
       return "N/A";
     }
   };
+
+  // Get stage name from stageId
+  const getStageName = (stageId: string) => {
+    if (!deliveryStagesData?.data || !stageId) return "N/A";
+    
+    const stage = deliveryStagesData.data.find((stage: any) => stage.id === stageId);
+    return stage ? stage.name : "N/A";
+  };
+
+  // Get stage color
+  const getStageColor = (stageId: string) => {
+    if (!deliveryStagesData?.data || !stageId) return "default";
+    
+    const stage = deliveryStagesData.data.find((stage: any) => stage.id === stageId);
+    if (!stage) return "default";
+    
+    // Define colors based on stage position
+    const index = deliveryStagesData.data.findIndex((s: any) => s.id === stageId);
+    const totalStages = deliveryStagesData.data.length;
+    
+    if (index < totalStages / 3) return "warning";
+    if (index < (2 * totalStages) / 3) return "info";
+    return "success";
+  };
+
   console.log("ordersResponse", ordersResponse)
 
   return (
@@ -210,7 +238,7 @@ const OrdersPage = () => {
             </Button>
           </Box>
 
-          {isLoading ? (
+          {isLoading || isLoadingStages ? (
             <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
               <CircularProgress />
             </Box>
@@ -229,6 +257,7 @@ const OrdersPage = () => {
                         <TableCell sx={{ fontWeight: "bold" }} align="right">Lợi nhuận</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Tiến độ</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>Tiến trình</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }} align="center">Thao tác</TableCell>
                       </TableRow>
                     </TableHead>
@@ -286,6 +315,15 @@ const OrdersPage = () => {
                                 color={getDelayStatusColor(order.delayStatus)}
                                 size="small"
                                 variant="outlined"
+                              />
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip title={getStageName(order.stageId)}>
+                              <Chip
+                                label={getStageName(order.stageId)}
+                                color={getStageColor(order.stageId)}
+                                size="small"
                               />
                             </Tooltip>
                           </TableCell>

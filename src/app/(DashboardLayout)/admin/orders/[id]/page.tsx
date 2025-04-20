@@ -21,11 +21,17 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Card,
+  CardHeader,
+  CardContent,
+  Stack,
+  LinearProgress,
 } from '@mui/material';
 import { sendGet } from '@/api/apiClient';
+import { useGetDeliveryStages } from '@/hooks/order';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { IconArrowLeft, IconUser, IconBuildingStore, IconTruckDelivery, IconInfoCircle } from '@tabler/icons-react';
+import { IconArrowLeft, IconUser, IconBuildingStore, IconTruckDelivery, IconInfoCircle, IconHistory, IconCircleFilled, IconPackage } from '@tabler/icons-react';
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -35,6 +41,9 @@ const OrderDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Get delivery stages if order is in SHIPPING status
+  const { data: deliveryStagesData } = useGetDeliveryStages(order?.status === 'SHIPPING' ? 'SHIPPING' : undefined);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -124,6 +133,26 @@ const OrderDetailPage = () => {
   const UserIcon = () => <IconUser size={20} />;
   const ShopIcon = () => <IconBuildingStore size={20} />;
   const DeliveryIcon = () => <IconTruckDelivery size={20} />;
+  const HistoryIcon = () => <IconHistory size={20} />;
+  const StagesIcon = () => <IconPackage size={20} />;
+
+  // Get timeline dot color based on stage
+  const getTimelineDotColor = (index: number, total: number) => {
+    if (index === 0) return 'success';
+    if (index === total - 1) return 'primary';
+    return 'info';
+  };
+
+  // Calculate delivery progress
+  const calculateDeliveryProgress = () => {
+    if (!order || !order.stageDelivery || !deliveryStagesData?.data || deliveryStagesData.data.length === 0) return 0;
+    
+    const stageValues = deliveryStagesData.data.map((stage: any) => parseFloat(stage.value));
+    const maxStage = Math.max(...stageValues);
+    const currentStage = parseFloat(order.stageDelivery);
+    
+    return (currentStage / maxStage) * 100;
+  };
 
   return (
     <PageContainer title="Chi tiết đơn hàng" description="Xem chi tiết đơn hàng">
@@ -206,6 +235,32 @@ const OrderDetailPage = () => {
                   </Grid>
                 </Grid>
 
+                <Grid container spacing={2} sx={{ mb: 1 }}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Trạng thái đơn hàng:</Typography>
+                    <Chip 
+                      label={order.status} 
+                      color={getStatusColor(order.status)}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Tiến độ:</Typography>
+                    <Chip 
+                      label={getDelayStatusText(order.delayStatus)}
+                      color={getDelayStatusColor(order.delayStatus)}
+                      size="small"
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2} sx={{ mb: 1 }}>
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="textSecondary">Giai đoạn giao hàng:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.stageDelivery || 'N/A'}</Typography>
+                  </Grid>
+                </Grid>
+
                 {order.confirmedAt && (
                   <Grid container spacing={2} sx={{ mb: 1 }}>
                     <Grid item xs={12}>
@@ -237,6 +292,17 @@ const OrderDetailPage = () => {
 
                 <Typography variant="body2" color="textSecondary">Địa chỉ giao hàng:</Typography>
                 <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>{order.address || 'N/A'}</Typography>
+
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Email:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.email || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Số điện thoại:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.phone || 'N/A'}</Typography>
+                  </Grid>
+                </Grid>
               </Box>
             </DashboardCard>
           </Grid>
@@ -259,7 +325,13 @@ const OrderDetailPage = () => {
                     <Typography variant="body2" sx={{ mb: 1 }}>{order.phone || order.user?.phone || 'N/A'}</Typography>
                     
                     <Typography variant="body2" color="textSecondary">Mã khách hàng:</Typography>
-                    <Typography variant="body2">{order.user?.id || 'N/A'}</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.user?.id || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Địa chỉ:</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.user?.address || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Mã bưu điện:</Typography>
+                    <Typography variant="body2">{order.user?.postalCode || 'N/A'}</Typography>
                   </Box>
                 </DashboardCard>
               </Grid>
@@ -279,11 +351,139 @@ const OrderDetailPage = () => {
                     <Typography variant="body2" sx={{ mb: 1 }}>{order.shop?.phone || 'N/A'}</Typography>
                     
                     <Typography variant="body2" color="textSecondary">Địa chỉ:</Typography>
-                    <Typography variant="body2">{order.shop?.shopAddress || order.shop?.address || 'N/A'}</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.shop?.shopAddress || order.shop?.address || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Trạng thái cửa hàng:</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      <Chip 
+                        label={order.shop?.shopStatus || 'N/A'} 
+                        color={order.shop?.shopStatus === 'ACTIVE' ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </Typography>
+
+                    <Typography variant="body2" color="textSecondary">Đánh giá:</Typography>
+                    <Typography variant="body2">{order.shop?.stars || 0} sao ({order.shop?.reputationPoints || 0} điểm)</Typography>
                   </Box>
                 </DashboardCard>
               </Grid>
             </Grid>
+          </Grid>
+
+          {/* Delivery Stages - Show only for SHIPPING orders */}
+          {order.status === 'SHIPPING' && deliveryStagesData?.data && deliveryStagesData.data.length > 0 && (
+            <Grid item xs={12}>
+              <DashboardCard 
+                title="Tiến trình giao hàng"
+                action={<StagesIcon />}
+              >
+                <Box sx={{ p: 2 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="textSecondary" gutterBottom>
+                      Tiến độ giao hàng
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={calculateDeliveryProgress()} 
+                      sx={{ height: 10, borderRadius: 5, mb: 1 }}
+                    />
+                    <Typography variant="caption" align="right" display="block">
+                      Giai đoạn hiện tại: {order.stageDelivery}
+                    </Typography>
+                  </Box>
+                  
+                  <Typography variant="subtitle2" gutterBottom>
+                    Các giai đoạn giao hàng
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    {deliveryStagesData.data.map((stage: any) => {
+                      const isCurrentStage = parseFloat(stage.value) <= parseFloat(order.stageDelivery);
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={stage.id}>
+                          <Card 
+                            variant="outlined"
+                            sx={{ 
+                              bgcolor: isCurrentStage ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                              borderColor: isCurrentStage ? 'primary.main' : 'divider'
+                            }}
+                          >
+                            <CardContent>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <Chip 
+                                  label={stage.value} 
+                                  color={isCurrentStage ? 'primary' : 'default'} 
+                                  size="small" 
+                                  sx={{ mr: 1 }}
+                                />
+                                <Typography variant="subtitle2">
+                                  {stage.name}
+                                </Typography>
+                              </Box>
+                              <Typography variant="body2" color="textSecondary">
+                                {stage.description}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                </Box>
+              </DashboardCard>
+            </Grid>
+          )}
+
+          {/* Order Status History */}
+          <Grid item xs={12}>
+            <DashboardCard 
+              title="Lịch sử trạng thái đơn hàng"
+              action={<HistoryIcon />}
+            >
+              {order.statusHistory && order.statusHistory.length > 0 ? (
+                <Box sx={{ p: 2 }}>
+                  {order.statusHistory.map((status: any, index: number) => (
+                    <Box key={status.id} sx={{ mb: index !== order.statusHistory.length - 1 ? 2 : 0 }}>
+                      <Card variant="outlined" sx={{ mb: 1 }}>
+                        <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <IconCircleFilled 
+                              size={16} 
+                              style={{ 
+                                marginTop: 4, 
+                                marginRight: 8,
+                                color: index === 0 ? '#4caf50' : 
+                                       index === order.statusHistory.length - 1 ? '#1976d2' : '#03a9f4'
+                              }} 
+                            />
+                            <Box>
+                              <Typography variant="subtitle2" component="span">
+                                Giai đoạn: {status.stageDelivery}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {formatDate(status.time)}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                {status.description}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                      {index !== order.statusHistory.length - 1 && (
+                        <Box sx={{ display: 'flex', ml: 0.7, pl: 0.1, height: 20 }}>
+                          <Divider orientation="vertical" sx={{ height: '100%' }} />
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="body1">Chưa có lịch sử trạng thái</Typography>
+                </Box>
+              )}
+            </DashboardCard>
           </Grid>
 
           <Grid item xs={12}>
