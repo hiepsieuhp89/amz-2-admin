@@ -363,7 +363,7 @@ const OrdersPage = () => {
                 </Box>
               )}
 
-              {ordersResponse?.data?.meta && (
+              {ordersResponse?.data?.total !== undefined && (
                 <Box
                   sx={{
                     display: "flex",

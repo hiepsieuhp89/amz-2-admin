@@ -975,7 +975,7 @@ function UserDetailPage() {
                   label="Tổng tiền hàng đã giao"
                   name="totalDeliveredOrders"
                   type="number"
-                  value={formData.totalDeliveredOrders}
+                  value={userData.data.totalRevenue || "0"}
                   onChange={handleChange}
                   fullWidth
                   variant="outlined"
