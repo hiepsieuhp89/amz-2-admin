@@ -136,13 +136,6 @@ const OrderDetailPage = () => {
   const HistoryIcon = () => <IconHistory size={20} />;
   const StagesIcon = () => <IconPackage size={20} />;
 
-  // Get timeline dot color based on stage
-  const getTimelineDotColor = (index: number, total: number) => {
-    if (index === 0) return 'success';
-    if (index === total - 1) return 'primary';
-    return 'info';
-  };
-
   // Calculate delivery progress
   const calculateDeliveryProgress = () => {
     if (!order || !order.stageDelivery) return 0;
