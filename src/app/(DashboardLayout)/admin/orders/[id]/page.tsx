@@ -42,9 +42,6 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Get delivery stages if order is in SHIPPING status
-  const { data: deliveryStagesData } = useGetDeliveryStages(order?.status === 'SHIPPING' ? 'SHIPPING' : undefined);
-
   useEffect(() => {
     const fetchOrderDetail = async () => {
       try {
