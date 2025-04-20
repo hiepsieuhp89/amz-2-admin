@@ -1312,7 +1312,7 @@ function UserDetailPage() {
                   ) : (
                     isEditing ? (
                       <label className="flex flex-col items-center justify-center w-full transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">
-                        <div className="flex flex-col items-center justify-center py-4">8
+                        <div className="flex flex-col items-center justify-center py-4">
                           <IconUpload size={24} className="mb-2 text-gray-400" />
                           <p className="text-sm text-gray-400">Upload ảnh mặt sau</p>
                         </div>

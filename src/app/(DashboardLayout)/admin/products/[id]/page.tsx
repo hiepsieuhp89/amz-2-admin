@@ -581,58 +581,63 @@ function ProductDetailPage() {
               )}
             </Box>
           </Box>
-
-          <Box className="flex gap-2 mt-4">
-            {isEditing ? (
-              <>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                  disabled={updateProductMutation.isPending}
-                >
-                  {updateProductMutation.isPending ? (
-                    <CircularProgress size={24} className="text-gray-800" />
-                  ) : (
-                    "Lưu thay đổi"
-                  )}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Hủy
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="contained"
-                  className="text-black !bg-main-golden-orange hover:bg-amber-600"
-                  startIcon={<IconEdit size={18} />}
-                  onClick={() => setIsEditing(true)}
-                >
-                  Chỉnh sửa
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={handleViewReviews}
-                >
-                  Xem đánh giá
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<IconTrash size={18} />}
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  Xóa sản phẩm
-                </Button>
-              </>
-            )}
-          </Box>
         </form>
+
+        <Box className="flex gap-2 mt-6">
+          {isEditing ? (
+            <>
+              <Button
+                type="button"
+                variant="contained"
+                className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                disabled={updateProductMutation.isPending}
+                onClick={handleSubmit}
+              >
+                {updateProductMutation.isPending ? (
+                  <CircularProgress size={24} className="text-gray-800" />
+                ) : (
+                  "Lưu thay đổi"
+                )}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setIsEditing(false)}
+                type="button"
+              >
+                Hủy
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                startIcon={<IconEdit size={18} />}
+                onClick={() => setIsEditing(true)}
+                type="button"
+              >
+                Chỉnh sửa
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleViewReviews}
+                type="button"
+              >
+                Xem đánh giá
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<IconTrash size={18} />}
+                onClick={() => setDeleteDialogOpen(true)}
+                type="button"
+              >
+                Xóa sản phẩm
+              </Button>
+            </>
+          )}
+        </Box>
       </Paper>
 
       <Dialog
