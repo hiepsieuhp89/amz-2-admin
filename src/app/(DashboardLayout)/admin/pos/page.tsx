@@ -62,6 +62,7 @@ import styles from "./storehouse.module.scss"
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
+import { formatNumber } from "@/utils"
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -136,7 +137,7 @@ const AdminPosPage = () => {
     }, 500),
     []
   );
-  
+
   // Add debounced user search function
   const debouncedUserSearch = useCallback(
     debounce((value: string) => {
@@ -827,15 +828,15 @@ const AdminPosPage = () => {
                                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                                       <Box sx={{ display: "flex", gap: 1 }}>
                                         <span>Giá niêm yết:</span>
-                                        <span className="!text-green-500">${Number((item as any).salePrice)}</span>
+                                        <span className="!text-green-500">${formatNumber(Number((item as any).salePrice))}</span>
                                       </Box>
                                       <Box sx={{ display: "flex", gap: 1 }}>
                                         <span>Giá nhập:</span>
-                                        <span className="!text-amber-500">${Number((item as any).price)}</span>
+                                        <span className="!text-amber-500">${formatNumber(Number((item as any).price))}</span>
                                       </Box>
                                       <Box sx={{ display: "flex", gap: 1 }}>
                                         <span>Lợi nhuận:</span>
-                                        <span className="!text-red-500 font-bold">${(item as any).profit}</span>
+                                        <span className="!text-red-500 font-bold">${formatNumber(Number((item as any).profit))}</span>
                                       </Box>
                                     </Box>
                                     <Box
@@ -929,17 +930,17 @@ const AdminPosPage = () => {
                                         </div>
                                         <div style={{ width: '150px' }}>
                                           <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                            ${Number((item as any).salePrice)}
+                                            ${formatNumber(Number((item as any).salePrice))}
                                           </Box>
                                         </div>
                                         <div style={{ width: '150px' }}>
                                           <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                            ${Number((item as any).price)}
+                                            ${formatNumber(Number((item as any).price))}
                                           </Box>
                                         </div>
                                         <div style={{ width: '150px' }}>
                                           <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                                            ${Number((item as any).profit)}
+                                            ${formatNumber(Number((item as any).profit))}
                                           </Box>
                                         </div>
                                       </Stack>
@@ -1167,16 +1168,16 @@ const AdminPosPage = () => {
                               <Box sx={{ display: "flex", mt: 2, width: "100%", justifyContent: "space-between" }}>
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                   <span className="text-xs font-semibold text-main-gunmetal-blue">Giá niêm yết:</span>
-                                  <span className="text-xs !text-green-500">${Number(item.salePrice)}</span>
+                                  <span className="text-xs !text-green-500">${formatNumber(Number(item.salePrice))}</span>
                                 </Box>
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                   <span className="text-xs font-semibold text-main-gunmetal-blue">Giá nhập:</span>
-                                  <span className="text-xs !text-amber-500">${Number(item.price)}</span>
+                                  <span className="text-xs !text-amber-500">${formatNumber(Number(item.price))}</span>
                                 </Box>
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                   <span className="text-xs font-semibold text-main-gunmetal-blue">Lợi nhuận:</span>
                                   <span className="text-xs !text-red-500 font-bold">
-                                    ${Number(item.profit)}
+                                    ${formatNumber(Number(item.profit))}
                                   </span>
                                 </Box>
                               </Box>
@@ -1191,9 +1192,8 @@ const AdminPosPage = () => {
                           </Typography>
                           <span className="font-normal text-gray-400">
                             $
-                            {selectedProducts
-                              .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
-                            }
+                            {formatNumber(selectedProducts
+                              .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0))}
                           </span>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -1237,9 +1237,8 @@ const AdminPosPage = () => {
 
                           <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none">
                             ${" "}
-                            {(
-                              selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
-                            )}
+                            {formatNumber(selectedProducts
+                              .reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0))}
                           </Box>
                         </Box>
                       </Box>
@@ -1454,7 +1453,7 @@ const AdminPosPage = () => {
                 <Typography sx={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
                   <IconCalendar className="w-4 h-4 mr-2" style={{ color: "#3F6AD8" }} />
                   <span className="mr-1 font-bold">Thời gian đặt hàng:</span>
-                  
+
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, width: "100%" }}>
                     <TextField
                       type="date"
@@ -1474,7 +1473,7 @@ const AdminPosPage = () => {
                       InputLabelProps={{ shrink: true }}
                       sx={{ width: '150px' }}
                     />
-                    
+
                     <TextField
                       type="number"
                       size="small"
@@ -1490,7 +1489,7 @@ const AdminPosPage = () => {
                       inputProps={{ min: 0, max: 23 }}
                       sx={{ width: '80px' }}
                     />
-                    
+
                     <TextField
                       type="number"
                       size="small"
@@ -1506,7 +1505,7 @@ const AdminPosPage = () => {
                       inputProps={{ min: 0, max: 59 }}
                       sx={{ width: '80px' }}
                     />
-                    
+
                     <TextField
                       type="number"
                       size="small"
@@ -1574,14 +1573,14 @@ const AdminPosPage = () => {
                           <Typography className="font-semibold">{product.name}</Typography>
                         </Box>
                         <Box sx={{ width: "20%" }}>
-                          <Typography>{quantities[item.id] || 1}</Typography>
+                          <Typography>{formatNumber(quantities[item.id] || 1)}</Typography>
                         </Box>
                         <Box sx={{ width: "15%" }}>
-                          <Typography>${Number(item.salePrice).toFixed(2)}</Typography>
+                          <Typography>${formatNumber(Number(item.salePrice))}</Typography>
                         </Box>
                         <Box sx={{ width: "15%" }}>
                           <Typography fontWeight={600}>
-                            ${(Number(item.salePrice) * (quantities[item.id] || 1)).toFixed(2)}
+                            ${formatNumber(Number(item.salePrice) * (quantities[item.id] || 1))}
                           </Typography>
                         </Box>
                       </Box>
@@ -1596,9 +1595,7 @@ const AdminPosPage = () => {
                 Tổng cộng:
               </Typography>
               <Box className="h-6 bg-[#E6F9FF] text-[#22E0BE] font-normal rounded-[4px] px-2 text-sm flex items-center justify-center border-none w-fit">
-                ${(
-                  selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0)
-                )}
+                ${formatNumber(selectedProducts.reduce((sum, item) => sum + Number(item.salePrice) * (quantities[item.id] || 1), 0))}
               </Box>
             </Box>
           </Box>
