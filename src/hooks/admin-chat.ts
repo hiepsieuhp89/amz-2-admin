@@ -27,16 +27,25 @@ export const useGetMessages = (
   })
 }
 
+// Define message payload interface
+interface SendMessagePayload {
+  userId: string;
+  shopId: string;
+  message: string;
+  imageUrls?: string[];
+  shopProductId?: string;
+}
+
 // Gửi tin nhắn
 export const useSendMessage = (): UseMutationResult<
   void,
   Error,
-  { userId: string; shopId: string; message: string }
+  SendMessagePayload
 > => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ userId, shopId, message }) =>
-      sendMessage(userId, shopId, message),
+    mutationFn: ({ userId, shopId, message, imageUrls, shopProductId }) =>
+      sendMessage(userId, shopId, message, imageUrls, shopProductId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: [ADMIN_CHAT_KEY, variables.userId, variables.shopId],

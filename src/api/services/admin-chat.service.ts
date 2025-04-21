@@ -6,9 +6,15 @@ import { ConfigAdminChatEndPoint } from "./contants"
 export const sendMessage = async (
   userId: string,
   shopId: string,
-  message: string
+  message: string,
+  imageUrls?: string[],
+  shopProductId?: string
 ): Promise<void> => {
-  await sendPost(ConfigAdminChatEndPoint.SEND_MESSAGE(userId, shopId), { message })
+  await sendPost(ConfigAdminChatEndPoint.SEND_MESSAGE(userId, shopId), { 
+    message,
+    imageUrls,
+    shopProductId
+  })
 }
 
 // Lấy danh sách tin nhắn
