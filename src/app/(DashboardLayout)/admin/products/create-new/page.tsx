@@ -380,6 +380,21 @@ export default function CreateProductPage() {
 
                   {imagePreviews.length > 0 ? (
                     <Box>
+                      <Box className="flex justify-end mb-2">
+                        <Button 
+                          variant="outlined" 
+                          color="error" 
+                          size="small"
+                          startIcon={<IconX size={16} />}
+                          onClick={() => {
+                            setImagePreviews([]);
+                            setImageFiles([]);
+                          }}
+                          className="!normal-case"
+                        >
+                          Xoá tất cả
+                        </Button>
+                      </Box>
                       <Grid container spacing={2}>
                         {imagePreviews.map((preview, index) => (
                           <Grid item key={index} xs={6} sm={6}>
@@ -391,7 +406,7 @@ export default function CreateProductPage() {
                               />
                               <IconButton
                                 onClick={() => removeImage(index)}
-                                className="absolute p-1 transition-colors rounded-full top-2 right-2 hover:bg-red-600"
+                                className="absolute p-1 transition-colors rounded-full top-2 right-2 hover:bg-red-600 z-10"
                                 size="small"
                               >
                                 <IconX size={16} color="white" />
