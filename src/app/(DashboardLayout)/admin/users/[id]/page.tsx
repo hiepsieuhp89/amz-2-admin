@@ -1201,7 +1201,7 @@ function UserDetailPage() {
                 />
                 <TextField
                   size="small"
-                  label="Mật khẩu giao dịch cửa hàng"
+                  label="Mật khẩu giao dịch"
                   name="withdrawPassword"
                   type={showWithdrawPassword ? "text" : "password"}
                   value={formData.withdrawPassword}
@@ -1224,30 +1224,6 @@ function UserDetailPage() {
                   } : undefined}
                 />
               </div>
-              <TextField
-                size="small"
-                label="Mật khẩu giao dịch ví"
-                name="walletPassword"
-                type={showWalletPassword ? "text" : "password"}
-                value={formData.walletPassword}
-                onChange={handleChange}
-                fullWidth
-                variant="outlined"
-                className="rounded"
-                disabled={!isEditing}
-                InputProps={formData.walletPassword ? {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowWalletPassword(!showWalletPassword)}
-                        edge="end"
-                      >
-                        {showWalletPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                } : undefined}
-              />
 
 
               {/* Thông tin xác thực */}
