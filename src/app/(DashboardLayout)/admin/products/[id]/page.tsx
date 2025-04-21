@@ -240,6 +240,10 @@ function ProductDetailPage() {
     router.push("/admin/products")
   }
 
+  const handleViewReviews = () => {
+    router.push(`/admin/products/${id}/reviews`)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -577,53 +581,63 @@ function ProductDetailPage() {
               )}
             </Box>
           </Box>
+        </form>
 
-          {isEditing && (
-            <Box className="flex justify-end gap-4">
+        <Box className="flex gap-2 mt-6">
+          {isEditing ? (
+            <>
               <Button
-                className="!normal-case"
                 type="button"
-                variant="outlined"
-                onClick={() => setIsEditing(false)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="submit"
                 variant="contained"
+                className="text-black !bg-main-golden-orange hover:bg-amber-600"
                 disabled={updateProductMutation.isPending}
-                className="text-black !bg-main-golden-orange hover:bg-amber-600 !normal-case"
+                onClick={handleSubmit}
               >
                 {updateProductMutation.isPending ? (
                   <CircularProgress size={24} className="text-gray-800" />
                 ) : (
-                  "Cập nhật sản phẩm"
+                  "Lưu thay đổi"
                 )}
               </Button>
-            </Box>
+              <Button
+                variant="outlined"
+                onClick={() => setIsEditing(false)}
+                type="button"
+              >
+                Hủy
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                className="text-black !bg-main-golden-orange hover:bg-amber-600"
+                startIcon={<IconEdit size={18} />}
+                onClick={() => setIsEditing(true)}
+                type="button"
+              >
+                Chỉnh sửa
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleViewReviews}
+                type="button"
+              >
+                Xem đánh giá
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<IconTrash size={18} />}
+                onClick={() => setDeleteDialogOpen(true)}
+                type="button"
+              >
+                Xóa sản phẩm
+              </Button>
+            </>
           )}
-        </form>
-
-        {!isEditing && (
-          <Box className={`flex justify-end gap-2 ${isEditing ? 'mt-0' : 'mt-6'}`}>
-            <Button
-              variant="contained"
-              startIcon={<IconTrash size={18} />}
-              onClick={() => setDeleteDialogOpen(true)}
-              className="!bg-red-500 !text-white !normal-case"
-            >
-              Xóa
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<IconEdit size={18} />}
-              onClick={() => setIsEditing(true)}
-              className="!normal-case !bg-main-golden-orange"
-            >
-              Chỉnh sửa
-            </Button>
-          </Box>
-        )}
+        </Box>
       </Paper>
 
       <Dialog

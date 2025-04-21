@@ -21,11 +21,17 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Card,
+  CardHeader,
+  CardContent,
+  Stack,
+  LinearProgress,
 } from '@mui/material';
 import { sendGet } from '@/api/apiClient';
+import { useGetDeliveryStages } from '@/hooks/order';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { IconArrowLeft, IconUser, IconBuildingStore, IconTruckDelivery, IconInfoCircle } from '@tabler/icons-react';
+import { IconArrowLeft, IconUser, IconBuildingStore, IconTruckDelivery, IconInfoCircle, IconHistory, IconCircleFilled, IconPackage } from '@tabler/icons-react';
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -124,6 +130,17 @@ const OrderDetailPage = () => {
   const UserIcon = () => <IconUser size={20} />;
   const ShopIcon = () => <IconBuildingStore size={20} />;
   const DeliveryIcon = () => <IconTruckDelivery size={20} />;
+  const HistoryIcon = () => <IconHistory size={20} />;
+  const StagesIcon = () => <IconPackage size={20} />;
+
+  // Calculate delivery progress
+  const calculateDeliveryProgress = () => {
+    if (!order || !order.stageDelivery) return 0;
+    
+    // Calculate progress based on the current stage value out of 12 total stages
+    const currentStage = parseFloat(order.stageDelivery);
+    return (currentStage / 12) * 100;
+  };
 
   return (
     <PageContainer title="Chi tiết đơn hàng" description="Xem chi tiết đơn hàng">
@@ -206,6 +223,32 @@ const OrderDetailPage = () => {
                   </Grid>
                 </Grid>
 
+                <Grid container spacing={2} sx={{ mb: 1 }}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Trạng thái đơn hàng:</Typography>
+                    <Chip 
+                      label={order.status} 
+                      color={getStatusColor(order.status)}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Tiến độ:</Typography>
+                    <Chip 
+                      label={getDelayStatusText(order.delayStatus)}
+                      color={getDelayStatusColor(order.delayStatus)}
+                      size="small"
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2} sx={{ mb: 1 }}>
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="textSecondary">Giai đoạn giao hàng:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.stageDelivery || 'N/A'}</Typography>
+                  </Grid>
+                </Grid>
+
                 {order.confirmedAt && (
                   <Grid container spacing={2} sx={{ mb: 1 }}>
                     <Grid item xs={12}>
@@ -237,6 +280,17 @@ const OrderDetailPage = () => {
 
                 <Typography variant="body2" color="textSecondary">Địa chỉ giao hàng:</Typography>
                 <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>{order.address || 'N/A'}</Typography>
+
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Email:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.email || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">Số điện thoại:</Typography>
+                    <Typography variant="body2" fontWeight="medium">{order.phone || 'N/A'}</Typography>
+                  </Grid>
+                </Grid>
               </Box>
             </DashboardCard>
           </Grid>
@@ -259,7 +313,13 @@ const OrderDetailPage = () => {
                     <Typography variant="body2" sx={{ mb: 1 }}>{order.phone || order.user?.phone || 'N/A'}</Typography>
                     
                     <Typography variant="body2" color="textSecondary">Mã khách hàng:</Typography>
-                    <Typography variant="body2">{order.user?.id || 'N/A'}</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.user?.id || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Địa chỉ:</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.user?.address || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Mã bưu điện:</Typography>
+                    <Typography variant="body2">{order.user?.postalCode || 'N/A'}</Typography>
                   </Box>
                 </DashboardCard>
               </Grid>
@@ -279,11 +339,443 @@ const OrderDetailPage = () => {
                     <Typography variant="body2" sx={{ mb: 1 }}>{order.shop?.phone || 'N/A'}</Typography>
                     
                     <Typography variant="body2" color="textSecondary">Địa chỉ:</Typography>
-                    <Typography variant="body2">{order.shop?.shopAddress || order.shop?.address || 'N/A'}</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>{order.shop?.shopAddress || order.shop?.address || 'N/A'}</Typography>
+
+                    <Typography variant="body2" color="textSecondary">Trạng thái cửa hàng:</Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      <Chip 
+                        label={order.shop?.shopStatus || 'N/A'} 
+                        color={order.shop?.shopStatus === 'ACTIVE' ? 'success' : 'default'}
+                        size="small"
+                      />
+                    </Typography>
+
+                    <Typography variant="body2" color="textSecondary">Đánh giá:</Typography>
+                    <Typography variant="body2">{order.shop?.stars || 0} sao ({order.shop?.reputationPoints || 0} điểm)</Typography>
                   </Box>
                 </DashboardCard>
               </Grid>
             </Grid>
+          </Grid>
+
+          {/* Delivery Stages - Show only for SHIPPING orders */}
+          {order.status === 'SHIPPING' && (
+            <Grid item xs={12}>
+              <DashboardCard 
+                title="Tiến trình giao hàng"
+                action={<StagesIcon />}
+              >
+                <Box sx={{ p: 2 }}>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="textSecondary" gutterBottom>
+                      Tiến độ giao hàng
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={calculateDeliveryProgress()} 
+                      sx={{ height: 10, borderRadius: 5, mb: 1 }}
+                    />
+                    <Typography variant="caption" align="right" display="block">
+                      Giai đoạn hiện tại: {order.stageDelivery}
+                    </Typography>
+                  </Box>
+                  
+                  <Typography variant="subtitle1" gutterBottom>
+                    Các giai đoạn giao hàng
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">1</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đang được gửi đến trung tâm FedEx và đang trong quá trình xử lý giao hàng
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">2</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đang trên đường đến địch
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">3</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Cơ quan hải quan tại quốc gia xuất xứ đã thông quan kiện hàng quốc tế của bạn
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">4</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đã rời khỏi quốc gia bạn đầu
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">5</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                FedEx đã nhận hàng của bạn sau thời gian hạn chót
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">6</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đang được chuyển đến trung tâm FedEx để phân loại
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">7</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đã được gửi đi từ trung tâm FedEx
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">8</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng quốc tế của bạn đã được hải quan tại quốc gia đích thông quan
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">9</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                FedEx đã xác nhận gói hàng của bạn bằng cách quét nhận
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">10</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đang được vận chuyển bằng xe FedEx và sẽ được giao trong ngày hôm nay
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">11</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đang ở cơ sở địa phương và sẵn sàng để giao hàng
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                      <Card variant="outlined" sx={{ height: '100%' }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  backgroundColor: 'grey.200', 
+                                  display: 'flex', 
+                                  justifyContent: 'center', 
+                                  alignItems: 'center',
+                                  mr: 2
+                                }}
+                              >
+                                <Typography variant="body2" color="text.secondary">12</Typography>
+                              </Box>
+                              <Typography variant="subtitle2">
+                                Kiện hàng của bạn đã đến cơ sở FedEx tại khu vực của người nhận
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </DashboardCard>
+            </Grid>
+          )}
+
+          {/* Order Status History */}
+          <Grid item xs={12}>
+            <DashboardCard 
+              title="Lịch sử trạng thái đơn hàng"
+              action={<HistoryIcon />}
+            >
+              {order.statusHistory && order.statusHistory.length > 0 ? (
+                <Box sx={{ p: 2 }}>
+                  {order.statusHistory.map((status: any, index: number) => (
+                    <Box key={status.id} sx={{ mb: index !== order.statusHistory.length - 1 ? 2 : 0 }}>
+                      <Card variant="outlined" sx={{ mb: 1 }}>
+                        <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <IconCircleFilled 
+                              size={16} 
+                              style={{ 
+                                marginTop: 4, 
+                                marginRight: 8,
+                                color: index === 0 ? '#4caf50' : 
+                                       index === order.statusHistory.length - 1 ? '#1976d2' : '#03a9f4'
+                              }} 
+                            />
+                            <Box>
+                              <Typography variant="subtitle2" component="span">
+                                Giai đoạn: {status.stageDelivery}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {formatDate(status.time)}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                {status.description}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                      {index !== order.statusHistory.length - 1 && (
+                        <Box sx={{ display: 'flex', ml: 0.7, pl: 0.1, height: 20 }}>
+                          <Divider orientation="vertical" sx={{ height: '100%' }} />
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="body1">Chưa có lịch sử trạng thái</Typography>
+                </Box>
+              )}
+            </DashboardCard>
           </Grid>
 
           <Grid item xs={12}>

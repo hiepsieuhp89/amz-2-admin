@@ -20,11 +20,18 @@ import {
   Stack,
   Tooltip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useGetOrders } from "@/hooks/fake-order";
+import { useAddDelayMessage, useGetDeliveryStages } from "@/hooks/order";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { IconSearch, IconEye } from "@tabler/icons-react";
+import { IconSearch, IconEye, IconClock } from "@tabler/icons-react";
 
 const OrdersPage = () => {
   const [searchParams, setSearchParams] = useState({
@@ -32,8 +39,22 @@ const OrdersPage = () => {
     take: 10,
     search: "",
   });
+  const [delayDialogOpen, setDelayDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [delayMessage, setDelayMessage] = useState("");
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const { data: ordersResponse, isLoading } = useGetOrders(searchParams);
+  const addDelayMessageMutation = useAddDelayMessage();
+  const { data: deliveryStagesData, isLoading: isLoadingStages } = useGetDeliveryStages('SHIPPING');
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -48,6 +69,52 @@ const OrdersPage = () => {
 
   const handleSearch = () => {
     setSearchParams((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const openDelayDialog = (order: any) => {
+    setSelectedOrder(order);
+    setDelayMessage("");
+    setDelayDialogOpen(true);
+  };
+
+  const closeDelayDialog = () => {
+    setDelayDialogOpen(false);
+    setSelectedOrder(null);
+  };
+
+  const handleSubmitDelay = async () => {
+    if (!delayMessage.trim()) {
+      setSnackbar({
+        open: true,
+        message: "Vui lòng nhập thông báo delay!",
+        severity: "error",
+      });
+      return;
+    }
+
+    try {
+      await addDelayMessageMutation.mutateAsync({
+        orderId: selectedOrder.id,
+        payload: { message: delayMessage },
+      });
+      
+      setSnackbar({
+        open: true,
+        message: "Đã thêm thông báo delay thành công!",
+        severity: "success",
+      });
+      closeDelayDialog();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Không thể thêm thông báo delay. Vui lòng thử lại!",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const getStatusColor = (status: string) => {
@@ -75,6 +142,8 @@ const OrdersPage = () => {
         return "Trễ 24h";
       case "DELAY_48H":
         return "Trễ 48h";
+      case "DELAY_72H":
+        return "Trễ 72h";
       default:
         return delayStatus;
     }
@@ -108,6 +177,32 @@ const OrdersPage = () => {
       return "N/A";
     }
   };
+
+  // Get stage name from stageId
+  const getStageName = (stageId: string) => {
+    if (!deliveryStagesData?.data || !stageId) return "N/A";
+    
+    const stage = deliveryStagesData.data.find((stage: any) => stage.id === stageId);
+    return stage ? stage.name : "N/A";
+  };
+
+  // Get stage color
+  const getStageColor = (stageId: string) => {
+    if (!deliveryStagesData?.data || !stageId) return "default";
+    
+    const stage = deliveryStagesData.data.find((stage: any) => stage.id === stageId);
+    if (!stage) return "default";
+    
+    // Define colors based on stage position
+    const index = deliveryStagesData.data.findIndex((s: any) => s.id === stageId);
+    const totalStages = deliveryStagesData.data.length;
+    
+    if (index < totalStages / 3) return "warning";
+    if (index < (2 * totalStages) / 3) return "info";
+    return "success";
+  };
+
+  console.log("ordersResponse", ordersResponse)
 
   return (
     <PageContainer
@@ -143,7 +238,7 @@ const OrdersPage = () => {
             </Button>
           </Box>
 
-          {isLoading ? (
+          {isLoading || isLoadingStages ? (
             <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
               <CircularProgress />
             </Box>
@@ -162,6 +257,7 @@ const OrdersPage = () => {
                         <TableCell sx={{ fontWeight: "bold" }} align="right">Lợi nhuận</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Tiến độ</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>Tiến trình</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }} align="center">Thao tác</TableCell>
                       </TableRow>
                     </TableHead>
@@ -222,16 +318,36 @@ const OrdersPage = () => {
                               />
                             </Tooltip>
                           </TableCell>
-                          <TableCell align="center">
-                            <Tooltip title="Xem chi tiết">
-                              <IconButton
+                          <TableCell>
+                            <Tooltip title={getStageName(order.stageId)}>
+                              <Chip
+                                label={getStageName(order.stageId)}
+                                color={getStageColor(order.stageId)}
                                 size="small"
-                                color="primary"
-                                href={`/admin/orders/${order.id}`}
-                              >
-                                <IconEye size={18} />
-                              </IconButton>
+                              />
                             </Tooltip>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Stack direction="row" spacing={1} justifyContent="center">
+                              <Tooltip title="Xem chi tiết">
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  href={`/admin/orders/${order.id}`}
+                                >
+                                  <IconEye size={18} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Thông báo delay">
+                                <IconButton
+                                  size="small"
+                                  color="warning"
+                                  onClick={() => openDelayDialog(order)}
+                                >
+                                  <IconClock size={18} />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -247,7 +363,7 @@ const OrdersPage = () => {
                 </Box>
               )}
 
-              {ordersResponse?.data?.meta && (
+              {ordersResponse?.data?.total !== undefined && (
                 <Box
                   sx={{
                     display: "flex",
@@ -272,6 +388,61 @@ const OrdersPage = () => {
           )}
         </Box>
       </DashboardCard>
+
+      {/* Delay Message Dialog */}
+      <Dialog 
+        open={delayDialogOpen} 
+        onClose={closeDelayDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Thông báo delay đơn hàng</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <TextField
+              autoFocus
+              label="Lý do delay"
+              fullWidth
+              multiline
+              rows={3}
+              value={delayMessage}
+              onChange={(e) => setDelayMessage(e.target.value)}
+              placeholder="Nhập lý do delay đơn hàng..."
+              variant="outlined"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDelayDialog} color="inherit">
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleSubmitDelay} 
+            variant="contained" 
+            color="primary"
+            disabled={addDelayMessageMutation.isPending}
+          >
+            {addDelayMessageMutation.isPending ? "Đang xử lý..." : "Xác nhận"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </PageContainer>
   );
 };
