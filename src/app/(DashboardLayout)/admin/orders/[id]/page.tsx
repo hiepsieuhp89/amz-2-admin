@@ -799,12 +799,66 @@ const OrderDetailPage = () => {
                       {order.items.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell>
-                            <Typography variant="body2" fontWeight="medium">
-                              {item.shopProduct?.name || `Sản phẩm #${item.shopProductId.substring(0, 8)}...`}
-                            </Typography>
-                            <Typography variant="caption" color="textSecondary">
-                              ID: {item.shopProductId}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                              {item.shopProduct?.product?.imageUrls && item.shopProduct.product.imageUrls.length > 0 && (
+                                <Box 
+                                  component="img" 
+                                  src={item.shopProduct.product.imageUrls[0]} 
+                                  alt={item.shopProduct?.product?.name}
+                                  sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                                />
+                              )}
+                              <Box>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {item.shopProduct?.product?.name || item.shopProduct?.name || `Sản phẩm #${item.shopProductId.substring(0, 8)}...`}
+                                </Typography>
+                                <Typography variant="caption" color="textSecondary" display="block">
+                                  ID: {item.shopProductId}
+                                </Typography>
+                                {item.shopProduct?.product?.category && (
+                                  <Typography variant="caption" color="textSecondary" display="block">
+                                    Danh mục: {item.shopProduct.product.category.name}
+                                  </Typography>
+                                )}
+                                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                                  {item.shopProduct?.product?.isHot && (
+                                    <Chip label="Hot" size="small" color="error" variant="outlined" sx={{ height: 20 }} />
+                                  )}
+                                  {item.shopProduct?.product?.isNew && (
+                                    <Chip label="New" size="small" color="info" variant="outlined" sx={{ height: 20 }} />
+                                  )}
+                                  {item.shopProduct?.product?.isFeatured && (
+                                    <Chip label="Featured" size="small" color="success" variant="outlined" sx={{ height: 20 }} />
+                                  )}
+                                  {item.shopProduct?.product?.averageRating && (
+                                    <Chip 
+                                      label={`${item.shopProduct.product.averageRating} ★`} 
+                                      size="small" 
+                                      color="warning" 
+                                      variant="outlined" 
+                                      sx={{ height: 20 }}
+                                    />
+                                  )}
+                                </Box>
+                              </Box>
+                            </Box>
+                            <Box sx={{ mt: 1 }}>
+                              <Tooltip title={
+                                <div dangerouslySetInnerHTML={{ 
+                                  __html: item.shopProduct?.product?.description || 'Không có mô tả'
+                                }} />
+                              }>
+                                <Button size="small" variant="text" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                                  Xem mô tả
+                                </Button>
+                              </Tooltip>
+                              <Typography variant="caption" color="textSecondary" sx={{ ml: 2 }}>
+                                Tồn kho: {item.shopProduct?.product?.stock || 'N/A'}
+                              </Typography>
+                              <Typography variant="caption" color="textSecondary" sx={{ ml: 2 }}>
+                                Đã bán: {item.shopProduct?.soldCount || 0}
+                              </Typography>
+                            </Box>
                           </TableCell>
                           <TableCell align="center">
                             <Chip 
