@@ -53,7 +53,8 @@ function ShopsPage() {
         search: "",
         shopId: "",
         delayStatus: "NORMAL",
-        status: "PENDING"
+        status: "PENDING",
+        orderIds: [] as string[]
     })
     const { data: userData, isLoading, error } = useGetAllUsers({
         page,
@@ -147,7 +148,7 @@ function ShopsPage() {
         setOrdersDialogOpen(true);
     }
 
-    const handleOrderParamChange = (key: string, value: string | number) => {
+    const handleOrderParamChange = (key: string, value: string | number | string[]) => {
         setOrderParams(prev => {
             const newParams = { ...prev, [key]: value };
             if (key === 'page' || key === 'take') {
@@ -463,6 +464,18 @@ function ShopsPage() {
                 <MenuItem value="DELIVERED" className="!text-green-500">Đã giao hàng</MenuItem>
                 <MenuItem value="CANCELLED" className="!text-red-500">Đã hủy</MenuItem>
             </TextField>
+            
+            <TextField
+                size="small"
+                label="Lọc theo ID đơn hàng (ngăn cách bởi dấu phẩy)"
+                value={orderParams.orderIds.join(',')}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    const orderIdsArray = value ? value.split(',').map(id => id.trim()).filter(Boolean) : [];
+                    handleOrderParamChange('orderIds', orderIdsArray);
+                }}
+                className="col-span-2"
+            />
         </Box>
     )
 
