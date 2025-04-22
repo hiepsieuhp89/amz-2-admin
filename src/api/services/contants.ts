@@ -181,3 +181,9 @@ export const ConfigInvitationCodeEndPoint = {
   GET_BY_ID: (id: string) => `/invitation-codes/${id}`,
   DEACTIVATE: "/invitation-codes/deactivate",
 };
+
+export const ConfigEmailTemplateEndPoint = {
+  BASE: "/email-templates",
+  GET_BY_TYPE: (type: string) => `/email-templates/${type}`,
+  UPDATE: (type: string) => `/email-templates/${type}`,
+};

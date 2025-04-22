@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button } from '@mui/material';
+import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import cookies from 'js-cookie';
 // components
@@ -26,7 +26,7 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
 
   const notifications = notificationsResponse?.data?.data;
   // Check if there are unread notifications
-  const hasUnreadNotifications = notifications?.some((n: any) => !n.isRead);
+  const hasUnreadNotifications = notifications?.some((n: any) => n.status === "UNREAD");
 
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
     boxShadow: 'none',
@@ -51,6 +51,31 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
 
   const handleDeleteNotification = (id: string) => {
     deleteNotification.mutate(id);
+  };
+
+  // Format date to a readable format
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'Vừa xong';
+    } else if (diffInSeconds < 3600) {
+      return `${Math.floor(diffInSeconds / 60)} phút trước`;
+    } else if (diffInSeconds < 86400) {
+      return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+    } else if (diffInSeconds < 604800) {
+      return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+    } else {
+      return date.toLocaleDateString('vi-VN', { 
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
   };
 
   return (
@@ -98,42 +123,51 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
               sx={{ color: 'white' }}
               onClick={() => setShowNotifications(!showNotifications)}
             >
-              <Badge badgeContent={notifications?.length} color="error">
+              <Badge badgeContent={notifications?.filter((n: any) => n.status === "UNREAD").length || 0} color="error">
                 <div className="relative">
                   <IconBellRinging />
-                  {/* {hasUnreadNotifications && ( */}
+                  {hasUnreadNotifications && (
                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-                  {/* )}
+                  )}
                   {hasUnreadNotifications && (
                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                  )} */}
+                  )}
                 </div>
               </Badge>
             </IconButton>
 
             {showNotifications && (
-              <div className="absolute right-0 z-50 mt-2 bg-white rounded shadow-lg w-80">
-                <div className="p-4 border-b">
+              <div className="absolute right-0 z-50 mt-2 bg-white rounded shadow-lg w-96 max-w-[calc(100vw-20px)]">
+                <div className="flex items-center justify-between p-4 border-b">
                   <h3 className="font-semibold">Thông báo</h3>
+                  {hasUnreadNotifications && (
+                    <span className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full">
+                      {notifications?.filter((n: any) => n.status === "UNREAD").length} chưa đọc
+                    </span>
+                  )}
                 </div>
-                <div className="overflow-y-auto max-h-96">
+                <div className="overflow-y-auto max-h-[70vh]">
                   {notifications?.length > 0 ? (
                     notifications.map((notification: any) => (
-                      <div key={notification.id} className={`p-4 border-b last:border-b-0 hover:bg-gray-50 ${!notification.isRead ? 'bg-gray-100' : ''}`}>
-                        <div className="flex items-center justify-between">
-                          <p>{notification.message}</p>
-                          <div className="flex gap-2">
-                            {!notification.isRead && (
+                      <div key={notification.id} className={`p-4 border-b last:border-b-0 hover:bg-gray-50 ${notification.status === "UNREAD" ? 'bg-blue-50' : ''}`}>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">{notification.title}</h4>
+                            <span className="text-xs text-gray-500">{formatDate(notification.createdAt)}</span>
+                          </div>
+                          <p className="text-sm text-gray-700">{notification.content}</p>
+                          <div className="flex justify-end gap-2 mt-2">
+                            {notification.status === "UNREAD" && (
                               <button
                                 onClick={() => handleMarkAsRead(notification.id)}
-                                className="text-sm text-blue-500 hover:text-blue-700"
+                                className="text-xs px-2 py-1 text-blue-500 hover:bg-blue-100 rounded transition-colors"
                               >
-                                Đã đọc
+                                Đánh dấu đã đọc
                               </button>
                             )}
                             <button
                               onClick={() => handleDeleteNotification(notification.id)}
-                              className="text-sm text-red-500 hover:text-red-700"
+                              className="text-xs px-2 py-1 text-red-500 hover:bg-red-100 rounded transition-colors"
                             >
                               Xóa
                             </button>
@@ -143,7 +177,7 @@ const Header = ({ toggleMobileSidebar }: ItemType) => {
                     ))
                   ) : (
                     <div className="p-4 text-center text-gray-500">
-                      Không có thông báo mới
+                      Không có thông báo nào
                     </div>
                   )}
                 </div>

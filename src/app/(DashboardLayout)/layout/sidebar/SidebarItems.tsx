@@ -201,6 +201,11 @@ const Menuitems = [
         title: "Shipping Carrier",
         href: "/admin/settings/shipping-carriers",
       },
+      {
+        id: generateUniqueId(),
+        title: "Quản lý Template Email",
+        href: "/admin/settings/email-templates",
+      },
     ],
   },
   // {
