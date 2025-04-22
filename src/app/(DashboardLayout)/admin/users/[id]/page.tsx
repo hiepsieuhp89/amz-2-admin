@@ -39,6 +39,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useGetUserActionLogs } from "@/hooks/action-log";
 import { useUploadImage } from "@/hooks/image";
 import { useGetAllSellerPackages } from "@/hooks/seller-package";
 import { useGetAllSpreadPackages } from "@/hooks/spread-package";
@@ -95,6 +96,15 @@ function UserDetailPage() {
   const [ipHistoryRowsPerPage, setIpHistoryRowsPerPage] = useState(10);
   const [ipFilter, setIpFilter] = useState("");
   const [actionFilter, setActionFilter] = useState("");
+
+  // Activity Logs state
+  const [activityLogsPage, setActivityLogsPage] = useState(0);
+  const [activityLogsRowsPerPage, setActivityLogsRowsPerPage] = useState(10);
+  const [searchFilter, setSearchFilter] = useState("");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
+  const [endpointFilter, setEndpointFilter] = useState("");
+  const [methodFilter, setMethodFilter] = useState("");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -161,6 +171,20 @@ function UserDetailPage() {
     ip: ipFilter || undefined,
     action: actionFilter || undefined,
   });
+
+  // Fetch Activity Logs
+  const { data: activityLogsData, isLoading: activityLogsLoading } = useGetUserActionLogs(
+    id,
+    {
+      page: activityLogsPage + 1,
+      take: activityLogsRowsPerPage,
+      search: searchFilter || undefined,
+      description: descriptionFilter || undefined,
+      endpoint: endpointFilter || undefined,
+      method: methodFilter || undefined,
+      order: sortOrder,
+    }
+  );
 
   useEffect(() => {
     if (userData?.data) {
@@ -440,6 +464,35 @@ function UserDetailPage() {
     setActionFilter(e.target.value);
   };
 
+  const handleActivityLogsPageChange = (event: unknown, newPage: number) => {
+    setActivityLogsPage(newPage);
+  };
+
+  const handleActivityLogsRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setActivityLogsRowsPerPage(parseInt(event.target.value, 10));
+    setActivityLogsPage(0);
+  };
+
+  const handleSearchFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchFilter(e.target.value);
+  };
+
+  const handleDescriptionFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescriptionFilter(e.target.value);
+  };
+
+  const handleEndpointFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEndpointFilter(e.target.value);
+  };
+
+  const handleMethodFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMethodFilter(e.target.value);
+  };
+
+  const handleSortOrderChange = (e: SelectChangeEvent<string>) => {
+    setSortOrder(e.target.value as "ASC" | "DESC");
+  };
+
   // Handle toggling shop freeze status
   const handleToggleFreeze = async () => {
     try {
@@ -583,6 +636,39 @@ function UserDetailPage() {
     );
   };
 
+  // Format HTTP method for display
+  const formatMethod = (method: string): JSX.Element => {
+    let color = "default";
+    
+    switch (method.toUpperCase()) {
+      case "GET":
+        color = "info";
+        break;
+      case "POST":
+        color = "success";
+        break;
+      case "PUT":
+      case "PATCH":
+        color = "warning";
+        break;
+      case "DELETE":
+        color = "error";
+        break;
+      default:
+        color = "default";
+    }
+
+    return (
+      <Chip
+        label={method.toUpperCase()}
+        color={color as any}
+        size="small"
+        variant="filled"
+        className="min-w-[65px] text-center"
+      />
+    );
+  };
+
   // Open image preview dialog
   const handleOpenImagePreview = (imageSrc: string, title: string) => {
     setPreviewImageSrc(imageSrc);
@@ -646,6 +732,7 @@ function UserDetailPage() {
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="user detail tabs">
               <Tab label="Thông tin người dùng" id="user-tab-0" aria-controls="user-tabpanel-0" />
               <Tab label="Lịch sử IP" id="user-tab-1" aria-controls="user-tabpanel-1" />
+              <Tab label="Lịch sử hoạt động" id="user-tab-2" aria-controls="user-tabpanel-2" />
             </Tabs>
           </Box>
 
@@ -1492,6 +1579,154 @@ function UserDetailPage() {
                 page={ipHistoryPage}
                 onPageChange={handleIpHistoryPageChange}
                 onRowsPerPageChange={handleIpHistoryRowsPerPageChange}
+                labelRowsPerPage="Số dòng mỗi trang:"
+                labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong ${count}`}
+              />
+            )}
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
+            <Box className="mb-4">
+              <Typography variant="h6" className="mb-4 font-medium">Lịch sử hoạt động người dùng</Typography>
+              <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tìm kiếm"
+                  value={searchFilter}
+                  onChange={handleSearchFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Tìm kiếm..."
+                  className="rounded"
+                />
+                <TextField
+                  size="small"
+                  label="Mô tả"
+                  value={descriptionFilter}
+                  onChange={handleDescriptionFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Lọc theo mô tả..."
+                  className="rounded"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <TextField
+                  size="small"
+                  label="Endpoint"
+                  value={endpointFilter}
+                  onChange={handleEndpointFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Ví dụ: /users/login"
+                  className="rounded"
+                />
+                <TextField
+                  size="small"
+                  label="Phương thức HTTP"
+                  value={methodFilter}
+                  onChange={handleMethodFilterChange}
+                  fullWidth
+                  variant="outlined"
+                  placeholder="GET, POST, PUT, DELETE..."
+                  className="rounded"
+                />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Sắp xếp</InputLabel>
+                  <Select
+                    value={sortOrder}
+                    label="Sắp xếp"
+                    onChange={handleSortOrderChange}
+                  >
+                    <MenuItem value="DESC">Mới nhất trước</MenuItem>
+                    <MenuItem value="ASC">Cũ nhất trước</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+            </Box>
+
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Thời gian</TableCell>
+                    <TableCell>Phương thức</TableCell>
+                    <TableCell>Endpoint</TableCell>
+                    <TableCell>Mô tả</TableCell>
+                    <TableCell>Metadata</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {activityLogsLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        <CircularProgress size={24} className="py-4 my-4 text-main-golden-orange" />
+                      </TableCell>
+                    </TableRow>
+                  ) : activityLogsData?.data?.data && activityLogsData.data.data.length > 0 ? (
+                    activityLogsData.data.data.map((item: any) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Typography variant="body2" className="whitespace-nowrap">
+                            {new Date(item.createdAt).toLocaleString('vi-VN')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{formatMethod(item.method)}</TableCell>
+                        <TableCell>
+                          <Tooltip title={item.endpoint} arrow placement="top">
+                            <span className="inline-block max-w-[150px] truncate">
+                              {item.endpoint}
+                            </span>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip title={item.description} arrow placement="top">
+                            <span className="inline-block max-w-[200px] truncate">
+                              {item.description}
+                            </span>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell>
+                          {item.metadata ? (
+                            <Tooltip 
+                              title={
+                                <pre className="text-xs whitespace-pre-wrap">
+                                  {JSON.stringify(item.metadata, null, 2)}
+                                </pre>
+                              } 
+                              arrow 
+                              placement="left"
+                            >
+                              <IconButton size="small">
+                                <IconZoomIn size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-gray-500">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        Không có dữ liệu
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {activityLogsData?.data?.meta && (
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                component="div"
+                count={activityLogsData.data.meta.itemCount || 0}
+                rowsPerPage={activityLogsRowsPerPage}
+                page={activityLogsPage}
+                onPageChange={handleActivityLogsPageChange}
+                onRowsPerPageChange={handleActivityLogsRowsPerPageChange}
                 labelRowsPerPage="Số dòng mỗi trang:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} trong ${count}`}
               />

@@ -77,6 +77,12 @@ export const ConfigTransactionEndPoint = {
   HISTORY: "/transaction/admin/history",
   RECHARGE: "/transaction/recharge",
   WITHDRAW: "/transaction/withdraw",
+  ADMIN_WITHDRAWALS: "/withdrawals/admin",
+};
+
+export const ConfigActionLogEndPoint = {
+  BASE: "/action-logs",
+  USER_LOGS: (userId: string) => `/action-logs?userAgent=${userId}`,
 };
 
 export const ConfigFakeOrderEndPoint = {
