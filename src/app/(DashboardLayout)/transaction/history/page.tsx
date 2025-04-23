@@ -340,6 +340,7 @@ function TransactionHistoryPage() {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>ID giao dịch</TableCell>
+                    <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Email người dùng</TableCell>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Ngày tạo</TableCell>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Số tiền</TableCell>
                     <TableCell sx={{ fontSize: "14px", fontWeight: 600 }}>Loại giao dịch</TableCell>
@@ -373,6 +374,7 @@ function TransactionHistoryPage() {
                           </IconButton>
                         </div>
                       </TableCell>
+                      <TableCell>{transaction.user?.email}</TableCell>
                       <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                       <TableCell>{formatMoney(transaction.money)}</TableCell>
                       <TableCell>
