@@ -135,8 +135,6 @@ function UserDetailPage() {
     bankAccountName: "",
     // Thông tin mật khẩu
     password: "",
-    transactionPassword: "",
-    walletPassword: "",
     withdrawPassword: "",
     // Thông tin xác thực
     idCardType: "",
@@ -211,10 +209,8 @@ function UserDetailPage() {
         bankName: userData.data.bankName || "",
         bankAccountNumber: userData.data.bankAccountNumber || "",
         bankAccountName: userData.data.bankAccountName || "",
-        password: "",
-        transactionPassword: "",
+        password: userData.data.password || "",
         withdrawPassword: userData.data.withdrawPassword || "",
-        walletPassword: "",
         idCardType: userData.data.idCardType || "",
         idCardNumber: userData.data.idCardNumber || "",
         idCardFrontImage: userData.data.idCardFrontImage || "",

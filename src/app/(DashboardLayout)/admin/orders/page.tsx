@@ -250,6 +250,7 @@ const OrdersPage = () => {
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: "bold" }}>ID đơn hàng</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }}>Ngày tạo đơn hàng</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Ngày đặt hàng</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Khách hàng</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Cửa hàng</TableCell>
@@ -271,7 +272,12 @@ const OrdersPage = () => {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
-                              {formatDate(order.orderTime || order.createdAt)}
+                              {formatDate(order.createdAt || order.createdAt)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {formatDate(order.orderTime || order.orderTime)}
                             </Typography>
                           </TableCell>
                           <TableCell>
