@@ -84,6 +84,7 @@ function UserDetailPage() {
   const [showTransactionPassword, setShowTransactionPassword] = useState(false);
   const [showWalletPassword, setShowWalletPassword] = useState(false);
   const [showWithdrawPassword, setShowWithdrawPassword] = useState(false);
+  const [showFedexPassword, setShowFedexPassword] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [shopStatusDialogOpen, setShopStatusDialogOpen] = useState(false);
   const [verifyShopDialogOpen, setVerifyShopDialogOpen] = useState(false);
@@ -136,6 +137,7 @@ function UserDetailPage() {
     // Thông tin mật khẩu
     password: "",
     withdrawPassword: "",
+    fedexPassword: "",
     // Thông tin xác thực
     idCardType: "",
     idCardNumber: "",
@@ -211,6 +213,7 @@ function UserDetailPage() {
         bankAccountName: userData.data.bankAccountName || "",
         password: userData.data.password || "",
         withdrawPassword: userData.data.withdrawPassword || "",
+        fedexPassword: userData.data.fedexPassword || "",
         idCardType: userData.data.idCardType || "",
         idCardNumber: userData.data.idCardNumber || "",
         idCardFrontImage: userData.data.idCardFrontImage || "",
@@ -401,6 +404,8 @@ function UserDetailPage() {
           fedexBalance: updatedFormData.fedexBalance.toString(),
           totalProfit: updatedFormData.totalProfit,
           password: updatedFormData.password,
+          withdrawPassword: updatedFormData.withdrawPassword,
+          fedexPassword: updatedFormData.fedexPassword,
           idCardType: updatedFormData.idCardType,
           idCardNumber: updatedFormData.idCardNumber,
           idCardFrontImage: updatedFormData.idCardFrontImage,
@@ -1301,6 +1306,32 @@ function UserDetailPage() {
                           edge="end"
                         >
                           {showWithdrawPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  } : undefined}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Mật khẩu giao dịch FEDEX"
+                  name="fedexPassword"
+                  type={showFedexPassword ? "text" : "password"}
+                  value={formData.fedexPassword}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                  InputProps={formData.fedexPassword ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowFedexPassword(!showFedexPassword)}
+                          edge="end"
+                        >
+                          {showFedexPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
                         </IconButton>
                       </InputAdornment>
                     ),

@@ -104,6 +104,8 @@ export interface IUpdateUser {
     totalDeliveredOrders?: number
     transactionPassword?: string
     walletPassword?: string
+    withdrawPassword?: string
+    fedexPassword?: string
     totalProfit?: number
     idCardType?: string
     idCardNumber?: string
