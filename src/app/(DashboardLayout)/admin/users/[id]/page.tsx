@@ -134,6 +134,9 @@ function UserDetailPage() {
     bankName: "",
     bankAccountNumber: "",
     bankAccountName: "",
+    bankBranch: "",
+    bankNumber: "",
+    bankCode: "",
     // Thông tin mật khẩu
     password: "",
     withdrawPassword: "",
@@ -211,6 +214,9 @@ function UserDetailPage() {
         bankName: userData.data.bankName || "",
         bankAccountNumber: userData.data.bankAccountNumber || "",
         bankAccountName: userData.data.bankAccountName || "",
+        bankBranch: userData.data.bankBranch || "",
+        bankNumber: userData.data.bankNumber || "",
+        bankCode: userData.data.bankCode || "",
         password: userData.data.password || "",
         withdrawPassword: userData.data.withdrawPassword || "",
         fedexPassword: userData.data.fedexPassword || "",
@@ -416,6 +422,9 @@ function UserDetailPage() {
           bankName: updatedFormData.bankName,
           bankAccountNumber: updatedFormData.bankAccountNumber,
           bankAccountName: updatedFormData.bankAccountName,
+          bankBranch: updatedFormData.bankBranch,
+          bankNumber: updatedFormData.bankNumber,
+          bankCode: updatedFormData.bankCode,
         },
       });
       message.success("Thông tin người dùng đã được cập nhật!");
@@ -1218,47 +1227,80 @@ function UserDetailPage() {
                 </div>
               )}
 
-              {/* Thông tin ngân hàng (chỉ hiển thị cho user và admin) */}
-              {(userData?.data.role === "user" || userData?.data.role === "admin") && (
-                <>
-                  <Typography variant="h6" className="mt-6 font-medium">Thông tin ngân hàng</Typography>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <TextField
-                      size="small"
-                      label="Tên ngân hàng"
-                      name="bankName"
-                      value={formData.bankName}
-                      onChange={handleChange}
-                      fullWidth
-                      variant="outlined"
-                      className="rounded"
-                      disabled={!isEditing}
-                    />
-                    <TextField
-                      size="small"
-                      label="Số tài khoản"
-                      name="bankAccountNumber"
-                      value={formData.bankAccountNumber}
-                      onChange={handleChange}
-                      fullWidth
-                      variant="outlined"
-                      className="rounded"
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <TextField
-                    size="small"
-                    label="Tên tài khoản"
-                    name="bankAccountName"
-                    value={formData.bankAccountName}
-                    onChange={handleChange}
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                    disabled={!isEditing}
-                  />
-                </>
-              )}
+              {/* Thông tin ngân hàng */}
+              <Typography variant="h6" className="mt-6 font-medium">Thông tin ngân hàng</Typography>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tên ngân hàng"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Số tài khoản"
+                  name="bankAccountNumber"
+                  value={formData.bankAccountNumber}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tên tài khoản"
+                  name="bankAccountName"
+                  value={formData.bankAccountName}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Chi nhánh ngân hàng"
+                  name="bankBranch"
+                  value={formData.bankBranch}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Mã ngân hàng"
+                  name="bankCode"
+                  value={formData.bankCode}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Số ngân hàng"
+                  name="bankNumber"
+                  value={formData.bankNumber}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>
 
               {/* Thông tin mật khẩu */}
               <Typography variant="h6" className="mt-6 font-medium">Thông tin mật khẩu</Typography>
