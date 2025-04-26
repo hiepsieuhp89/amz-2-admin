@@ -58,6 +58,10 @@ function getTransactionTypeLabel(type: string): string {
       return "Rút tiền"
     case "manual_fedex_amount":
       return "Điều chỉnh số dư Fedex"
+    case "manual_balance_amount":
+      return "Quy đổi"
+    case "completed_order":
+      return "Hoàn thành đơn hàng"
     default:
       return "Không xác định"
   }
