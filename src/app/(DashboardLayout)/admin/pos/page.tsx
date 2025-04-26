@@ -63,6 +63,13 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
 import { formatNumber } from "@/utils"
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+
+// Extend dayjs with plugins
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
@@ -122,7 +129,11 @@ const AdminPosPage = () => {
   const [newUserName, setNewUserName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-  const [orderDateTime, setOrderDateTime] = useState<Date | null>(new Date())
+  const [orderDateTime, setOrderDateTime] = useState(dayjs())
+  
+  const [hour, setHour] = useState(dayjs().hour())
+  const [minute, setMinute] = useState(dayjs().minute())
+  const [second, setSecond] = useState(dayjs().second())
 
   const { data: countries } = useGetCountries({ take: 9999999999 })
   const { data: states } = useGetStates({ countryId: selectedCountry, take: 9999999999 })
@@ -273,6 +284,12 @@ const AdminPosPage = () => {
       return;
     }
 
+    // Combine date with hour, minute, second only at order creation time
+    const finalOrderDateTime = orderDateTime
+      .hour(hour)
+      .minute(minute)
+      .second(second);
+
     const payload = {
       items: selectedProducts.map((item) => ({
         shopProductId: item.id,
@@ -281,7 +298,7 @@ const AdminPosPage = () => {
       email: selectedUser.email,
       address: selectedUser.address || "New York, USA",
       userId: selectedUser.id,
-      orderTime: orderDateTime ? orderDateTime.toISOString() : new Date().toISOString(),
+      orderTime: finalOrderDateTime.toISOString(),
     }
 
     createFakeOrder(payload, {
@@ -1459,16 +1476,11 @@ const AdminPosPage = () => {
                       type="date"
                       size="small"
                       label="Ngày"
-                      value={orderDateTime ? orderDateTime.toISOString().split('T')[0] : ''}
+                      value={orderDateTime.format('YYYY-MM-DD')}
                       onChange={(e) => {
-                        if (orderDateTime) {
-                          const newDate = new Date(orderDateTime);
-                          const [year, month, day] = e.target.value.split('-');
-                          newDate.setFullYear(parseInt(year));
-                          newDate.setMonth(parseInt(month) - 1);
-                          newDate.setDate(parseInt(day));
-                          setOrderDateTime(newDate);
-                        }
+                        const [year, month, day] = e.target.value.split('-');
+                        const newDate = orderDateTime.year(parseInt(year)).month(parseInt(month) - 1).date(parseInt(day));
+                        setOrderDateTime(newDate);
                       }}
                       InputLabelProps={{ shrink: true }}
                       sx={{ width: '150px' }}
@@ -1478,13 +1490,9 @@ const AdminPosPage = () => {
                       type="number"
                       size="small"
                       label="Giờ"
-                      value={orderDateTime ? orderDateTime.getHours() : 0}
+                      value={hour}
                       onChange={(e) => {
-                        if (orderDateTime) {
-                          const newDate = new Date(orderDateTime);
-                          newDate.setHours(parseInt(e.target.value));
-                          setOrderDateTime(newDate);
-                        }
+                        setHour(parseInt(e.target.value));
                       }}
                       inputProps={{ min: 0, max: 23 }}
                       sx={{ width: '80px' }}
@@ -1494,13 +1502,9 @@ const AdminPosPage = () => {
                       type="number"
                       size="small"
                       label="Phút"
-                      value={orderDateTime ? orderDateTime.getMinutes() : 0}
+                      value={minute}
                       onChange={(e) => {
-                        if (orderDateTime) {
-                          const newDate = new Date(orderDateTime);
-                          newDate.setMinutes(parseInt(e.target.value));
-                          setOrderDateTime(newDate);
-                        }
+                        setMinute(parseInt(e.target.value));
                       }}
                       inputProps={{ min: 0, max: 59 }}
                       sx={{ width: '80px' }}
@@ -1510,13 +1514,9 @@ const AdminPosPage = () => {
                       type="number"
                       size="small"
                       label="Giây"
-                      value={orderDateTime ? orderDateTime.getSeconds() : 0}
+                      value={second}
                       onChange={(e) => {
-                        if (orderDateTime) {
-                          const newDate = new Date(orderDateTime);
-                          newDate.setSeconds(parseInt(e.target.value));
-                          setOrderDateTime(newDate);
-                        }
+                        setSecond(parseInt(e.target.value));
                       }}
                       inputProps={{ min: 0, max: 59 }}
                       sx={{ width: '80px' }}
