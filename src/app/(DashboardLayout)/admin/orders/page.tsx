@@ -255,6 +255,7 @@ const OrdersPage = () => {
                         <TableCell sx={{ fontWeight: "bold" }}>Khách hàng</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Cửa hàng</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }} align="right">Tổng tiền</TableCell>
+                        <TableCell sx={{ fontWeight: "bold" }} align="right">Giá nhập</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }} align="right">Lợi nhuận</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
                         <TableCell sx={{ fontWeight: "bold" }}>Tiến độ</TableCell>
@@ -299,6 +300,11 @@ const OrdersPage = () => {
                           <TableCell align="right">
                             <Typography variant="body2" fontWeight="medium">
                               ${formatCurrency(order.totalAmount)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" fontWeight="medium">
+                              ${formatCurrency(order.totalPaidAmount)}
                             </Typography>
                           </TableCell>
                           <TableCell align="right">
