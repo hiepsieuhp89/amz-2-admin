@@ -808,33 +808,32 @@ function UserDetailPage() {
                 </FormControl>
               </div>
 
-              {/* Thông tin người dùng (chỉ hiển thị cho user và admin) */}
-              {(userData?.data.role === "user" || userData?.data.role === "admin") && (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <TextField
-                    size="small"
-                    label="Tên người dùng"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                    disabled={!isEditing}
-                  />
-                  <TextField
-                    size="small"
-                    label="Tên đầy đủ"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    fullWidth
-                    variant="outlined"
-                    className="rounded"
-                    disabled={!isEditing}
-                  />
-                </div>
-              )}
+              {/* Thông tin người dùng */}
+              <Typography variant="h6" className="mt-6 font-medium">Thông tin người dùng</Typography>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tên người dùng"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+                <TextField
+                  size="small"
+                  label="Tên đầy đủ"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  className="rounded"
+                  disabled={!isEditing}
+                />
+              </div>
 
               {/* Thông tin cửa hàng */}
               {userData?.data.role === "shop" &&
