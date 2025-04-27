@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Typography,
   Button,
@@ -88,6 +88,14 @@ function WithdrawalTable() {
   const { mutate: updateStatus } = useUpdateWithdrawalStatus()
 
   const withdrawals = withdrawalsData?.data?.data || []
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch();
+    }, 10000);
+    
+    return () => clearInterval(intervalId);
+  }, [refetch]);
 
   const handleApprove = (id: string) => {
     updateStatus({ id, status: "APPROVED" }, {
