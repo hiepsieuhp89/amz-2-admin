@@ -95,6 +95,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
         {
           type,
           payload: {
+            name,
             description,
             subject,
             htmlContent,
