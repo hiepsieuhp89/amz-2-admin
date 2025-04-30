@@ -1,5 +1,5 @@
 /* eslint-disable import/no-anonymous-default-export */
-import { sendGet, sendPut } from "../apiClient"
+import { sendGet, sendPut, sendPost } from "../apiClient"
 import { ConfigEmailTemplateEndPoint } from "./contants"
 
 // Get all email templates
@@ -31,5 +31,11 @@ export const getEmailTemplateByType = async (type: string): Promise<any> => {
 // Update email template
 export const updateEmailTemplate = async (type: string, payload: any): Promise<any> => {
   const res = await sendPut(ConfigEmailTemplateEndPoint.UPDATE(type), payload)
+  return res
+}
+
+// Send email by template type
+export const sendEmailByTemplate = async (payload: { userId: string; templateType: string }): Promise<any> => {
+  const res = await sendPost(ConfigEmailTemplateEndPoint.SEND, payload)
   return res
 } 

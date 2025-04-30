@@ -24,7 +24,7 @@ import {
     FormControl,
     InputLabel
 } from "@mui/material"
-import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore, IconStairsUp } from "@tabler/icons-react"
+import { IconCopy, IconEye, IconList, IconMessage, IconSearch, IconTrash, IconEdit, IconDotsVertical, IconWallet, IconMoodSadDizzy, IconBuildingStore, IconStairsUp, IconMail } from "@tabler/icons-react"
 import { message, Pagination } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -33,6 +33,7 @@ import ChatDialog from "@/components/ChatDialog"
 import {useUpdateFakeOrder, useDeleteFakeOrder } from "@/hooks/fake-order"
 import { useDeleteUser, useGetAllUsers, useUpdateUser } from "@/hooks/user"
 import { useGetDeliveryStages, useGetOrderDetail, useUpdateDeliveryStage, useGetShopOrders } from "@/hooks/order"
+import { useGetAllEmailTemplates, useSendEmailByTemplate } from "@/hooks/emailTemplate"
 
 function ShopsPage() {
     const router = useRouter()
@@ -113,6 +114,10 @@ function ShopsPage() {
     const [selectedStage, setSelectedStage] = useState<number | null>(null)
     const updateDeliveryStageMutation = useUpdateDeliveryStage()
     const { data: orderDetail } = useGetOrderDetail(selectedOrderId || "")
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [selectedTemplateType, setSelectedTemplateType] = useState<string>("");
+    const { data: emailTemplatesData } = useGetAllEmailTemplates();
+    const sendEmailMutation = useSendEmailByTemplate();
     const handleView = (id: string) => {
         router.push(`/admin/users/${id}`)
     }
@@ -418,6 +423,37 @@ function ShopsPage() {
         setSelectedOrderId(null);
     };
 
+    const handleEmailDialogOpen = (userId: string) => {
+        setSelectedUserId(userId);
+        setEmailDialogOpen(true);
+    };
+
+    const handleEmailDialogClose = () => {
+        setEmailDialogOpen(false);
+        setSelectedTemplateType("");
+        setSelectedUserId(null);
+    };
+
+    const handleSendEmail = async () => {
+        if (!selectedUserId || !selectedTemplateType) {
+            message.error('Vui lòng chọn loại template');
+            return;
+        }
+
+        try {
+            await sendEmailMutation.mutateAsync({
+                userId: selectedUserId,
+                templateType: selectedTemplateType
+            });
+
+            message.success('Gửi email thành công!');
+            handleEmailDialogClose();
+        } catch (error) {
+            message.error('Không thể gửi email. Vui lòng thử lại.');
+            console.error(error);
+        }
+    };
+
     const renderOrderFilters = () => (
         <Box className="grid grid-cols-2 gap-4 p-4">
             <TextField
@@ -687,6 +723,17 @@ function ShopsPage() {
                                 <Box className="flex items-center gap-2">
                                     <IconMessage size={16} className="text-green-400" />
                                     <span>Nhắn tin</span>
+                                </Box>
+                            </MenuItem>
+                        )}
+                        {user.role === "shop" && (
+                            <MenuItem onClick={() => {
+                                handleEmailDialogOpen(user.id);
+                                handleMenuClose();
+                            }}>
+                                <Box className="flex items-center gap-2">
+                                    <IconMail size={16} className="text-indigo-400" />
+                                    <span>Gửi email</span>
                                 </Box>
                             </MenuItem>
                         )}
@@ -1179,7 +1226,7 @@ function ShopsPage() {
                     Xác minh cửa hàng
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText className="text-gray-500 mt-2">
+                    <DialogContentText className="mt-2 text-gray-500">
                         Bạn có chắc chắn muốn xác minh cửa hàng này không? Sau khi xác minh, cửa hàng sẽ được đánh dấu là đã xác minh và có thể tiếp tục hoạt động.
                     </DialogContentText>
                 </DialogContent>
@@ -1340,6 +1387,58 @@ function ShopsPage() {
                                 Đang cập nhật...
                             </Box>
                         ) : 'Cập nhật giai đoạn'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={emailDialogOpen}
+                onClose={handleEmailDialogClose}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>
+                    Gửi email cho người dùng
+                </DialogTitle>
+                <DialogContent>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <TextField
+                            select
+                            fullWidth
+                            size="small"
+                            label="Loại template"
+                            value={selectedTemplateType}
+                            onChange={(e) => setSelectedTemplateType(e.target.value)}
+                        >
+                            {emailTemplatesData?.data?.data?.map((template: any) => (
+                                <MenuItem key={template.type} value={template.type}>
+                                    {template.type}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions className="!p-4 !pb-6">
+                    <Button
+                        variant="outlined"
+                        onClick={handleEmailDialogClose}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={handleSendEmail}
+                        className="text-white transition-colors !bg-main-golden-orange !border-main-golden-orange"
+                        disabled={sendEmailMutation.isPending || !selectedTemplateType}
+                    >
+                        {sendEmailMutation.isPending ? (
+                            <div className="flex items-center gap-2 text-white">
+                                <CircularProgress size={16} className="text-white" />
+                                Đang gửi...
+                            </div>
+                        ) : (
+                            <span className="text-white">Gửi email</span>
+                        )}
                     </Button>
                 </DialogActions>
             </Dialog>

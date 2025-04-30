@@ -1,4 +1,4 @@
-import { getAllEmailTemplates, getEmailTemplateByType, updateEmailTemplate } from "@/api/services/emailTemplate.service"
+import { getAllEmailTemplates, getEmailTemplateByType, updateEmailTemplate, sendEmailByTemplate } from "@/api/services/emailTemplate.service"
 import {
   useMutation,
   type UseMutationResult,
@@ -10,6 +10,7 @@ import {
 // Query keys
 const EMAIL_TEMPLATES_KEY = "emailTemplates"
 const EMAIL_TEMPLATE_KEY = "emailTemplate"
+const EMAIL_SEND_KEY = "sendEmail"
 
 // Get all email templates
 export const useGetAllEmailTemplates = (params?: {
@@ -46,5 +47,13 @@ export const useUpdateEmailTemplate = (): UseMutationResult<any, Error, { type: 
         queryKey: [EMAIL_TEMPLATES_KEY],
       })
     },
+  })
+}
+
+// Send email by template type
+export const useSendEmailByTemplate = (): UseMutationResult<any, Error, { userId: string; templateType: string }> => {
+  return useMutation<any, Error, { userId: string; templateType: string }>({
+    mutationFn: (payload) => sendEmailByTemplate(payload),
+    mutationKey: [EMAIL_SEND_KEY],
   })
 } 
