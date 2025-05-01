@@ -186,4 +186,5 @@ export const ConfigEmailTemplateEndPoint = {
   BASE: "/email-templates",
   GET_BY_TYPE: (type: string) => `/email-templates/${type}`,
   UPDATE: (type: string) => `/email-templates/${type}`,
+  SEND: "/email/send",
 };
