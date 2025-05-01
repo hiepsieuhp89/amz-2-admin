@@ -8,4 +8,3 @@ if (branch === "staging") {
 }
 
 fs.copyFileSync(envFile, ".env");
-console.log(`✔ Loaded environment from ${envFile}`);

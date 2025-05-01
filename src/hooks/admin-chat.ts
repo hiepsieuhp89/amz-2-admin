@@ -3,6 +3,7 @@ import {
   getMessages,
   markAsRead,
   deleteMessage,
+  getShopUsers,
 } from "@/api/services/admin-chat.service"
 import {
   useMutation,
@@ -15,6 +16,14 @@ import {
 // Query keys
 const ADMIN_CHAT_KEY = "admin-chat"
 
+// Define message payload interface
+interface SendMessagePayload {
+  userId: string;
+  shopId: string;
+  message: string;
+  imageUrls?: string[];
+  shopProductId?: string;
+}
 // Lấy danh sách tin nhắn
 export const useGetMessages = (
   userId: string,
@@ -27,14 +36,22 @@ export const useGetMessages = (
   })
 }
 
-// Define message payload interface
-interface SendMessagePayload {
-  userId: string;
-  shopId: string;
-  message: string;
-  imageUrls?: string[];
-  shopProductId?: string;
-}
+export const useGetShopUsers = (
+  shopId: string,
+  params?: {
+    order?: "ASC" | "DESC";
+    page?: number;
+    take?: number;
+    search?: string;
+    sortBy?: string;
+  }
+): UseQueryResult<any> => {
+  return useQuery({
+    queryKey: ["shopUsers", shopId, params],
+    queryFn: () => getShopUsers(shopId, params),
+  });
+};
+
 
 // Gửi tin nhắn
 export const useSendMessage = (): UseMutationResult<

@@ -30,10 +30,8 @@ import { useGetAllSpreadPackages } from "@/hooks/spread-package";
 import { useDeleteUser, useGetUserById, useUpdateUser } from "@/hooks/user";
 import { ISellerPackage } from "@/interface/response/seller-package";
 import { ISpreadPackage } from "@/interface/response/spread-package";
-
 const formatDateForInput = (dateString: string) => {
   if (!dateString) return "";
-  // Add T00:00 to match datetime-local format
   return `${dateString}T00:00`;
 };
 function UserDetailPage() {

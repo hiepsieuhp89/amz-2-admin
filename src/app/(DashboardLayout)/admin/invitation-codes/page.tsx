@@ -61,7 +61,6 @@ const InvitationCodesPage = () => {
     order,
     search: search.trim() ? search : undefined 
   });
-  console.log(data);
   
   useEffect(() => {
     if (data?.data?.total) {

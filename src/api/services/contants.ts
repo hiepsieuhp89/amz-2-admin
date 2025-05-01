@@ -129,6 +129,7 @@ export const ConfigAdminChatEndPoint = {
   GET_MESSAGES: (userId: string, shopId: string) => `/admin/chat/user/${userId}/shop/${shopId}`,
   MARK_AS_READ: (messageId: string) => `/admin/chat/${messageId}/read`,
   DELETE_MESSAGE: (messageId: string) => `/admin/chat/${messageId}`,
+  GET_SHOP_USERS: (shopId: string) => `/admin/chat/shop/${shopId}/users`,
 }
 
 export const ConfigFakeReviewEndPoint = {

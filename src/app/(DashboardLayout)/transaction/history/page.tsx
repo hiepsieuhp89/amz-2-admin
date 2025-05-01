@@ -136,8 +136,6 @@ function WithdrawalTable() {
       </Box>
     )
   }
-  console.log(withdrawals)
-
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", border: "1px solid #E0E0E0", marginTop: 2 }}>
       <Typography variant="h4" className="p-4">Danh sách yêu cầu rút tiền</Typography>
@@ -271,7 +269,6 @@ function TransactionHistoryPage() {
     )
   }
 
-  console.log("filteredTransactions", filteredTransactions)
   return (
     <>
      <Box className="relative flex flex-col items-center justify-center py-8">

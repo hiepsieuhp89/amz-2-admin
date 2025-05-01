@@ -21,10 +21,6 @@ const PageWrapper = styled('div')(() => ({
   backgroundColor: 'transparent',
 }));
 
-interface Props {
-  children: React.ReactNode;
-}
-
 function RootLayout({
   children,
 }: {

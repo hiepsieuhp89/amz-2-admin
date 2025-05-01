@@ -11,13 +11,34 @@ import {
   TextField,
   Button,
   IconButton,
-  Autocomplete,
   CircularProgress,
   Paper,
+  Avatar,
+  Chip,
+  Tooltip,
+  alpha,
+  Tabs,
+  Tab,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import { useGetMessages, useSendMessage, useMarkAsRead, useDeleteMessage } from "@/hooks/admin-chat";
+import { useGetMessages, useSendMessage, useMarkAsRead, useDeleteMessage, useGetShopUsers } from "@/hooks/admin-chat";
 import { useState, useEffect, useRef } from "react";
-import { IconSearch, IconCheck, IconTrash, IconPaperclip, IconShoppingCart, IconX, IconPhoto, IconExternalLink } from "@tabler/icons-react";
+import { 
+  IconSearch, 
+  IconCheck, 
+  IconTrash, 
+  IconPaperclip, 
+  IconShoppingCart, 
+  IconX, 
+  IconPhoto, 
+  IconExternalLink,
+  IconSend,
+  IconUserFilled,
+  IconMessageCircle,
+  IconBubbleTextFilled,
+  IconDotsVertical,
+} from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import { useGetAllShopProducts, useGetShopProductById } from "@/hooks/shop-products";
 import { useGetProductById } from "@/hooks/product";
@@ -52,6 +73,7 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
   handleDeleteMessage: (id: string) => void;
 }) => {
   const router = useRouter();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isUserMessage = msg.senderRole === "user";
   const senderInfo = isUserMessage
     ? msg.user?.fullName || "Người dùng"
@@ -81,41 +103,91 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
     <Box
       mb={2}
       className={isUserMessage ? "ml-auto" : ""}
-      style={{ 
+      sx={{ 
         maxWidth: msg.message?.length > 50 ? "70%" : "fit-content",
-        marginLeft: isUserMessage ? "auto" : "0"
+        marginLeft: isUserMessage ? "auto" : "0",
+        position: "relative",
       }}
     >
       <Box
-        bgcolor={isUserMessage ? "#e3f2fd" : "#f5f5f5"}
-        p={1.5}
-        borderRadius={2}
+        sx={{
+          bgcolor: isUserMessage ? alpha('#1976d2', 0.08) : alpha('#616161', 0.05),
+          p: 1.5,
+          borderRadius: 2,
+          position: 'relative',
+          '&:hover .message-actions': {
+            opacity: 1,
+          }
+        }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+          <Typography 
+            variant="caption" 
+            color={isUserMessage ? "primary" : "text.secondary"} 
+            fontWeight={500}
+          >
             {senderInfo}
           </Typography>
-          <Box display="flex" gap={1}>
-            <IconCheck
-              size={20}
-              style={{ cursor: "pointer", color: "#4caf50" }}
-              onClick={() => handleMarkAsRead(msg.id)}
-            />
-            <IconTrash
-              size={20}
-              style={{ cursor: "pointer", color: "#f44336" }}
-              onClick={() => handleDeleteMessage(msg.id)}
-            />
-          </Box>
+          <IconButton
+            size="small"
+            sx={{ 
+              color: isUserMessage ? 'primary.main' : 'text.secondary',
+              p: 0.5,
+              opacity: 0,
+              transition: 'opacity 0.2s',
+              '&:hover': { bgcolor: alpha(isUserMessage ? '#1976d2' : '#616161', 0.1) }
+            }}
+            className="message-actions"
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
+            <IconDotsVertical size={14} />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+            PaperProps={{
+              className: "!rounded-[6px] shadow-xl",
+            }}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: isUserMessage ? 'left' : 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: isUserMessage ? 'right' : 'left',
+            }}
+          >
+            <MenuItem onClick={() => {
+              handleMarkAsRead(msg.id);
+              setAnchorEl(null);
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconCheck size={16} className="text-green-400" />
+                <span>Đánh dấu đã đọc</span>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={() => {
+              handleDeleteMessage(msg.id);
+              setAnchorEl(null);
+            }}>
+              <Box className="flex items-center gap-2">
+                <IconTrash size={16} className="text-red-400" />
+                <span>Xóa tin nhắn</span>
+              </Box>
+            </MenuItem>
+          </Menu>
         </Box>
         
         {msg.message && (
-          <Typography>{msg.message}</Typography>
+          <Typography variant="body2" sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+            {msg.message}
+          </Typography>
         )}
         
         {/* Display attached images */}
         {msg.imageUrls && msg.imageUrls.length > 0 && (
-          <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+          <Box mt={1.5} display="flex" gap={1} flexWrap="wrap">
             {msg.imageUrls.map((url: string, idx: number) => (
               <Box 
                 key={idx} 
@@ -125,7 +197,12 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
                   height: msg.imageUrls.length > 1 ? '120px' : '200px',
                   borderRadius: '8px',
                   overflow: 'hidden',
-                  border: '1px solid #e0e0e0'
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                  }
                 }}
               >
                 <Image 
@@ -142,12 +219,22 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
         {/* Display attached product */}
         {msg.shopProductId && (
           <Box 
-            mt={1} 
-            p={1} 
-            bgcolor={isUserMessage ? "#d0e8fd" : "#e9e9e9"}
-            borderRadius={1}
-            display="flex"
-            gap={2}
+            mt={1.5} 
+            p={1.5} 
+            sx={{
+              bgcolor: alpha(isUserMessage ? '#1976d2' : '#616161', 0.05),
+              borderRadius: 1.5,
+              display: "flex",
+              gap: 2,
+              border: `1px solid ${alpha(isUserMessage ? '#1976d2' : '#616161', 0.1)}`,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              cursor: 'pointer',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+              }
+            }}
+            onClick={handleProductClick}
           >
             {productQueryEnabled && isLoadingProduct ? (
               <Box sx={{ display: "flex", width: "100%", justifyContent: "center", p: 1 }}>
@@ -155,13 +242,25 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
               </Box>
             ) : (
               <>
-                <Box sx={{ width: '60px', height: '60px', position: 'relative', flexShrink: 0, bgcolor: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ 
+                  width: '60px', 
+                  height: '60px', 
+                  position: 'relative', 
+                  flexShrink: 0, 
+                  bgcolor: "#f0f0f0", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
                   {productData?.data?.imageUrls ? (
                     <Image
-                      src={getFirstImage(productData.data.imageUrls)}
+                      src={getFirstImage(productData.data.imageUrls) || "/placeholder.svg"}
                       alt={productData.data.name || "Product image"}
                       fill
-                      style={{ objectFit: 'cover', borderRadius: '4px' }}
+                      style={{ objectFit: 'cover' }}
                     />
                   ) : (
                     <IconShoppingCart size={24} color="#999" />
@@ -171,21 +270,21 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
                   <Typography 
                     variant="subtitle2" 
                     fontWeight={500}
-                    onClick={handleProductClick}
                     sx={{ 
-                      cursor: 'pointer', 
                       display: 'flex', 
                       alignItems: 'center',
-                      '&:hover': { 
-                        color: '#2196f3', 
-                        textDecoration: 'underline' 
-                      } 
+                      color: isUserMessage ? '#1976d2' : '#424242',
+                      mb: 0.5
                     }}
                   >
                     {productData?.data?.name || "Sản phẩm đính kèm"}
                     <IconExternalLink size={14} style={{ marginLeft: '4px' }} />
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant="body2" 
+                    color={isUserMessage ? "primary.dark" : "text.secondary"}
+                    fontWeight={500}
+                  >
                     {productData?.data?.price ? `$${productData.data.price}` : "Xem chi tiết sản phẩm"}
                   </Typography>
                 </Box>
@@ -194,8 +293,15 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
           </Box>
         )}
         
-        <Typography variant="caption" color="textSecondary" display="block" mt={0.5}>
-          {new Date(msg.createdAt).toLocaleTimeString()}
+        <Typography 
+          variant="caption" 
+          color="text.secondary" 
+          display="block" 
+          mt={1}
+          textAlign="right"
+          fontSize="10px"
+        >
+          {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
         </Typography>
       </Box>
     </Box>
@@ -215,16 +321,20 @@ export default function ChatDialog({
   const [searchTerm, setSearchTerm] = useState("");
   const previousMessagesCount = useRef(0);
   const [images, setImages] = useState<File[]>([]);
-  const [imageURLs, setImageURLs] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ShopProduct | null>(null);
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [searchProduct, setSearchProduct] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [currentRelationId, setCurrentRelationId] = useState<string | null>(null);
 
   const { data: messages, isLoading, refetch } = useGetMessages(
     selectedUserId || "",
     selectedShopId || ""
   );
+  const {data: shopUsers} = useGetShopUsers(selectedShopId || "")
   
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
@@ -250,6 +360,11 @@ export default function ChatDialog({
   const { data: selectedProductData } = useGetProductById(
     (productDetailsEnabled && selectedProduct?.productId ? selectedProduct.productId : "") as string
   );
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Update product data when details are fetched
   useEffect(() => {
@@ -308,15 +423,15 @@ export default function ChatDialog({
       
       // Create preview URLs
       const newURLs = newFiles.map(file => URL.createObjectURL(file));
-      setImageURLs((prev) => [...prev, ...newURLs]);
+      setImageUrls((prev) => [...prev, ...newURLs]);
     }
   };
 
   // Handle image remove
   const handleRemoveImage = (index: number) => {
-    URL.revokeObjectURL(imageURLs[index]);
+    URL.revokeObjectURL(imageUrls[index]);
     setImages(prev => prev.filter((_, i) => i !== index));
-    setImageURLs(prev => prev.filter((_, i) => i !== index));
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   // Handle product selection
@@ -325,11 +440,18 @@ export default function ChatDialog({
     setShowProductSelector(false);
   };
 
-  // Filter users based on search term
-  const filteredUsers = allUsers.filter((user) => {
+  // Handle tab change
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+    // Reset selectedUserId when switching tabs
+    setSelectedUserId(null);
+  };
+
+  // Filter users based on search term and current tab
+  const filteredUsers = (tabValue === 0 ? allUsers : shopUsers?.data?.data || []).filter((user: any) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      user.email.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
       user.phone?.toLowerCase().includes(searchLower) ||
       user.invitationCode?.toLowerCase().includes(searchLower) ||
       user.referralCode?.toLowerCase().includes(searchLower) ||
@@ -379,7 +501,7 @@ export default function ChatDialog({
       
       setMessage("");
       setImages([]);
-      setImageURLs([]);
+      setImageUrls([]);
       setSelectedProduct(null);
       toast.success("Đã gửi tin nhắn thành công");
       
@@ -421,7 +543,6 @@ export default function ChatDialog({
     return imageUrls[0].startsWith('http') ? imageUrls[0] : `http://localhost:3000${imageUrls[0]}`;
   };
 
-  // Inside the component, add a handler for product click in the selectedProduct preview:
   const handleProductClick = () => {
     if (selectedProduct?.productId) {
       router.push(`/admin/products/${selectedProduct.productId}`);
@@ -429,20 +550,63 @@ export default function ChatDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogContent>
-        <Box display="flex" height="600px">
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="lg" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogContent sx={{ p: 0, display: 'flex', height: '650px' }}>
+        <Box display="flex" width="100%" height="100%">
           {/* Sidebar */}
           <Box
             width="300px"
             borderRight="1px solid #e0e0e0"
             display="flex"
             flexDirection="column"
+            sx={{ bgcolor: '#f9fafb' }}
           >
-            <Box p={2}>
-              <Typography variant="h6" mb={2}>
-                Chọn người dùng
-              </Typography>
+            {/* Tabs */}
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange}
+              variant="fullWidth"
+              sx={{ 
+                borderBottom: '1px solid #e0e0e0',
+                minHeight: '48px',
+                '& .MuiTab-root': {
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  color: '#616161',
+                  '&.Mui-selected': {
+                    color: '#1976d2',
+                  }
+                }
+              }}
+            >
+              <Tab label="Tất cả" />
+              <Tab label="Đã nhắn" />
+            </Tabs>
+            
+            <Box 
+              p={2} 
+              borderBottom="1px solid #e0e0e0" 
+              sx={{
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "space-between", 
+                gap: 1,  
+                height: "80px"
+              }}
+            >
+              <IconUserFilled size={22} color="#1976d2"/>
               <TextField
                 size="small"
                 fullWidth
@@ -452,96 +616,281 @@ export default function ChatDialog({
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <IconSearch size={20} />
+                      <IconSearch size={18} color="#666" />
                     </InputAdornment>
                   ),
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'white',
+                    borderRadius: 2,
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#1976d2',
+                    },
+                  }
+                }}
               />
             </Box>
-            <Box flex={1} overflow="auto">
-              <List>
-                {filteredUsers.map((user) => (
-                  <ListItem key={user.id} disablePadding>
-                    <ListItemButton
-                      selected={selectedUserId === user.id}
-                      onClick={() => {
-                        setSelectedUserId(user.id);
-                      }}
-                    >
-                      <ListItemText
-                        primary={user.fullName || user.username}
-                        secondary={
-                          <Box component="span" display="block">
-                            <Box component="span" display="block">
-                              {user.email}
-                            </Box>
-                            <Box component="span" display="block">
-                              {user.phone}
-                            </Box>
-                            <Box component="span" display="block">
-                              {[
-                                user.address,
-                                user.ward,
-                                user.district,
-                                user.city,
-                              ]
-                                .filter(Boolean)
-                                .join(", ")}
-                            </Box>
-                          </Box>
-                        }
-                        secondaryTypographyProps={{ component: "div" }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
+            <Box flex={1} overflow="auto" sx={{ scrollbarWidth: 'thin' }}>
+              {filteredUsers.length === 0 ? (
+                <Box p={3} textAlign="center">
+                  <Typography color="text.secondary">Không tìm thấy người dùng</Typography>
+                </Box>
+              ) : (
+                <List disablePadding>
+                  {filteredUsers.map((user: any) => (
+                    <ListItem key={user.id} disablePadding>
+                      <ListItemButton
+                        selected={selectedUserId === user.id}
+                        onClick={() => {
+                          setSelectedUserId(user.id);
+                        }}
+                        sx={{
+                          py: 1.5,
+                          borderLeft: selectedUserId === user.id ? '3px solid #1976d2' : '3px solid transparent',
+                          bgcolor: selectedUserId === user.id ? alpha('#1976d2', 0.05) : 'transparent',
+                          '&:hover': {
+                            bgcolor: alpha('#1976d2', 0.05),
+                          }
+                        }}
+                      >
+                        <Box display="flex" width="100%" gap={1.5}>
+                          <Avatar 
+                            sx={{ 
+                              width: 40, 
+                              height: 40, 
+                              bgcolor: selectedUserId === user.id ? '#1976d2' : '#9e9e9e',
+                              fontSize: '1rem'
+                            }}
+                          >
+                            {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
+                          </Avatar>
+                          <ListItemText
+                            primary={
+                              <Typography 
+                                variant="subtitle2" 
+                                fontWeight={selectedUserId === user.id ? 600 : 500}
+                                noWrap
+                              >
+                                {user.fullName || user.username || 'Người dùng'}
+                              </Typography>
+                            }
+                            secondary={
+                              <Box component="div" sx={{ mt: 0.5 }}>
+                                {user.email && (
+                                  <Typography 
+                                    variant="caption" 
+                                    component="div" 
+                                    noWrap
+                                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                                  >
+                                    {user.email}
+                                  </Typography>
+                                )}
+                                {user.phone && (
+                                  <Typography variant="caption" component="div" noWrap>
+                                    {user.phone}
+                                  </Typography>
+                                )}
+                                {/* Show last message if in Đã nhắn tab and it exists */}
+                                {tabValue === 1 && user.lastMessage && (
+                                  <Typography 
+                                    variant="caption" 
+                                    component="div" 
+                                    noWrap
+                                    sx={{ 
+                                      color: user.lastMessage.isRead ? 'text.secondary' : 'primary.main',
+                                      fontWeight: user.lastMessage.isRead ? 400 : 600,
+                                      mt: 0.5
+                                    }}
+                                  >
+                                    {user.lastMessage.message || (user.lastMessage.imageUrls ? "Đã gửi ảnh" : "Đã gửi sản phẩm")}
+                                  </Typography>
+                                )}
+                                {[user.address, user.ward, user.district, user.city].filter(Boolean).length > 0 && (
+                                  <Typography 
+                                    variant="caption" 
+                                    component="div" 
+                                    sx={{ 
+                                      mt: 0.5,
+                                      color: 'text.secondary',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                    }}
+                                  >
+                                    {[user.address, user.ward, user.district, user.city]
+                                      .filter(Boolean)
+                                      .join(", ")}
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                          />
+                        </Box>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
             </Box>
           </Box>
 
           {/* Chat Area */}
-          <Box flex={1} display="flex" flexDirection="column">
+          <Box flex={1} display="flex" flexDirection="column" bgcolor="white">
             {/* Chat Header */}
-            <Box p={2} borderBottom="1px solid #e0e0e0">
-              <Typography variant="h6">
-                Gửi tin nhắn từ{" "}
-                {selectedUserId
-                  ? allUsers.find((u) => u.id === selectedUserId)?.fullName ||
-                    "người dùng"
-                  : "..."}{" "}
-                đến {shop?.shopName || "shop"}
-              </Typography>
+            <Box 
+              p={2} 
+              borderBottom="1px solid #e0e0e0"
+              sx={{
+                bgcolor: '#fff',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: "80px"
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <IconBubbleTextFilled size={22} color="#1976d2" />
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {selectedUserId
+                      ? allUsers.find((u) => u.id === selectedUserId)?.fullName ||
+                        "Người dùng"
+                      : "Chọn người dùng để bắt đầu"}
+                  </Typography>
+                  {selectedUserId && (
+                    <Typography variant="caption" color="text.secondary">
+                      Đang chat với {shop?.shopName || "shop"}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              <Chip 
+                label={shop?.shopName || "Shop"} 
+                size="small" 
+                color="primary" 
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
             </Box>
 
             {/* Messages */}
-            <Box flex={1} p={2} overflow="auto">
+            <Box 
+              flex={1} 
+              p={2.5} 
+              overflow="auto" 
+              sx={{ 
+                bgcolor: '#f9fafb',
+                backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+                scrollbarWidth: 'thin'
+              }}
+            >
               {isLoading ? (
-                <Typography>Đang tải tin nhắn...</Typography>
+                <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                  <CircularProgress size={30} />
+                </Box>
+              ) : !selectedUserId ? (
+                <Box 
+                  display="flex" 
+                  flexDirection="column" 
+                  justifyContent="center" 
+                  alignItems="center" 
+                  height="100%"
+                  gap={2}
+                >
+                  <IconMessageCircle size={50} color="#ccc" />
+                  <Typography color="text.secondary" variant="h6">
+                    Chọn người dùng để bắt đầu cuộc trò chuyện
+                  </Typography>
+                </Box>
+              ) : messages?.data?.length === 0 ? (
+                <Box 
+                  display="flex" 
+                  flexDirection="column" 
+                  justifyContent="center" 
+                  alignItems="center" 
+                  height="100%"
+                  gap={2}
+                >
+                  <IconBubbleTextFilled size={50} color="#ccc" />
+                  <Typography color="text.secondary" variant="h6">
+                    Chưa có tin nhắn nào
+                  </Typography>
+                  <Typography color="text.secondary" variant="body2">
+                    Hãy bắt đầu cuộc trò chuyện
+                  </Typography>
+                </Box>
               ) : (
-                messages?.data?.map((msg: any) => (
-                  <MessageItem 
-                    key={msg.id} 
-                    msg={msg} 
-                    handleMarkAsRead={handleMarkAsRead} 
-                    handleDeleteMessage={handleDeleteMessage} 
-                  />
-                ))
+                <>
+                  {messages?.data?.map((msg: any) => (
+                    <MessageItem 
+                      key={msg.id} 
+                      msg={msg} 
+                      handleMarkAsRead={handleMarkAsRead} 
+                      handleDeleteMessage={handleDeleteMessage} 
+                    />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </>
               )}
             </Box>
 
             {/* Selected product preview */}
             {selectedProduct && (
-              <Box p={2} borderTop="1px solid #e0e0e0" bgcolor="#f9f9f9">
+              <Box 
+                p={1.5} 
+                borderTop="1px solid #e0e0e0" 
+                bgcolor={alpha('#1976d2', 0.03)}
+              >
                 <Box display="flex" alignItems="center" gap={2}>
-                  <Typography variant="subtitle2">Sản phẩm đính kèm:</Typography>
-                  <Box display="flex" alignItems="center" gap={1} flex={1} p={1} border="1px solid #e0e0e0" borderRadius={1} bgcolor="white">
-                    <Box sx={{ width: '40px', height: '40px', position: 'relative', flexShrink: 0, bgcolor: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Chip 
+                    label="Sản phẩm đính kèm" 
+                    size="small" 
+                    color="primary" 
+                    variant="outlined"
+                    sx={{ fontWeight: 500 }}
+                  />
+                  <Box 
+                    display="flex" 
+                    alignItems="center" 
+                    gap={1} 
+                    flex={1} 
+                    p={1.5} 
+                    border="1px solid #e0e0e0" 
+                    borderRadius={1.5} 
+                    bgcolor="white"
+                    sx={{
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      position: 'relative', 
+                      flexShrink: 0, 
+                      bgcolor: "#f0f0f0", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center",
+                      borderRadius: '6px',
+                      overflow: 'hidden'
+                    }}>
                       {selectedProduct.product?.imageUrls ? (
                         <Image
-                          src={getFirstImage(selectedProduct.product?.imageUrls)}
+                          src={getFirstImage(selectedProduct.product?.imageUrls) || "/placeholder.svg"}
                           alt={selectedProduct.product?.name || "Product"}
                           fill
-                          style={{ objectFit: 'cover', borderRadius: '4px' }}
+                          style={{ objectFit: 'cover' }}
                         />
                       ) : (
                         <IconShoppingCart size={20} color="#999" />
@@ -549,12 +898,13 @@ export default function ChatDialog({
                     </Box>
                     <Typography 
                       variant="body2" 
+                      fontWeight={500}
                       noWrap 
                       sx={{ 
                         flex: 1, 
                         cursor: selectedProduct.productId ? 'pointer' : 'default',
+                        color: '#1976d2',
                         '&:hover': selectedProduct.productId ? { 
-                          color: '#2196f3', 
                           textDecoration: 'underline' 
                         } : {}
                       }}
@@ -565,7 +915,15 @@ export default function ChatDialog({
                         <IconExternalLink size={14} style={{ marginLeft: '4px', display: 'inline-block', verticalAlign: 'middle' }} />
                       )}
                     </Typography>
-                    <IconButton size="small" onClick={() => setSelectedProduct(null)}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => setSelectedProduct(null)}
+                      sx={{ 
+                        color: '#f44336',
+                        p: 0.5,
+                        '&:hover': { bgcolor: alpha('#f44336', 0.1) }
+                      }}
+                    >
                       <IconX size={16} />
                     </IconButton>
                   </Box>
@@ -574,24 +932,44 @@ export default function ChatDialog({
             )}
 
             {/* Image previews */}
-            {imageURLs.length > 0 && (
-              <Box p={2} borderTop="1px solid #e0e0e0" bgcolor="#f9f9f9">
-                <Typography variant="subtitle2" mb={1}>Hình ảnh đính kèm:</Typography>
-                <Box display="flex" gap={1} flexWrap="wrap">
-                  {imageURLs.map((url, index) => (
+            {imageUrls.length > 0 && (
+              <Box 
+                p={1.5} 
+                borderTop="1px solid #e0e0e0" 
+                bgcolor={alpha('#1976d2', 0.03)}
+              >
+                <Box display="flex" alignItems="center" mb={1}>
+                  <Chip 
+                    label="Hình ảnh đính kèm" 
+                    size="small" 
+                    color="primary" 
+                    variant="outlined"
+                    sx={{ fontWeight: 500 }}
+                  />
+                  <Typography variant="caption" color="text.secondary" ml={1}>
+                    {imageUrls.length} ảnh
+                  </Typography>
+                </Box>
+                <Box display="flex" gap={1.5} flexWrap="wrap">
+                  {imageUrls.map((url, index) => (
                     <Box 
                       key={index} 
                       sx={{ 
                         position: 'relative',
                         width: '80px',
                         height: '80px',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         overflow: 'hidden',
-                        border: '1px solid #e0e0e0'
+                        border: '1px solid #e0e0e0',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                        }
                       }}
                     >
                       <Image 
-                        src={url} 
+                        src={url || "/placeholder.svg"} 
                         alt={`Preview ${index}`} 
                         fill
                         style={{ objectFit: 'cover' }}
@@ -604,7 +982,10 @@ export default function ChatDialog({
                           right: 0, 
                           bgcolor: 'rgba(255,255,255,0.8)', 
                           p: '2px',
-                          '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                          '&:hover': { 
+                            bgcolor: 'rgba(255,255,255,0.9)',
+                            color: '#f44336'
+                          }
                         }}
                         onClick={() => handleRemoveImage(index)}
                       >
@@ -619,7 +1000,7 @@ export default function ChatDialog({
             {/* Product selector */}
             {showProductSelector && selectedShopId && (
               <Paper 
-                elevation={3} 
+                elevation={4} 
                 sx={{ 
                   position: 'absolute', 
                   bottom: '80px', 
@@ -629,18 +1010,36 @@ export default function ChatDialog({
                   display: 'flex',
                   flexDirection: 'column',
                   zIndex: 10,
-                  borderRadius: '8px',
-                  overflow: 'hidden'
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
                 }}
               >
-                <Box p={2} borderBottom="1px solid #e0e0e0" display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="subtitle1" fontWeight={500}>Chọn sản phẩm</Typography>
-                  <IconButton size="small" onClick={() => setShowProductSelector(false)}>
-                    <IconX size={18} />
+                <Box 
+                  p={2} 
+                  borderBottom="1px solid #e0e0e0" 
+                  display="flex" 
+                  justifyContent="space-between" 
+                  alignItems="center"
+                  bgcolor="#f5f5f5"
+                >
+                  <Typography variant="subtitle1" fontWeight={600} display="flex" alignItems="center" gap={1}>
+                    <IconShoppingCart size={18} />
+                    Chọn sản phẩm
+                  </Typography>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => setShowProductSelector(false)}
+                    sx={{ 
+                      bgcolor: alpha('#000', 0.05),
+                      '&:hover': { bgcolor: alpha('#000', 0.1) }
+                    }}
+                  >
+                    <IconX size={16} />
                   </IconButton>
                 </Box>
                 
-                <Box p={2}>
+                <Box p={2} borderBottom="1px solid #f0f0f0">
                   <TextField
                     size="small"
                     fullWidth
@@ -654,10 +1053,18 @@ export default function ChatDialog({
                         </InputAdornment>
                       ),
                     }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#1976d2',
+                        },
+                      }
+                    }}
                   />
                 </Box>
                 
-                <Box overflow="auto" flex={1} maxHeight="300px">
+                <Box overflow="auto" flex={1} maxHeight="300px" sx={{ scrollbarWidth: 'thin' }}>
                   {isLoadingProducts ? (
                     <Box display="flex" justifyContent="center" p={3}>
                       <CircularProgress size={24} />
@@ -671,22 +1078,39 @@ export default function ChatDialog({
                       ) : (
                         productsData?.data?.data?.map((item: any) => (
                           <ListItem key={item.id} disablePadding divider>
-                            <ListItemButton onClick={() => handleSelectProduct(item)}>
+                            <ListItemButton 
+                              onClick={() => handleSelectProduct(item)}
+                              sx={{
+                                py: 1.5,
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  bgcolor: alpha('#1976d2', 0.05),
+                                }
+                              }}
+                            >
                               <Box display="flex" gap={2} width="100%">
-                                <Box sx={{ width: '50px', height: '50px', position: 'relative', flexShrink: 0 }}>
+                                <Box sx={{ 
+                                  width: '50px', 
+                                  height: '50px', 
+                                  position: 'relative', 
+                                  flexShrink: 0,
+                                  borderRadius: '6px',
+                                  overflow: 'hidden',
+                                  border: '1px solid #e0e0e0'
+                                }}>
                                   <Image
-                                    src={getFirstImage(item.product?.imageUrls)}
+                                    src={getFirstImage(item.product?.imageUrls) || "/placeholder.svg"}
                                     alt={item.product?.name || "Product"}
                                     fill
-                                    style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                    style={{ objectFit: 'cover' }}
                                   />
                                 </Box>
                                 <Box flex={1}>
                                   <Typography variant="body2" fontWeight={500}>
                                     {item.product?.name || "Sản phẩm"}
                                   </Typography>
-                                  <Box display="flex" gap={2}>
-                                    <Typography variant="caption" color="success.main">
+                                  <Box display="flex" gap={2} mt={0.5}>
+                                    <Typography variant="caption" color="success.main" fontWeight={500}>
                                       ${item.salePrice || item.price || 0}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
@@ -706,7 +1130,14 @@ export default function ChatDialog({
             )}
 
             {/* Message Input */}
-            <Box p={2} borderTop="1px solid #e0e0e0">
+            <Box 
+              p={2} 
+              borderTop="1px solid #e0e0e0"
+              sx={{ 
+                bgcolor: '#fff',
+                boxShadow: '0 -2px 10px rgba(0,0,0,0.03)'
+              }}
+            >
               <Box display="flex" gap={1}>
                 <TextField
                   fullWidth
@@ -715,26 +1146,48 @@ export default function ChatDialog({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Nhập tin nhắn..."
+                  placeholder={selectedUserId ? "Nhập tin nhắn..." : "Chọn người dùng để bắt đầu..."}
                   size="small"
+                  disabled={!selectedUserId}
                   InputProps={{
+                    sx: {
+                      borderRadius: 2,
+                      bgcolor: selectedUserId ? '#fff' : '#f5f5f5',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: selectedUserId ? '#1976d2' : '#e0e0e0',
+                      },
+                    },
                     endAdornment: (
                       <InputAdornment position="end">
                         <Box display="flex" gap={0.5}>
-                          <IconButton 
-                            size="small" 
-                            onClick={() => fileInputRef.current?.click()}
-                            sx={{ color: '#1976d2' }}
-                          >
-                            <IconPaperclip size={20} />
-                          </IconButton>
-                          <IconButton 
-                            size="small" 
-                            onClick={() => setShowProductSelector(prev => !prev)}
-                            sx={{ color: selectedProduct ? 'success.main' : 'inherit' }}
-                          >
-                            <IconShoppingCart size={20} />
-                          </IconButton>
+                          <Tooltip title="Đính kèm hình ảnh">
+                            <IconButton 
+                              size="small" 
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={!selectedUserId}
+                              sx={{ 
+                                color: '#1976d2',
+                                opacity: selectedUserId ? 1 : 0.5,
+                                '&:hover': { bgcolor: alpha('#1976d2', 0.1) }
+                              }}
+                            >
+                              <IconPaperclip size={20} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Đính kèm sản phẩm">
+                            <IconButton 
+                              size="small" 
+                              onClick={() => setShowProductSelector(prev => !prev)}
+                              disabled={!selectedUserId}
+                              sx={{ 
+                                color: selectedProduct ? 'success.main' : 'inherit',
+                                opacity: selectedUserId ? 1 : 0.5,
+                                '&:hover': { bgcolor: alpha(selectedProduct ? '#4caf50' : '#1976d2', 0.1) }
+                              }}
+                            >
+                              <IconShoppingCart size={20} />
+                            </IconButton>
+                          </Tooltip>
                           <input
                             type="file"
                             multiple
@@ -753,33 +1206,48 @@ export default function ChatDialog({
                   variant="contained"
                   color="primary"
                   disabled={!selectedUserId || (!message && images.length === 0 && !selectedProduct)}
-                  sx={{ minWidth: '80px' }}
+                  sx={{ 
+                    backgroundColor: !selectedUserId || (!message && images.length === 0 && !selectedProduct) ? "#1976d295 !important" : "#1976d2 !important",
+                    minWidth: '80px',
+                    borderRadius: 2,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    }
+                  }}
+                  endIcon={<IconSend size={16} />}
                 >
                   Gửi
                 </Button>
               </Box>
               
-              <Box display="flex" gap={1} mt={1}>
+              <Box display="flex" gap={1} mt={1} alignItems="center">
+                {(images.length > 0 || selectedProduct) && (
+                  <Typography variant="caption" color="text.secondary">
+                    Đính kèm:
+                  </Typography>
+                )}
+                
                 {images.length > 0 && (
-                  <Button 
+                  <Chip 
                     size="small" 
-                    startIcon={<IconPhoto size={16} />}
-                    variant="text"
+                    icon={<IconPhoto size={14} />}
+                    label={`${images.length} ảnh`}
                     color="primary"
-                  >
-                    {images.length} ảnh
-                  </Button>
+                    variant="outlined"
+                    sx={{ height: 24 }}
+                  />
                 )}
                 
                 {selectedProduct && (
-                  <Button
+                  <Chip
                     size="small"
-                    startIcon={<IconShoppingCart size={16} />}
-                    variant="text"
+                    icon={<IconShoppingCart size={14} />}
+                    label="1 sản phẩm"
                     color="success"
-                  >
-                    1 sản phẩm
-                  </Button>
+                    variant="outlined"
+                    sx={{ height: 24 }}
+                  />
                 )}
               </Box>
             </Box>

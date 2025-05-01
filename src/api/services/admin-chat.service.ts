@@ -34,4 +34,25 @@ export const markAsRead = async (messageId: string): Promise<void> => {
 // Xóa tin nhắn
 export const deleteMessage = async (messageId: string): Promise<void> => {
   await sendDelete(ConfigAdminChatEndPoint.DELETE_MESSAGE(messageId))
-} 
+}
+
+// Lấy danh sách người dùng của shop
+export const getShopUsers = async (
+  shopId: string,
+  params?: {
+    order?: "ASC" | "DESC";
+    page?: number;
+    take?: number;
+    search?: string;
+    sortBy?: string;
+  }
+): Promise<any> => {
+  const res = await sendGet(ConfigAdminChatEndPoint.GET_SHOP_USERS(shopId), {
+    order: params?.order,
+    page: params?.page,
+    take: params?.take,
+    search: params?.search && params.search.length > 0 ? params.search : undefined,
+    sortBy: params?.sortBy && params.sortBy.length > 0 ? params.sortBy : undefined,
+  });
+  return res;
+};

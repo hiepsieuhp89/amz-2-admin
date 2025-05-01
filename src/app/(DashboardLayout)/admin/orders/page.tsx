@@ -201,9 +201,6 @@ const OrdersPage = () => {
     if (index < (2 * totalStages) / 3) return "info";
     return "success";
   };
-
-  console.log("ordersResponse", ordersResponse)
-
   return (
     <PageContainer
       title="Quản lý đơn hàng"

@@ -38,7 +38,6 @@ import { message } from "antd";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import { useGetUserActionLogs } from "@/hooks/action-log";
 import { useUploadImage } from "@/hooks/image";
 import { useGetAllSellerPackages } from "@/hooks/seller-package";
@@ -46,6 +45,7 @@ import { useGetAllSpreadPackages } from "@/hooks/spread-package";
 import { useDeleteUser, useGetUserById, useGetUserIpHistory, useUpdateUser } from "@/hooks/user";
 import { ISellerPackage } from "@/interface/response/seller-package";
 import { ISpreadPackage } from "@/interface/response/spread-package";
+import { useGetShopUsers } from "@/hooks/admin-chat";
 
 // Tab interface
 interface TabPanelProps {
@@ -1934,14 +1934,14 @@ function UserDetailPage() {
           className: "!rounded-[6px] shadow-xl",
         }}
       >
-        <DialogTitle fontSize={18} className="flex justify-between items-center">
+        <DialogTitle fontSize={18} className="flex items-center justify-between">
           {previewImageTitle}
           <IconButton onClick={() => setImagePreviewDialogOpen(false)} size="small">
             <IconX size={18} />
           </IconButton>
         </DialogTitle>
         <DialogContent className="min-w-[300px] sm:min-w-[500px] lg:min-w-[800px]">
-          <div className="w-full flex justify-center">
+          <div className="flex justify-center w-full">
             <img
               src={previewImageSrc}
               alt={previewImageTitle}
