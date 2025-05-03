@@ -35,7 +35,6 @@ import {
   IconExternalLink,
   IconSend,
   IconUserFilled,
-  IconMessageCircle,
   IconBubbleTextFilled,
   IconDotsVertical,
 } from "@tabler/icons-react";
@@ -79,7 +78,6 @@ const MessageItem = ({ msg, handleMarkAsRead, handleDeleteMessage }: {
     ? msg.user?.fullName || "Người dùng"
     : msg.shop?.shopName || "Shop";
 
-  // Fetch product details if shopProductId exists but full product data is missing
   const productId = msg.shopProduct?.productId;
   const productQueryEnabled = !!productId && !msg.shopProduct?.product;
   const { data: productData, isLoading: isLoadingProduct } = useGetProductById(
@@ -760,7 +758,7 @@ export default function ChatDialog({
                     {selectedUserId
                       ? allUsers.find((u) => u.id === selectedUserId)?.fullName ||
                         "Người dùng"
-                      : "Chọn người dùng để bắt đầu"}
+                      : ""}
                   </Typography>
                   {selectedUserId && (
                     <Typography variant="caption" color="text.secondary">
@@ -803,7 +801,7 @@ export default function ChatDialog({
                   height="100%"
                   gap={2}
                 >
-                  <IconMessageCircle size={50} color="#ccc" />
+                  <IconBubbleTextFilled size={50} color="#ccc" />
                   <Typography color="text.secondary" variant="h6">
                     Chọn người dùng để bắt đầu cuộc trò chuyện
                   </Typography>

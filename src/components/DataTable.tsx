@@ -55,7 +55,7 @@ export default function DataTable({
   searchComponent,
 }: DataTableProps) {
   return (
-    <div className="p-6 pt-0 space-y-6">
+    <div className="flex-1 h-full p-6 pt-0 space-y-6">
       <div className="flex flex-col items-start justify-end gap-4 sm:flex-row sm:items-center">
         {searchComponent}
         {createNewButton && (
@@ -103,7 +103,7 @@ export default function DataTable({
               borderRadius: 0
             }}>
               <TableContainer sx={{ 
-                maxHeight: 'calc(100vh - 480px)', 
+                maxHeight: 'calc(100vh - 400px)', 
                 overflowX: 'auto',
                 width: '100%'
               }}>

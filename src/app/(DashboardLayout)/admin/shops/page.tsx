@@ -863,7 +863,7 @@ function ShopsPage() {
                         }}
                     />
                 </Box>
-                <Box className="flex-1 overflow-auto">
+                <Box className="flex flex-col flex-1 overflow-auto">
                     <DataTable
                         columns={columns}
                         data={filteredUsers}
