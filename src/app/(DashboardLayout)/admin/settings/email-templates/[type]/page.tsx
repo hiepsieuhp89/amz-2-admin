@@ -61,6 +61,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
   const [subject, setSubject] = useState("");
   const [htmlContent, setHtmlContent] = useState("");
   const [variables, setVariables] = useState<Record<string, string>>({});
+  const [newVariable, setNewVariable] = useState("");
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [editorTab, setEditorTab] = useState(0);
@@ -99,6 +100,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
             description,
             subject,
             htmlContent,
+            variables,
           },
         },
         {
@@ -200,6 +202,14 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
     }
   };
 
+  // Thêm hàm để thêm biến mới vào danh sách
+  const addVariable = () => {
+    if (newVariable.trim() !== "") {
+      setVariables((prev) => ({ ...prev, [newVariable]: "" }));
+      setNewVariable("");
+    }
+  };
+
   return (
     <PageContainer
       title="Chỉnh sửa Template Email"
@@ -277,6 +287,17 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                       />
                     </Tooltip>
                   ))}
+                </Box>
+                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                  <TextField
+                    label="Thêm biến mới"
+                    value={newVariable}
+                    onChange={(e) => setNewVariable(e.target.value)}
+                    fullWidth
+                  />
+                  <Button variant="contained" onClick={addVariable}>
+                    Thêm
+                  </Button>
                 </Box>
                 
                 <Paper variant="outlined" sx={{ p: 0, minHeight: 400 }}>
