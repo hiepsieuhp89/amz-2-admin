@@ -59,7 +59,6 @@ function FakeReviewsPage() {
   })
 
   const { data: orders, isLoading: isOrdersLoading, refetch } = useGetUserOrders(selectedUserId || '', orderStatus)
-  console.log(orders)
   const { mutate: createReview, isPending: isCreatingReview } = useCreateFakeReview()
   const { mutate: uploadImage, isPending: isUploading } = useUploadImage()
   const { mutate: deleteReview, isPending: isDeletingReview } = useDeleteFakeReview()
@@ -357,12 +356,11 @@ function FakeReviewsPage() {
   }
 
   const handleSubmitProductReview = () => {
-    if (!selectedUserId || !selectedOrderId || !selectedProduct) return
-
+    console.log(selectedProduct)
     createReview({
       userId: selectedUserId,
-      orderId: selectedOrderId,
-      productId: selectedProduct.productId,
+      orderId: selectedProduct?.orderId,
+      productId: selectedProduct?.shopProduct?.productId,
       rating,
       content,
       images
