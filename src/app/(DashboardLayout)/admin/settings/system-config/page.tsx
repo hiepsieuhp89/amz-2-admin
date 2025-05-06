@@ -22,7 +22,6 @@ import {
   IconButton,
   Alert,
   Snackbar,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -367,8 +366,8 @@ const SystemConfigPage = () => {
           border: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
         }}
       >
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
+        <Box container spacing={2} alignItems="center">
+          <Box item xs={12} md={6}>
             <TextField
               fullWidth
               placeholder="Tìm kiếm theo key hoặc mô tả..."
@@ -380,8 +379,8 @@ const SystemConfigPage = () => {
                 startAdornment: <IconSearch size={18} style={{ marginRight: 8 }} />,
               }}
             />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
 
       {/* Configs table */}
@@ -530,8 +529,8 @@ const SystemConfigPage = () => {
       >
         <DialogTitle sx={{ fontWeight: 600 }}>Thêm cấu hình mới</DialogTitle>
         <DialogContent dividers>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Box container spacing={2}>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Key"
@@ -543,8 +542,8 @@ const SystemConfigPage = () => {
                 required
                 helperText="Key phải là duy nhất và không thể thay đổi sau khi tạo"
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Giá trị"
@@ -557,8 +556,8 @@ const SystemConfigPage = () => {
                 multiline
                 rows={4}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Mô tả"
@@ -570,8 +569,8 @@ const SystemConfigPage = () => {
                 multiline
                 rows={3}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <FormControl component="fieldset">
                 <Typography component="legend">Trạng thái</Typography>
                 <Switch
@@ -581,8 +580,8 @@ const SystemConfigPage = () => {
                   color="primary"
                 />
               </FormControl>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={handleCloseCreateDialog} color="inherit">
@@ -620,8 +619,8 @@ const SystemConfigPage = () => {
       >
         <DialogTitle sx={{ fontWeight: 600 }}>Chỉnh sửa cấu hình</DialogTitle>
         <DialogContent dividers>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Box container spacing={2}>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Key"
@@ -633,8 +632,8 @@ const SystemConfigPage = () => {
                 }}
                 disabled
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Giá trị"
@@ -647,8 +646,8 @@ const SystemConfigPage = () => {
                 multiline
                 rows={4}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <TextField
                 fullWidth
                 label="Mô tả"
@@ -660,8 +659,8 @@ const SystemConfigPage = () => {
                 multiline
                 rows={3}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <FormControl component="fieldset">
                 <Typography component="legend">Trạng thái</Typography>
                 <Switch
@@ -671,8 +670,8 @@ const SystemConfigPage = () => {
                   color="primary"
                 />
               </FormControl>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={handleCloseEditDialog} color="inherit">

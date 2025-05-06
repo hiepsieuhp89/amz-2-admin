@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   TextField,
-  Grid,
   Button,
   Divider,
   Paper,
@@ -241,8 +240,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
           </Box>
         ) : (
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+            <Box container spacing={3}>
+              <Box item xs={12} sm={6}>
                 <TextField
                   label="Tên Template"
                   fullWidth
@@ -250,8 +249,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Box>
+              <Box item xs={12} sm={6}>
                 <TextField
                   label="Tiêu đề Email"
                   fullWidth
@@ -259,8 +258,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   onChange={(e) => setSubject(e.target.value)}
                   required
                 />
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box item xs={12}>
                 <TextField
                   label="Mô tả"
                   fullWidth
@@ -269,8 +268,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box item xs={12}>
                 <Typography variant="subtitle1" gutterBottom>
                   Biến có thể sử dụng trong template
                 </Typography>
@@ -382,8 +381,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                     </Box>
                   </TabPanel>
                 </Paper>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             <Divider sx={{ mt: 4, mb: 4 }} />
 

@@ -9,7 +9,6 @@ import {
   Chip,
   CircularProgress,
   Divider,
-  Grid,
   Paper,
   Table,
   TableBody,
@@ -161,9 +160,9 @@ const OrderDetailPage = () => {
       ) : error ? (
         <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       ) : order ? (
-        <Grid container spacing={3}>
+        <Box container spacing={3}>
           {/* Order Status Summary */}
-          <Grid item xs={12}>
+          <Box item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', md: 'center' }, gap: 2 }}>
               <Box>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
@@ -198,9 +197,9 @@ const OrderDetailPage = () => {
                 </Box>
               </Box>
             </Paper>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
+          <Box item xs={12} md={6}>
             <DashboardCard 
               title="Thông tin đơn hàng"
               action={<InfoIcon />}
@@ -208,72 +207,72 @@ const OrderDetailPage = () => {
               <Box sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>ID: <Typography component="span" fontWeight="medium">{order.id}</Typography></Typography>
                 
-                <Grid container spacing={2} sx={{ mb: 1 }}>
-                  <Grid item xs={6}>
+                <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Ngày đặt hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{formatDate(order.orderTime || order.createdAt)}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
+                  </Box>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Trạng thái thanh toán:</Typography>
                     <Chip 
                       label={order.paymentStatus || 'PENDING'} 
                       color={order.paymentStatus === 'PAID' ? 'success' : 'warning'}
                       size="small"
                     />
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
 
-                <Grid container spacing={2} sx={{ mb: 1 }}>
-                  <Grid item xs={6}>
+                <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Trạng thái đơn hàng:</Typography>
                     <Chip 
                       label={order.status} 
                       color={getStatusColor(order.status)}
                       size="small"
                     />
-                  </Grid>
-                  <Grid item xs={6}>
+                  </Box>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Tiến độ:</Typography>
                     <Chip 
                       label={getDelayStatusText(order.delayStatus)}
                       color={getDelayStatusColor(order.delayStatus)}
                       size="small"
                     />
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
 
-                <Grid container spacing={2} sx={{ mb: 1 }}>
-                  <Grid item xs={12}>
+                <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box item xs={12}>
                     <Typography variant="body2" color="textSecondary">Giai đoạn giao hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.stageDelivery || 'N/A'}</Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
 
                 {order.confirmedAt && (
-                  <Grid container spacing={2} sx={{ mb: 1 }}>
-                    <Grid item xs={12}>
+                  <Box container spacing={2} sx={{ mb: 1 }}>
+                    <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày xác nhận:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.confirmedAt)}</Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 )}
 
                 {order.deliveredAt && (
-                  <Grid container spacing={2} sx={{ mb: 1 }}>
-                    <Grid item xs={12}>
+                  <Box container spacing={2} sx={{ mb: 1 }}>
+                    <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày giao hàng:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.deliveredAt)}</Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 )}
 
                 {order.cancelledAt && (
-                  <Grid container spacing={2} sx={{ mb: 1 }}>
-                    <Grid item xs={12}>
+                  <Box container spacing={2} sx={{ mb: 1 }}>
+                    <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày hủy:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.cancelledAt)}</Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 )}
 
                 <Divider sx={{ my: 2 }} />
@@ -281,23 +280,23 @@ const OrderDetailPage = () => {
                 <Typography variant="body2" color="textSecondary">Địa chỉ giao hàng:</Typography>
                 <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>{order.address || 'N/A'}</Typography>
 
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={6}>
+                <Box container spacing={2} sx={{ mt: 1 }}>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Email:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.email || 'N/A'}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
+                  </Box>
+                  <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Số điện thoại:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.phone || 'N/A'}</Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               </Box>
             </DashboardCard>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+          <Box item xs={12} md={6}>
+            <Box container spacing={2}>
+              <Box item xs={12}>
                 <DashboardCard 
                   title="Thông tin khách hàng"
                   action={<UserIcon />}
@@ -322,8 +321,8 @@ const OrderDetailPage = () => {
                     <Typography variant="body2">{order.user?.postalCode || 'N/A'}</Typography>
                   </Box>
                 </DashboardCard>
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box item xs={12}>
                 <DashboardCard 
                   title="Thông tin cửa hàng"
                   action={<ShopIcon />}
@@ -354,13 +353,13 @@ const OrderDetailPage = () => {
                     <Typography variant="body2">{order.shop?.stars || 0} sao ({order.shop?.reputationPoints || 0} điểm)</Typography>
                   </Box>
                 </DashboardCard>
-              </Grid>
-            </Grid>
-          </Grid>
+              </Box>
+            </Box>
+          </Box>
 
           {/* Delivery Stages - Show only for SHIPPING orders */}
           {order.status === 'SHIPPING' && (
-            <Grid item xs={12}>
+            <Box item xs={12}>
               <DashboardCard 
                 title="Tiến trình giao hàng"
                 action={<StagesIcon />}
@@ -384,8 +383,8 @@ const OrderDetailPage = () => {
                     Các giai đoạn giao hàng
                   </Typography>
                   
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
+                  <Box container spacing={2}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -411,9 +410,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -439,9 +438,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -467,9 +466,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -495,9 +494,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -523,9 +522,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -551,9 +550,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -579,9 +578,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -607,9 +606,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -635,9 +634,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -663,9 +662,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -691,9 +690,9 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12} md={4}>
+                    <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -719,15 +718,15 @@ const OrderDetailPage = () => {
                           </Box>
                         </CardContent>
                       </Card>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 </Box>
               </DashboardCard>
-            </Grid>
+            </Box>
           )}
 
           {/* Order Status History */}
-          <Grid item xs={12}>
+          <Box item xs={12}>
             <DashboardCard 
               title="Lịch sử trạng thái đơn hàng"
               action={<HistoryIcon />}
@@ -776,9 +775,9 @@ const OrderDetailPage = () => {
                 </Box>
               )}
             </DashboardCard>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12}>
+          <Box item xs={12}>
             <DashboardCard 
               title="Chi tiết đơn hàng"
               action={<DeliveryIcon />}
@@ -912,8 +911,8 @@ const OrderDetailPage = () => {
               )}
               </Box>
             </DashboardCard>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       ) : (
         <DashboardCard>
           <Box sx={{ p: 3, textAlign: 'center' }}>

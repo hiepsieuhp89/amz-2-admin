@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, Grid, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem, IconButton } from '@mui/material';
-import { IconArrowLeft, IconUpload, IconX, IconPlus, IconCubePlus } from '@tabler/icons-react';
+import { Box, Button, CircularProgress, Paper, TextField, Typography, FormControl, InputLabel, Select, MenuItem, IconButton } from '@mui/material';
+import { IconUpload, IconX, IconPlus, IconCubePlus } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { message } from "antd"
 import { useCreateProduct } from '@/hooks/product';
@@ -395,9 +395,9 @@ export default function CreateProductPage() {
                           Xoá tất cả
                         </Button>
                       </Box>
-                      <Grid container spacing={2}>
+                      <Box container spacing={2}>
                         {imagePreviews.map((preview, index) => (
-                          <Grid item key={index} xs={6} sm={6}>
+                          <Box item key={index} xs={6} sm={6}>
                             <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
                               <img
                                 src={preview}
@@ -406,15 +406,15 @@ export default function CreateProductPage() {
                               />
                               <IconButton
                                 onClick={() => removeImage(index)}
-                                className="absolute p-1 transition-colors rounded-full top-2 right-2 hover:bg-red-600 z-10"
+                                className="absolute z-10 p-1 transition-colors rounded-full top-2 right-2 hover:bg-red-600"
                                 size="small"
                               >
                                 <IconX size={16} color="white" />
                               </IconButton>
                             </Box>
-                          </Grid>
+                          </Box>
                         ))}
-                        <Grid item xs={6} sm={6}>
+                        <Box item xs={6} sm={6}>
                           <label className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer aspect-square">
                             <Box className="flex flex-col items-center justify-center p-4">
                               <IconPlus size={24} className="mb-2 text-gray-400" />
@@ -430,8 +430,8 @@ export default function CreateProductPage() {
                               />
                             </Box>
                           </label>
-                        </Grid>
-                      </Grid>
+                        </Box>
+                      </Box>
                     </Box>
                   ) : (
                     <label className="flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg cursor-pointer">

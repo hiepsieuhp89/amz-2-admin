@@ -11,7 +11,6 @@ import {
   DialogTitle,
   FormControl,
   FormControlLabel,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -520,9 +519,9 @@ function ProductDetailPage() {
               </Typography>
               
               {imagePreviews.length > 0 ? (
-                <Grid container spacing={2}>
+                <Box container spacing={2}>
                   {imagePreviews.map((preview, index) => (
-                    <Grid item key={index} xs={6} sm={4} md={3}>
+                    <Box item key={index} xs={6} sm={4} md={3}>
                       <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
                         <img
                           src={preview}
@@ -539,11 +538,11 @@ function ProductDetailPage() {
                           </IconButton>
                         )}
                       </Box>
-                    </Grid>
+                    </Box>
                   ))}
                   
                   {isEditing && (
-                    <Grid item xs={6} sm={4} md={3}>
+                    <Box item xs={6} sm={4} md={3}>
                       <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-md border-gray-300 h-full min-h-[150px] cursor-pointer">
                         <Box className="flex flex-col items-center justify-center p-4">
                           <IconPlus size={24} className="mb-2 text-gray-400" />
@@ -559,9 +558,9 @@ function ProductDetailPage() {
                           />
                         </Box>
                       </label>
-                    </Grid>
+                    </Box>
                   )}
-                </Grid>
+                </Box>
               ) : (
                 <label className={`flex flex-col items-center justify-center w-full h-32 transition-colors border border-gray-500 border-dashed !rounded-lg ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                   <div className="flex flex-col items-center justify-center py-4">

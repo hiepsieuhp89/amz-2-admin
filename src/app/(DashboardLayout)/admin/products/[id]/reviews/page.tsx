@@ -24,7 +24,6 @@ import {
   Select,
   InputAdornment,
   Tooltip,
-  Grid,
   Chip,
 } from "@mui/material";
 import {
@@ -449,7 +448,7 @@ const ProductReviewsPage = () => {
 
         <Card className="mb-6 shadow">
           <CardContent>
-            <Box className="flex items-center space-x-4 mb-4">
+            <Box className="flex items-center mb-4 space-x-4">
               <Box
                 component="img"
                 src={product?.imageUrls?.[0] || "https://via.placeholder.com/150"}
@@ -606,9 +605,9 @@ const ProductReviewsPage = () => {
               </Typography>
 
               {reviewData.imagePreviews.length > 0 ? (
-                <Grid container spacing={2} className="mb-3">
+                <Box container spacing={2} className="mb-3">
                   {reviewData.imagePreviews.map((preview, index) => (
-                    <Grid item key={index} xs={6} sm={4} md={3}>
+                    <Box item key={index} xs={6} sm={4} md={3}>
                       <Box className="relative rounded aspect-square">
                         <img
                           src={preview}
@@ -623,9 +622,9 @@ const ProductReviewsPage = () => {
                           <IconX size={16} color="white" />
                         </IconButton>
                       </Box>
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               ) : null}
 
               <label>

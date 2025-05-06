@@ -11,7 +11,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   Paper,
   Table,
@@ -229,8 +228,8 @@ const InvitationCodesPage = () => {
 
       {/* Filter & Search Section */}
       <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
+        <Box container spacing={2} alignItems="center">
+          <Box item xs={12} md={6}>
             <FormControl fullWidth variant="outlined" size="small">
               <OutlinedInput
                 placeholder="Tìm kiếm mã mời..."
@@ -246,8 +245,8 @@ const InvitationCodesPage = () => {
                 }
               />
             </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
+          </Box>
+          <Box item xs={12} md={3}>
             <FormControl fullWidth size="small">
               <InputLabel>Sắp xếp</InputLabel>
               <Select
@@ -259,8 +258,8 @@ const InvitationCodesPage = () => {
                 <MenuItem value="ASC">Cũ nhất</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
+          </Box>
+          <Box item xs={12} md={3}>
             <FormControl fullWidth size="small">
               <InputLabel>Số lượng hiển thị</InputLabel>
               <Select
@@ -274,8 +273,8 @@ const InvitationCodesPage = () => {
                 <MenuItem value={50}>50</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
 
       <Paper elevation={3} sx={{ p: 2 }}>
@@ -389,8 +388,8 @@ const InvitationCodesPage = () => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Tạo mã mời mới</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+          <Box container spacing={2} sx={{ mt: 1 }}>
+            <Box item xs={12}>
               <TextField
                 label="Số lượng mã mời"
                 type="number"
@@ -399,8 +398,8 @@ const InvitationCodesPage = () => {
                 fullWidth
                 InputProps={{ inputProps: { min: 1, max: 100 } }}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box item xs={12}>
               <TextField
                 label="Thời gian hết hạn (phút)"
                 type="number"
@@ -409,8 +408,8 @@ const InvitationCodesPage = () => {
                 fullWidth
                 InputProps={{ inputProps: { min: 1 } }}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Hủy</Button>
@@ -494,8 +493,8 @@ const InvitationCodesPage = () => {
               
               <Divider sx={{ my: 2 }} />
               
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+              <Box container spacing={2}>
+                <Box item xs={12} md={6}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Thông tin cơ bản
                   </Typography>
@@ -559,10 +558,10 @@ const InvitationCodesPage = () => {
                       />
                     </ListItem>
                   </List>
-                </Grid>
+                </Box>
                 
                 {userData.data.role === "shop" && (
-                  <Grid item xs={12} md={6}>
+                  <Box item xs={12} md={6}>
                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                       Thông tin cửa hàng
                     </Typography>
@@ -624,9 +623,9 @@ const InvitationCodesPage = () => {
                         />
                       </ListItem>
                     </List>
-                  </Grid>
+                  </Box>
                 )}
-              </Grid>
+              </Box>
             </>
           ) : (
             <Typography>Không thể tải thông tin người dùng</Typography>
