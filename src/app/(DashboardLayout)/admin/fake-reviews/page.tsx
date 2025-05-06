@@ -24,7 +24,7 @@ import {
   OutlinedInput,
   InputAdornment,
 } from "@mui/material"
-import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy, IconMessageUser, IconBrandTelegram, IconSearch } from "@tabler/icons-react"
+import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy, IconMessageUser, IconBrandTelegram, IconSearch, IconX } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import React, { useState } from "react"
@@ -142,20 +142,25 @@ function FakeReviewsPage() {
   }
 
   const renderOrderItems = (items: any[]) => {
+    console.log(items)
     return (
-      <Box sx={{ pl: 4, pt: 2 }}>
+      <Box sx={{pt: 2 }}>
         {items.map((item, index) => (
           <Box
             className="cursor-pointer"
             onClick={() => handleOpenProductReviewDialog(item)}
-            key={index} display="flex" alignItems="center" gap={2} mb={2}>
+            key={index} display="flex" alignItems="start" gap={2} mb={2}>
             <img
-              src={item.productImage || "/images/white-image.png"}
+              className="rounded-[4px]"
+              src={item?.shopProduct?.product?.imageUrls[0] || "/images/white-image.png"}
               alt={item.productName}
-              style={{ width: 50, height: 50, objectFit: 'cover' }}
+              style={{ width: 80, height: 80, objectFit: 'cover' }}
             />
             <Box>
-              <Typography variant="body2">{item.productName}</Typography>
+              <Typography 
+              mb={1}
+              fontSize="14px"
+              variant="body2">{item.productName}</Typography>
               <Typography variant="body2" color="textSecondary">
                 Số lượng: {item.quantity}
               </Typography>
@@ -192,7 +197,9 @@ function FakeReviewsPage() {
     return (
       <Box>
         <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="textSecondary">
+          <Typography 
+          fontSize="14px"
+          variant="body2" color="textSecondary">
             Lọc đơn hàng theo trạng thái
           </Typography>
 
@@ -252,6 +259,7 @@ function FakeReviewsPage() {
                               endIcon={<IconMessageUser size={16} />}
                               sx={{
                                 backgroundColor: order.hasReview ? "#1976d295 !important" : "#1976d2 !important",
+                                color: 'white !important',
                                 minWidth: '80px',
                                 boxShadow: 'none',
                                 '&:hover': {
@@ -376,6 +384,10 @@ function FakeReviewsPage() {
     })
   }
 
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
   if (error) {
     return (
       <Box className="flex flex-col items-center justify-center min-h-screen gap-2 p-8 text-center">
@@ -483,15 +495,31 @@ function FakeReviewsPage() {
                   }
                 />
               </FormControl>
-              {isUploading && <CircularProgress size={24} />}
+              {isUploading && <CircularProgress size={24} className="mt-4" />}
               <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Review image ${index}`}
-                    style={{ width: 100, height: 100, objectFit: 'cover' }}
-                  />
+                  <Box key={index} sx={{ position: 'relative', width: 100, height: 100 }}>
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Review image ${index}`}
+                      style={{ width: 100, height: 100, objectFit: 'contain' }}
+                      className="rounded-[4px] border"
+                    />
+                    <IconButton
+                      size="small"
+                      className="!bg-red-100"
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 2,
+                        background: 'rgba(255,255,255,0.7)'
+                      }}
+                      onClick={() => handleRemoveImage(index)}
+                    >
+                      <IconX size={16} color="red" />
+                    </IconButton>
+                  </Box>
                 ))}
               </Box>
             </Box>
@@ -525,11 +553,13 @@ function FakeReviewsPage() {
       >
         <DialogTitle>Đánh giá sản phẩm</DialogTitle>
         <DialogContent>
-          {selectedProduct && (
+          {selectedProduct && ( 
             <Box>
-              <Box mb={2} display="flex" alignItems="center" gap={2} className="bg-[#F5F5F5] !rounded-[4px] border p-2">
+              <Box mb={2} display="flex" alignItems="center" gap={2} className="bg-[#F5F5F5] !rounded-[4px] border p-2 overflow-hidden">
                 <img
-                  src={selectedProduct.productImage || "/images/white-image.png"}
+                  draggable={false}
+                  className="rounded-[4px]"
+                  src={selectedProduct?.shopProduct?.product?.imageUrls[0]  || "/images/white-image.png"}
                   alt={selectedProduct.productName}
                   style={{ width: 80, height: 80, objectFit: 'cover' }}
                 />
@@ -574,15 +604,32 @@ function FakeReviewsPage() {
                     }
                   />
                 </FormControl>
-                {isUploading && <CircularProgress size={24} />}
+                {isUploading && <CircularProgress size={24} className="mt-4" />}
                 <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   {images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`Review image ${index}`}
-                      style={{ width: 100, height: 100, objectFit: 'cover' }}
-                    />
+                    <Box key={index} sx={{ position: 'relative', width: 100, height: 100 }}>
+                      <img
+                        draggable={false}
+                        key={index}
+                        src={img}
+                        alt={`Review image ${index}`}
+                        style={{ width: 100, height: 100, objectFit: 'contain' }}
+                        className="rounded-[4px] border"
+                      />
+                      <IconButton
+                        size="small"
+                        className="!bg-red-100"
+                        sx={{
+                          position: 'absolute',
+                          top: 2,
+                          right: 2,
+                          background: 'rgba(255,255,255,0.7)'
+                        }}
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <IconX size={16} color="red" />
+                      </IconButton>
+                    </Box>
                   ))}
                 </Box>
               </Box>
