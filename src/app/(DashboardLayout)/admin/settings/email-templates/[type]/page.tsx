@@ -240,8 +240,8 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
           </Box>
         ) : (
           <form onSubmit={handleSubmit}>
-            <Box container spacing={3}>
-              <Box item xs={12} sm={6}>
+            <Box>
+              <Box >
                 <TextField
                   label="Tên Template"
                   fullWidth
@@ -250,7 +250,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   required
                 />
               </Box>
-              <Box item xs={12} sm={6}>
+              <Box >
                 <TextField
                   label="Tiêu đề Email"
                   fullWidth
@@ -259,7 +259,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   required
                 />
               </Box>
-              <Box item xs={12}>
+              <Box >
                 <TextField
                   label="Mô tả"
                   fullWidth
@@ -269,7 +269,7 @@ export default function EmailTemplateEditPage({ params }: { params: { type: stri
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </Box>
-              <Box item xs={12}>
+              <Box >
                 <Typography variant="subtitle1" gutterBottom>
                   Biến có thể sử dụng trong template
                 </Typography>

@@ -229,7 +229,7 @@ const InvitationCodesPage = () => {
       {/* Filter & Search Section */}
       <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
         <Box  alignItems="center">
-          <Box item xs={12} md={6}>
+          <Box  >
             <FormControl fullWidth variant="outlined" size="small">
               <OutlinedInput
                 placeholder="Tìm kiếm mã mời..."
@@ -246,7 +246,7 @@ const InvitationCodesPage = () => {
               />
             </FormControl>
           </Box>
-          <Box item xs={12} md={3}>
+          <Box>
             <FormControl fullWidth size="small">
               <InputLabel>Sắp xếp</InputLabel>
               <Select
@@ -259,7 +259,7 @@ const InvitationCodesPage = () => {
               </Select>
             </FormControl>
           </Box>
-          <Box item xs={12} md={3}>
+          <Box>
             <FormControl fullWidth size="small">
               <InputLabel>Số lượng hiển thị</InputLabel>
               <Select
@@ -389,7 +389,7 @@ const InvitationCodesPage = () => {
         <DialogTitle>Tạo mã mời mới</DialogTitle>
         <DialogContent>
           <Box  sx={{ mt: 1 }}>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 label="Số lượng mã mời"
                 type="number"
@@ -399,7 +399,7 @@ const InvitationCodesPage = () => {
                 InputProps={{ inputProps: { min: 1, max: 100 } }}
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 label="Thời gian hết hạn (phút)"
                 type="number"
@@ -494,7 +494,7 @@ const InvitationCodesPage = () => {
               <Divider sx={{ my: 2 }} />
               
               <Box >
-                <Box item xs={12} md={6}>
+                <Box  >
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Thông tin cơ bản
                   </Typography>
@@ -561,7 +561,7 @@ const InvitationCodesPage = () => {
                 </Box>
                 
                 {userData.data.role === "shop" && (
-                  <Box item xs={12} md={6}>
+                  <Box  >
                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                       Thông tin cửa hàng
                     </Typography>

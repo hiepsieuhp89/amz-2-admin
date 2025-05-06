@@ -367,7 +367,7 @@ const SystemConfigPage = () => {
         }}
       >
         <Box  alignItems="center">
-          <Box item xs={12} md={6}>
+          <Box  >
             <TextField
               fullWidth
               placeholder="Tìm kiếm theo key hoặc mô tả..."
@@ -530,7 +530,7 @@ const SystemConfigPage = () => {
         <DialogTitle sx={{ fontWeight: 600 }}>Thêm cấu hình mới</DialogTitle>
         <DialogContent dividers>
           <Box >
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Key"
@@ -543,7 +543,7 @@ const SystemConfigPage = () => {
                 helperText="Key phải là duy nhất và không thể thay đổi sau khi tạo"
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Giá trị"
@@ -557,7 +557,7 @@ const SystemConfigPage = () => {
                 rows={4}
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Mô tả"
@@ -570,7 +570,7 @@ const SystemConfigPage = () => {
                 rows={3}
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <FormControl component="fieldset">
                 <Typography component="legend">Trạng thái</Typography>
                 <Switch
@@ -620,7 +620,7 @@ const SystemConfigPage = () => {
         <DialogTitle sx={{ fontWeight: 600 }}>Chỉnh sửa cấu hình</DialogTitle>
         <DialogContent dividers>
           <Box >
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Key"
@@ -633,7 +633,7 @@ const SystemConfigPage = () => {
                 disabled
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Giá trị"
@@ -647,7 +647,7 @@ const SystemConfigPage = () => {
                 rows={4}
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <TextField
                 fullWidth
                 label="Mô tả"
@@ -660,7 +660,7 @@ const SystemConfigPage = () => {
                 rows={3}
               />
             </Box>
-            <Box item xs={12}>
+            <Box >
               <FormControl component="fieldset">
                 <Typography component="legend">Trạng thái</Typography>
                 <Switch

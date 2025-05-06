@@ -160,9 +160,9 @@ const OrderDetailPage = () => {
       ) : error ? (
         <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
       ) : order ? (
-        <Box container spacing={3}>
+        <Box>
           {/* Order Status Summary */}
-          <Box item xs={12}>
+          <Box >
             <Paper sx={{ p: 2, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', md: 'center' }, gap: 2 }}>
               <Box>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
@@ -199,7 +199,7 @@ const OrderDetailPage = () => {
             </Paper>
           </Box>
 
-          <Box item xs={12} md={6}>
+          <Box  >
             <DashboardCard 
               title="Thông tin đơn hàng"
               action={<InfoIcon />}
@@ -208,11 +208,11 @@ const OrderDetailPage = () => {
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>ID: <Typography component="span" fontWeight="medium">{order.id}</Typography></Typography>
                 
                 <Box  sx={{ mb: 1 }}>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Ngày đặt hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{formatDate(order.orderTime || order.createdAt)}</Typography>
                   </Box>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Trạng thái thanh toán:</Typography>
                     <Chip 
                       label={order.paymentStatus || 'PENDING'} 
@@ -223,7 +223,7 @@ const OrderDetailPage = () => {
                 </Box>
 
                 <Box  sx={{ mb: 1 }}>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Trạng thái đơn hàng:</Typography>
                     <Chip 
                       label={order.status} 
@@ -231,7 +231,7 @@ const OrderDetailPage = () => {
                       size="small"
                     />
                   </Box>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Tiến độ:</Typography>
                     <Chip 
                       label={getDelayStatusText(order.delayStatus)}
@@ -242,7 +242,7 @@ const OrderDetailPage = () => {
                 </Box>
 
                 <Box  sx={{ mb: 1 }}>
-                  <Box item xs={12}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Giai đoạn giao hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.stageDelivery || 'N/A'}</Typography>
                   </Box>
@@ -250,7 +250,7 @@ const OrderDetailPage = () => {
 
                 {order.confirmedAt && (
                   <Box  sx={{ mb: 1 }}>
-                    <Box item xs={12}>
+                    <Box >
                       <Typography variant="body2" color="textSecondary">Ngày xác nhận:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.confirmedAt)}</Typography>
                     </Box>
@@ -259,7 +259,7 @@ const OrderDetailPage = () => {
 
                 {order.deliveredAt && (
                   <Box  sx={{ mb: 1 }}>
-                    <Box item xs={12}>
+                    <Box >
                       <Typography variant="body2" color="textSecondary">Ngày giao hàng:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.deliveredAt)}</Typography>
                     </Box>
@@ -268,7 +268,7 @@ const OrderDetailPage = () => {
 
                 {order.cancelledAt && (
                   <Box  sx={{ mb: 1 }}>
-                    <Box item xs={12}>
+                    <Box >
                       <Typography variant="body2" color="textSecondary">Ngày hủy:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.cancelledAt)}</Typography>
                     </Box>
@@ -281,11 +281,11 @@ const OrderDetailPage = () => {
                 <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>{order.address || 'N/A'}</Typography>
 
                 <Box  sx={{ mt: 1 }}>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Email:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.email || 'N/A'}</Typography>
                   </Box>
-                  <Box item xs={6}>
+                  <Box >
                     <Typography variant="body2" color="textSecondary">Số điện thoại:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.phone || 'N/A'}</Typography>
                   </Box>
@@ -294,9 +294,9 @@ const OrderDetailPage = () => {
             </DashboardCard>
           </Box>
 
-          <Box item xs={12} md={6}>
+          <Box  >
             <Box >
-              <Box item xs={12}>
+              <Box >
                 <DashboardCard 
                   title="Thông tin khách hàng"
                   action={<UserIcon />}
@@ -322,7 +322,7 @@ const OrderDetailPage = () => {
                   </Box>
                 </DashboardCard>
               </Box>
-              <Box item xs={12}>
+              <Box >
                 <DashboardCard 
                   title="Thông tin cửa hàng"
                   action={<ShopIcon />}
@@ -359,7 +359,7 @@ const OrderDetailPage = () => {
 
           {/* Delivery Stages - Show only for SHIPPING orders */}
           {order.status === 'SHIPPING' && (
-            <Box item xs={12}>
+            <Box >
               <DashboardCard 
                 title="Tiến trình giao hàng"
                 action={<StagesIcon />}
@@ -384,7 +384,7 @@ const OrderDetailPage = () => {
                   </Typography>
                   
                   <Box >
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -412,7 +412,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -440,7 +440,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -468,7 +468,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
 
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -496,7 +496,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -524,7 +524,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -552,7 +552,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
 
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -580,7 +580,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -608,7 +608,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -636,7 +636,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
 
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -664,7 +664,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -692,7 +692,7 @@ const OrderDetailPage = () => {
                       </Card>
                     </Box>
                     
-                    <Box item xs={12} md={4}>
+                    <Box >
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -726,7 +726,7 @@ const OrderDetailPage = () => {
           )}
 
           {/* Order Status History */}
-          <Box item xs={12}>
+          <Box >
             <DashboardCard 
               title="Lịch sử trạng thái đơn hàng"
               action={<HistoryIcon />}
@@ -777,7 +777,7 @@ const OrderDetailPage = () => {
             </DashboardCard>
           </Box>
 
-          <Box item xs={12}>
+          <Box >
             <DashboardCard 
               title="Chi tiết đơn hàng"
               action={<DeliveryIcon />}

@@ -397,7 +397,7 @@ export default function CreateProductPage() {
                       </Box>
                       <Box >
                         {imagePreviews.map((preview, index) => (
-                          <Box item key={index} xs={6} sm={6}>
+                          <Box key={index}>
                             <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">
                               <img
                                 src={preview}
@@ -414,7 +414,7 @@ export default function CreateProductPage() {
                             </Box>
                           </Box>
                         ))}
-                        <Box item xs={6} sm={6}>
+                        <Box>
                           <label className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer aspect-square">
                             <Box className="flex flex-col items-center justify-center p-4">
                               <IconPlus size={24} className="mb-2 text-gray-400" />

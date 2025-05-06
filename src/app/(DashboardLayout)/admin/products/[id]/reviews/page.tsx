@@ -607,7 +607,7 @@ const ProductReviewsPage = () => {
               {reviewData.imagePreviews.length > 0 ? (
                 <Box  className="mb-3">
                   {reviewData.imagePreviews.map((preview, index) => (
-                    <Box item key={index} xs={6} sm={4} md={3}>
+                    <Box key={index}>
                       <Box className="relative rounded aspect-square">
                         <img
                           src={preview}
