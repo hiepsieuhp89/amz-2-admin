@@ -11,7 +11,7 @@ const nextConfig = {
           "img2.yeshen.cc"
         ]
       : [
-          "amz.dunghaysai.site", 
+          "amz2.dunghaysai.site", 
           "example.com", 
           "picsum.photos", 
           "m.media-amazon.com", 
@@ -34,7 +34,7 @@ const nextConfig = {
   },
   async rewrites() {
     const domain =
-        process.env.NEXT_PUBLIC_API_URL || "amz.dunghaysai.site";
+        process.env.NEXT_PUBLIC_API_URL || "amz2.dunghaysai.site";
         return [
       {
         source: "/api/:path*",
