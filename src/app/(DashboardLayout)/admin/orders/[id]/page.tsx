@@ -207,7 +207,7 @@ const OrderDetailPage = () => {
               <Box sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>ID: <Typography component="span" fontWeight="medium">{order.id}</Typography></Typography>
                 
-                <Box container spacing={2} sx={{ mb: 1 }}>
+                <Box  sx={{ mb: 1 }}>
                   <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Ngày đặt hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{formatDate(order.orderTime || order.createdAt)}</Typography>
@@ -222,7 +222,7 @@ const OrderDetailPage = () => {
                   </Box>
                 </Box>
 
-                <Box container spacing={2} sx={{ mb: 1 }}>
+                <Box  sx={{ mb: 1 }}>
                   <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Trạng thái đơn hàng:</Typography>
                     <Chip 
@@ -241,7 +241,7 @@ const OrderDetailPage = () => {
                   </Box>
                 </Box>
 
-                <Box container spacing={2} sx={{ mb: 1 }}>
+                <Box  sx={{ mb: 1 }}>
                   <Box item xs={12}>
                     <Typography variant="body2" color="textSecondary">Giai đoạn giao hàng:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.stageDelivery || 'N/A'}</Typography>
@@ -249,7 +249,7 @@ const OrderDetailPage = () => {
                 </Box>
 
                 {order.confirmedAt && (
-                  <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box  sx={{ mb: 1 }}>
                     <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày xác nhận:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.confirmedAt)}</Typography>
@@ -258,7 +258,7 @@ const OrderDetailPage = () => {
                 )}
 
                 {order.deliveredAt && (
-                  <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box  sx={{ mb: 1 }}>
                     <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày giao hàng:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.deliveredAt)}</Typography>
@@ -267,7 +267,7 @@ const OrderDetailPage = () => {
                 )}
 
                 {order.cancelledAt && (
-                  <Box container spacing={2} sx={{ mb: 1 }}>
+                  <Box  sx={{ mb: 1 }}>
                     <Box item xs={12}>
                       <Typography variant="body2" color="textSecondary">Ngày hủy:</Typography>
                       <Typography variant="body2" fontWeight="medium">{formatDate(order.cancelledAt)}</Typography>
@@ -280,7 +280,7 @@ const OrderDetailPage = () => {
                 <Typography variant="body2" color="textSecondary">Địa chỉ giao hàng:</Typography>
                 <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>{order.address || 'N/A'}</Typography>
 
-                <Box container spacing={2} sx={{ mt: 1 }}>
+                <Box  sx={{ mt: 1 }}>
                   <Box item xs={6}>
                     <Typography variant="body2" color="textSecondary">Email:</Typography>
                     <Typography variant="body2" fontWeight="medium">{order.email || 'N/A'}</Typography>
@@ -295,7 +295,7 @@ const OrderDetailPage = () => {
           </Box>
 
           <Box item xs={12} md={6}>
-            <Box container spacing={2}>
+            <Box >
               <Box item xs={12}>
                 <DashboardCard 
                   title="Thông tin khách hàng"
@@ -383,7 +383,7 @@ const OrderDetailPage = () => {
                     Các giai đoạn giao hàng
                   </Typography>
                   
-                  <Box container spacing={2}>
+                  <Box >
                     <Box item xs={12} md={4}>
                       <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent>

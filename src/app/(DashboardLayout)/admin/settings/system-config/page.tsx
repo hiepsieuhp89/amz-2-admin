@@ -366,7 +366,7 @@ const SystemConfigPage = () => {
           border: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
         }}
       >
-        <Box container spacing={2} alignItems="center">
+        <Box  alignItems="center">
           <Box item xs={12} md={6}>
             <TextField
               fullWidth
@@ -529,7 +529,7 @@ const SystemConfigPage = () => {
       >
         <DialogTitle sx={{ fontWeight: 600 }}>Thêm cấu hình mới</DialogTitle>
         <DialogContent dividers>
-          <Box container spacing={2}>
+          <Box >
             <Box item xs={12}>
               <TextField
                 fullWidth
@@ -619,7 +619,7 @@ const SystemConfigPage = () => {
       >
         <DialogTitle sx={{ fontWeight: 600 }}>Chỉnh sửa cấu hình</DialogTitle>
         <DialogContent dividers>
-          <Box container spacing={2}>
+          <Box >
             <Box item xs={12}>
               <TextField
                 fullWidth

@@ -395,7 +395,7 @@ export default function CreateProductPage() {
                           Xoá tất cả
                         </Button>
                       </Box>
-                      <Box container spacing={2}>
+                      <Box >
                         {imagePreviews.map((preview, index) => (
                           <Box item key={index} xs={6} sm={6}>
                             <Box className="relative overflow-hidden border border-gray-600 rounded aspect-square">

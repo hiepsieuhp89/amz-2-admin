@@ -228,7 +228,7 @@ const InvitationCodesPage = () => {
 
       {/* Filter & Search Section */}
       <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-        <Box container spacing={2} alignItems="center">
+        <Box  alignItems="center">
           <Box item xs={12} md={6}>
             <FormControl fullWidth variant="outlined" size="small">
               <OutlinedInput
@@ -388,7 +388,7 @@ const InvitationCodesPage = () => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Tạo mã mời mới</DialogTitle>
         <DialogContent>
-          <Box container spacing={2} sx={{ mt: 1 }}>
+          <Box  sx={{ mt: 1 }}>
             <Box item xs={12}>
               <TextField
                 label="Số lượng mã mời"
@@ -493,7 +493,7 @@ const InvitationCodesPage = () => {
               
               <Divider sx={{ my: 2 }} />
               
-              <Box container spacing={2}>
+              <Box >
                 <Box item xs={12} md={6}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Thông tin cơ bản
