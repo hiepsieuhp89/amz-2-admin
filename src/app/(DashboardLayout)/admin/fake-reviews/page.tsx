@@ -24,7 +24,7 @@ import {
   OutlinedInput,
   InputAdornment,
 } from "@mui/material"
-import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy, IconMessageUser, IconBrandTelegram, IconSearch, IconX } from "@tabler/icons-react"
+import { IconEye, IconChevronDown, IconChevronUp, IconPhoto, IconMoodSadDizzy, IconMessageUser, IconBrandTelegram, IconSearch, IconX, IconPlus } from "@tabler/icons-react"
 import { message } from "antd"
 import { useRouter } from "next/navigation"
 import React, { useState } from "react"
@@ -34,7 +34,6 @@ import { CircularProgress } from "@mui/material"
 import { useUploadImage } from "@/hooks/image"
 
 function FakeReviewsPage() {
-  const router = useRouter()
   const [page, setPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -43,7 +42,6 @@ function FakeReviewsPage() {
   const [orderStatus, setOrderStatus] = useState<string>('DELIVERED')
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [rating, setRating] = useState(5)
   const [content, setContent] = useState("")
   const [images, setImages] = useState<string[]>([])
@@ -62,7 +60,6 @@ function FakeReviewsPage() {
   const { mutate: createReview, isPending: isCreatingReview } = useCreateFakeReview()
   const { mutate: uploadImage, isPending: isUploading } = useUploadImage()
   const { mutate: deleteReview, isPending: isDeletingReview } = useDeleteFakeReview()
-
   const filteredUsers = userData?.data?.data || []
   const pagination = userData?.data?.meta || {
     page: 1,
@@ -113,12 +110,6 @@ function FakeReviewsPage() {
     </TableRow>
   )
 
-  const handleCreateReview = (orderId: string) => {
-    setOrdersDialogOpen(false)
-    setSelectedOrderId(orderId)
-    setReviewDialogOpen(true)
-  }
-
   const handleOrderStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setOrderStatus(event.target.value)
     refetch()
@@ -144,11 +135,9 @@ function FakeReviewsPage() {
   const renderOrderItems = (items: any[]) => {
     console.log(items)
     return (
-      <Box sx={{pt: 2 }}>
+      <Box sx={{ pt: 2 }}>
         {items.map((item, index) => (
           <Box
-            className="cursor-pointer"
-            onClick={() => handleOpenProductReviewDialog(item)}
             key={index} display="flex" alignItems="start" gap={2} mb={2}>
             <img
               className="rounded-[4px]"
@@ -157,14 +146,26 @@ function FakeReviewsPage() {
               style={{ width: 80, height: 80, objectFit: 'cover' }}
             />
             <Box>
-              <Typography 
-              mb={1}
-              fontSize="14px"
-              variant="body2">{item.productName}</Typography>
+              <Typography
+                mb={1}
+                fontSize="14px"
+                variant="body2">{item.productName}</Typography>
               <Typography variant="body2" color="textSecondary">
                 Số lượng: {item.quantity}
               </Typography>
             </Box>
+            <IconButton
+              sx={{
+                width: 32,
+                height: 32,
+                border: '1px solid #1976d2',
+                background: '#fff',
+                ml: 1
+              }}
+              onClick={() => handleOpenProductReviewDialog(item)}
+            >
+              <IconPlus size={20} color="#1976d2" />
+            </IconButton>
           </Box>
         ))}
       </Box>
@@ -197,9 +198,9 @@ function FakeReviewsPage() {
     return (
       <Box>
         <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-          <Typography 
-          fontSize="14px"
-          variant="body2" color="textSecondary">
+          <Typography
+            fontSize="14px"
+            variant="body2" color="textSecondary">
             Lọc đơn hàng theo trạng thái
           </Typography>
 
@@ -254,9 +255,9 @@ function FakeReviewsPage() {
                             <Button
                               variant="contained"
                               color="primary"
-                              onClick={() => handleCreateReview(order.id)}
+                              onClick={() => toggleExpandOrder(order.id)}
                               disabled={order.hasReview}
-                              endIcon={<IconMessageUser size={16} />}
+                              endIcon={expandedOrderId === order.id ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
                               sx={{
                                 backgroundColor: order.hasReview ? "#1976d295 !important" : "#1976d2 !important",
                                 color: 'white !important',
@@ -264,10 +265,11 @@ function FakeReviewsPage() {
                                 boxShadow: 'none',
                                 '&:hover': {
                                   boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                }
+                                },
+                                textTransform: "none"
                               }}
                             >
-                              {order.hasReview ? 'Đã đánh giá' : 'Tạo review'}
+                              {order.hasReview ? 'Đã đánh giá' : 'Đánh giá sản phẩm'}
                             </Button>
                           )}
                           {order.hasReview && (
@@ -280,16 +282,7 @@ function FakeReviewsPage() {
                               {isDeletingReview ? 'Đang xóa...' : 'Xóa review'}
                             </Button>
                           )}
-                          <IconButton
-                            size="small"
-                            onClick={() => toggleExpandOrder(order.id)}
-                          >
-                            {expandedOrderId === order.id ? (
-                              <IconChevronUp size={18} />
-                            ) : (
-                              <IconChevronDown size={18} />
-                            )}
-                          </IconButton>
+
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -308,12 +301,6 @@ function FakeReviewsPage() {
         )}
       </Box>
     )
-  }
-
-  const handleOpenReviewDialog = (orderId: string) => {
-    setOrdersDialogOpen(false)
-    setSelectedOrderId(orderId)
-    setReviewDialogOpen(true)
   }
 
   const handleCloseReviewDialog = () => {
@@ -343,28 +330,7 @@ function FakeReviewsPage() {
     })
   }
 
-  const handleSubmitReview = () => {
-    if (!selectedUserId || !selectedOrderId) return
-
-    createReview({
-      userId: selectedUserId,
-      orderId: selectedOrderId,
-      rating,
-      content,
-      images
-    }, {
-      onSuccess: () => {
-        message.success("Tạo review thành công!")
-        handleCloseReviewDialog()
-      },
-      onError: () => {
-        message.error("Có lỗi xảy ra khi tạo review")
-      }
-    })
-  }
-
   const handleSubmitProductReview = () => {
-    console.log(selectedProduct)
     createReview({
       userId: selectedUserId,
       orderId: selectedProduct?.orderId,
@@ -453,99 +419,6 @@ function FakeReviewsPage() {
       </Dialog>
 
       <Dialog
-        open={reviewDialogOpen}
-        onClose={handleCloseReviewDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Viết đánh giá</DialogTitle>
-        <DialogContent>
-          <Box>
-            <Box mb={2}>
-              <Typography variant="body1" gutterBottom>
-                Đánh giá của bạn
-              </Typography>
-              <Rating
-                value={rating}
-                onChange={(_, value) => setRating(value || 5)}
-                size="large"
-              />
-            </Box>
-            <Box mb={2}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Nội dung đánh giá"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
-            </Box>
-            <Box mb={2}>
-              <InputLabel>Hình ảnh</InputLabel>
-              <FormControl fullWidth variant="outlined">
-                <OutlinedInput
-                  type="file"
-                  inputProps={{ multiple: true, accept: 'image/*' }}
-                  onChange={handleImageUpload}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <IconPhoto />
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
-              {isUploading && <CircularProgress size={24} className="mt-4" />}
-              <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                {images.map((img, index) => (
-                  <Box key={index} sx={{ position: 'relative', width: 100, height: 100 }}>
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`Review image ${index}`}
-                      style={{ width: 100, height: 100, objectFit: 'contain' }}
-                      className="rounded-[4px] border"
-                    />
-                    <IconButton
-                      size="small"
-                      className="!bg-red-100"
-                      sx={{
-                        position: 'absolute',
-                        top: 2,
-                        right: 2,
-                        background: 'rgba(255,255,255,0.7)'
-                      }}
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <IconX size={16} color="red" />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          </Box>
-          <Box className="flex justify-end gap-4 mt-6">
-            <Button
-              variant="outlined"
-              onClick={handleCloseReviewDialog}>Hủy</Button>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{
-                backgroundColor: !content ? "#1976d295 !important" : "#1976d2 !important",
-                minWidth: '80px',
-                boxShadow: 'none',
-                '&:hover': {
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                }
-              }}
-              endIcon={<IconBrandTelegram size={16} />}
-              onClick={handleSubmitReview}>Gửi đánh giá</Button>
-          </Box>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
         open={productReviewDialogOpen}
         onClose={handleCloseProductReviewDialog}
         maxWidth="md"
@@ -553,13 +426,13 @@ function FakeReviewsPage() {
       >
         <DialogTitle>Đánh giá sản phẩm</DialogTitle>
         <DialogContent>
-          {selectedProduct && ( 
+          {selectedProduct && (
             <Box>
               <Box mb={2} display="flex" alignItems="center" gap={2} className="bg-[#F5F5F5] !rounded-[4px] border p-2 overflow-hidden">
                 <img
                   draggable={false}
                   className="rounded-[4px]"
-                  src={selectedProduct?.shopProduct?.product?.imageUrls[0]  || "/images/white-image.png"}
+                  src={selectedProduct?.shopProduct?.product?.imageUrls[0] || "/images/white-image.png"}
                   alt={selectedProduct.productName}
                   style={{ width: 80, height: 80, objectFit: 'cover' }}
                 />
