@@ -133,7 +133,6 @@ function FakeReviewsPage() {
   }
 
   const renderOrderItems = (items: any[]) => {
-    console.log(items)
     return (
       <Box sx={{ pt: 2 }}>
         {items.map((item, index) => (

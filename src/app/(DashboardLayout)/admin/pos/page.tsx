@@ -57,25 +57,19 @@ import {
 import { Empty, message } from "antd"
 import Image from "next/image"
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import styles from "./storehouse.module.scss"
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
 import { formatNumber } from "@/utils"
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 
-// Extend dayjs with plugins
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const AdminPosPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([])
-  const [keyword, setKeyword] = useState("")
-  const [minPrice, setMinPrice] = useState<number | undefined>()
-  const [maxPrice, setMaxPrice] = useState<number | undefined>()
   const [totalSelectedProducts, setTotalSelectedProducts] = useState(0)
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [searchShop, setSearchShop] = useState("")
@@ -85,11 +79,6 @@ const AdminPosPage = () => {
     role: "shop",
     take: 9999999999,
     search: searchShop,
-  })
-
-  const { data: usersData, isLoading: isLoadingUsers } = useGetAllUsers({
-    role: "user",
-    take: 9999999999,
   })
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -156,14 +145,6 @@ const AdminPosPage = () => {
     }, 500),
     []
   );
-
-  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
-    const customer = event.currentTarget.dataset.customer
-    if (customer) {
-      setAnchorEl(event.currentTarget)
-      setHoveredCustomer(JSON.parse(customer))
-    }
-  }
 
   const handlePopoverClose = () => {
     setAnchorEl(null)
@@ -278,10 +259,12 @@ const AdminPosPage = () => {
     }
 
     // Kiểm tra số điện thoại hợp lệ
-    const phoneRegex = /^\+?[0-9]{10,15}$/;
-    if (selectedUser.phone && !phoneRegex.test(selectedUser.phone)) {
-      message.warning("Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại có từ 10-15 chữ số");
-      return;
+    if (selectedUser.phone) {
+      const strippedPhone = selectedUser.phone.replace(/\s+/g, '');
+      if (strippedPhone.length < 10 || strippedPhone.length > 15) {
+        message.warning("Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại có từ 10-15 chữ số");
+        return;
+      }
     }
 
     // Combine date with hour, minute, second only at order creation time
@@ -416,6 +399,15 @@ const AdminPosPage = () => {
     if (!newUserName) {
       message.warning("Vui lòng nhập tên người nhận hàng");
       return;
+    }
+
+    // Kiểm tra số điện thoại hợp lệ nếu có
+    if (phone) {
+      const strippedPhone = phone.replace(/\s+/g, '');
+      if (strippedPhone.length < 10 || strippedPhone.length > 15) {
+        message.warning("Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại có từ 10-15 chữ số");
+        return;
+      }
     }
 
     try {
@@ -1050,7 +1042,7 @@ const AdminPosPage = () => {
                           ),
                           endAdornment: (
                             <>
-                              {isLoadingValidUsers ? <CircularProgress color="inherit" size={20} /> : null}s
+                              {isLoadingValidUsers ? <CircularProgress color="inherit" size={20} /> : null}
                               {params.InputProps.endAdornment}
                             </>
                           ),
